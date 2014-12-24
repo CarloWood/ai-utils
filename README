@@ -1,0 +1,59 @@
+This repository is intended to be used as a submodule
+in a larger project using autotools, cwautomacros and
+libcwd.
+
+To add it to a project, add the '../utils/Makefile'
+to AC_CONFIG_FILES of the configure.ac of that project.
+For example,
+
+AC_CONFIG_FILES([src/utils/Makefile])
+
+where src/utils is the path to this projects root.
+
+Furthermore, configure.ac needs to contain something like:
+
+-----------------------------------------------------------------------------
+dnl Because we use cwautomacros.
+CW_AUTOMACROS([20090610])
+
+dnl Add --enable-debug (DEBUG, DOXYGEN_DEBUG), --enable-libcwd (CWDEBUG, DOXYGEN_CWDEBUG),
+dnl --enable-optimise and --enable-profile options. Update USE_LIBCWD, CWD_LIBS and CXXFLAGS accordingly.
+CW_OPG_FLAGS([-W -Wall -Woverloaded-virtual -Wundef -Wpointer-arith -Wwrite-strings -Winline])
+
+dnl This source code is C++11.
+CXXFLAGS="$CXXFLAGS -std=c++11"
+
+dnl Each Makefile.am should use DEFS = @DEFS@. Set DEFS here.
+DEFS="-DHAVE_CONFIG_H"
+AC_SUBST(DEFS)
+-----------------------------------------------------------------------------
+
+Also add 'utils' to the SUBDIRS of Makefile.am of the
+parent directory (ie src/Makefile.am). For example,
+
+SUBDIRS = utils .
+
+A directory with source files that include headers
+from this submodule must include that 'src' path.
+For example, the same src/Makefile.am could contain:
+
+DEFAULT_INCLUDES=-iquote $(top_builddir) -iquote $(top_builddir)/src -iquote $(srcdir)
+
+Note the last '-iquote $(srcdir)' which will allow
+#include "utils/AIAlert.h"
+in source files in src, while a src/foo/Makefile.am
+that wanted to use src/utils would do:
+
+DEFAULT_INCLUDES=-iquote $(top_builddir) -iquote $(top_builddir)/src -iquote $(srcdir)/..
+
+Linking works as usual. For example a module that defines a
+
+bin_PROGRAMS = foobar
+
+would also define
+
+foobar_LDADD = ../utils/.libs/libutils.a
+foobar_DEPENDENCIES = ../utils/libutils.la
+
+or whatever the path to utils is.
+
