@@ -8,6 +8,7 @@ DEFAULT_INCLUDES=-iquote $(top_builddir) -iquote $(top_builddir)/src -iquote $(s
 # See src/Makefile.am.
 libutils_la_CXXFLAGS = @CXXFLAGS@ @CWD_FLAGS@
 libutils_la_SOURCES = \
+	debug_ostream_operators.cc \
 	AIAlert.cpp \
 	translate.cpp \
 	double_to_str_precision.cpp \
