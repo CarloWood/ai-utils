@@ -177,7 +177,7 @@ namespace _internal_
   class GlobalObject {
   friend class ::GlobalObjectManager;
   protected:
-    virtual ~GlobalObject() { }
+    virtual ~GlobalObject() = default;
 #ifdef DEBUGGLOBAL
     virtual bool instantiated_from_constructor(void) const = 0;
     virtual void print_type_name(std::ostream&) const = 0;
@@ -191,7 +191,7 @@ namespace _internal_
     // and to calculate the offset between Instance* and TYPE*.
     class InstanceDummy : public TYPE, public GlobalObject {
       friend class GlobalObject; // To suppress a warning
-      virtual ~InstanceDummy() throw() { }
+      virtual ~InstanceDummy() throw() = default;
     };
   protected:
     static char instance_[/*sizeof(InstanceDummy)*/];
@@ -236,7 +236,7 @@ public:
   private:	// Make sure nobody instantiates Instance itself except for Global<TYPE, inst, CONVERTER>.
     friend class Global<TYPE, inst, CONVERTER>;
     Instance(int) : TYPE(parameter_converter(inst)) { }	// TYPE is private (compile error)? Look at NOTE2 at the bottom of this file.
-    virtual ~Instance() throw() { }
+    virtual ~Instance() throw() = default;
 
 #ifdef DEBUGGLOBAL
     virtual bool instantiated_from_constructor(void) const;
@@ -250,7 +250,7 @@ public:
   private:	// Make sure nobody instantiates Instance itself except for Global<TYPE, inst, GlobalConverterVoid>.
     friend class Global<TYPE, inst, GlobalConverterVoid>;
     Instance(int) { }		// TYPE is private (compile error)? Look at NOTE1 at the bottom of this file.
-    virtual ~Instance() throw() { }
+    virtual ~Instance() throw() = default;
 
 #ifdef DEBUGGLOBAL
     virtual bool instantiated_from_constructor(void) const;
