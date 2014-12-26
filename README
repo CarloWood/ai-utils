@@ -2,7 +2,7 @@ This repository is intended to be used as a submodule
 in a larger project using autotools, cwautomacros and
 libcwd.
 
-To add it to a project, add the '../utils/Makefile'
+To add it to a project, add the '.../utils/Makefile'
 to AC_CONFIG_FILES of the configure.ac of that project.
 For example,
 
@@ -27,6 +27,11 @@ dnl Each Makefile.am should use DEFS = @DEFS@. Set DEFS here.
 DEFS="-DHAVE_CONFIG_H"
 AC_SUBST(DEFS)
 -----------------------------------------------------------------------------
+
+This is then all the requirements needed for the dependency
+on cwautomacros (which has to be installed seperately) and libcwd,
+except the latter also means you have to supply a 'debug.h'
+and 'sys.h' (see the libcwd documentation).
 
 Also add 'utils' to the SUBDIRS of Makefile.am of the
 parent directory (ie src/Makefile.am). For example,
