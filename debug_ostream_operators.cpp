@@ -1,5 +1,5 @@
 /**
- * \file debug_ostream_operators.cc
+ * \file debug_ostream_operators.cpp
  * \brief This file contains the definition of debug serializers.
  *
  * Copyright (C) 2014 Aleric Inglewood.
