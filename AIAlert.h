@@ -32,7 +32,7 @@
  *   am/was the only author of this code).
  *
  *   2014/12/24
- *   Added GNU v3 license and Released publically on github.
+ *   Added Affero GPL v3 license and Released publically on github.
  */
 
 #ifndef UTILS_AIALERT_H

@@ -31,7 +31,7 @@
  *   relicensed it to have no license.
  *
  *   2014/12/24
- *   Added GNU v3 license and Released publically on github.
+ *   Added Affero GPL v3 license and Released publically on github.
  */
 
 #include "AIAlert.h"
