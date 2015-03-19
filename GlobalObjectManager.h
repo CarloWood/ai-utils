@@ -58,9 +58,9 @@ private:
 
 private:
   template<class TYPE, int inst, class CONVERTER> friend class Global;
-  void global_constructor_called(void) { ++number_of_global_objects; }
+  void global_constructor_called() { ++number_of_global_objects; }
   template<class TYPE, int inst> friend class utils::_internal_::GlobalBase;
-  void global_destructor_called(void) {
+  void global_destructor_called() {
 #ifdef DEBUGGLOBAL
     if (!after_global_constructors)
       DoutFatal(dc::core, "When you link with libcw, you should not define your own main(). "
@@ -69,21 +69,21 @@ private:
     if (--number_of_global_objects == 0)
       deleteGlobalObjects();
   }
-  void deleteGlobalObjects(void);
+  void deleteGlobalObjects();
 
 public:
   void registerGlobalObject(utils::_internal_::GlobalObject* globalObject);
 
 #ifndef DEBUGGLOBAL
 private:
-  GlobalObjectManager(void) : number_of_global_objects(0) { }
+  GlobalObjectManager() : number_of_global_objects(0) { }
 #else
 private:
   static bool after_global_constructors;
-  GlobalObjectManager(void) : number_of_global_objects(0) { }
+  GlobalObjectManager() : number_of_global_objects(0) { }
 public:
-  static void main_entered(void);	// Should be called at the top of main() - sets `after_global_constructors' and does checking.
-  static bool is_after_global_constructors(void) { return after_global_constructors; }
+  static void main_entered();	// Should be called at the top of main() - sets `after_global_constructors' and does checking.
+  static bool is_after_global_constructors() { return after_global_constructors; }
 #endif
 };
 

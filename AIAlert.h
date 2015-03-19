@@ -157,7 +157,7 @@ class AIArgs
 
   public:
     /// Construct an empty map.
-    AIArgs(void) { }
+    AIArgs() { }
     /// Construct a map with a single replacement.
     template<typename T> AIArgs(char const* key, T const& replacement) { mArgs[key] = boost::lexical_cast<std::string>(replacement); }
     /// Add another replacement.
@@ -211,16 +211,16 @@ class Prefix
 {
   public:
     /// Construct an empty Prefix.
-    Prefix(void) : mType(empty_prefix) { }
+    Prefix() : mType(empty_prefix) { }
     /// Construct a prefix \a str of type \a type.
     Prefix(char const* str, alert_line_type_nt type) : mStr(str), mType(type) { }
 
     /// Return true if the prefix is not empty.
-    operator bool(void) const { return mType != empty_prefix; }
+    operator bool() const { return mType != empty_prefix; }
     /// Accessor for the type of the prefix.
-    alert_line_type_nt type(void) const { return mType; }
+    alert_line_type_nt type() const { return mType; }
     /// Accessor for the prefix string.
-    std::string const& str(void) const { return mStr; }
+    std::string const& str() const { return mStr; }
 
   private:
     std::string mStr;                ///< Literal text. For example a C++ function name.
@@ -257,21 +257,21 @@ class Line
     ~Line() throw() { }
 
     /// Prepend a newline before this line.
-    void set_newline(void) { mNewline = true; }
+    void set_newline() { mNewline = true; }
 
     // These are to be used like: translate::getString(line.getXmlDesc(), line.args()) and prepend with a \n if prepend_newline() returns true.
     /// Return the xml key.
-    std::string getXmlDesc(void) const { return mXmlDesc; }
+    std::string getXmlDesc() const { return mXmlDesc; }
     /// Accessor for the replacement map.
-    translate::format_map_t const& args(void) const { return *mArgs; }
+    translate::format_map_t const& args() const { return *mArgs; }
     /// Returns true a new line must be prepended before this line.
-    bool prepend_newline(void) const { return mNewline; }
+    bool prepend_newline() const { return mNewline; }
 
     // Accessors.
     /// Return true if this Line must be suppressed.
     bool suppressed(unsigned int suppress_mask) const { return (suppress_mask & mType) != 0; }
     /// Return true if this is a prefix Line.
-    bool is_prefix(void) const { return mType != normal; }
+    bool is_prefix() const { return mType != normal; }
 };
 
 /**
@@ -300,9 +300,9 @@ class Error : public std::exception
 
     // Accessors.
     /// Accessor for the lines deque.
-    lines_type const& lines(void) const { return mLines; }
+    lines_type const& lines() const { return mLines; }
     /// Return true if the alert should be modal.
-    bool is_modal(void) const { return mModal == modal; }
+    bool is_modal() const { return mModal == modal; }
 
     /// Existing \a alert, just add a prefix and turn alert into modal if appropriate.
     Error(Prefix const& prefix, modal_nt type, Error const& alert);
@@ -347,7 +347,7 @@ class ErrorCode : public Error
     ~ErrorCode() throw() { }
 
     /// Accessor for the error code.
-    int getCode(void) const { return mCode; }
+    int getCode() const { return mCode; }
 
     /// Construct just an Error with a code (no args).
     ErrorCode(Prefix const& prefix, modal_nt type, int code,

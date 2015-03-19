@@ -27,7 +27,7 @@
  *   friend_Instance;
  * private:    // IMPORTANT! DO NOT FORGET THIS `private:' and the three declarations below!
  *             // Without it, this is not a real singleton!
- *   MySingleton(void);
+ *   MySingleton();
  *   ~MySingleton();
  *   MySingleton(MySingleton const&);
  * public:
@@ -90,20 +90,20 @@ protected:
   typedef utils::_internal_::Instance<FINAL, utils::_internal_::singleton, GlobalConverterVoid> Instance;
   ~Singleton() { }
 #ifndef DEBUGGLOBAL
-  Singleton(void) { }
+  Singleton() { }
 #else
-  Singleton(void);
+  Singleton();
 #endif
 protected:
   Singleton(Singleton const&);
   Singleton& operator=(Singleton const& s);
 public:
 #ifndef DEBUGGLOBAL
-  static inline FINAL& instantiate(void) { return Global<FINAL, utils::_internal_::singleton, GlobalConverterVoid>::instantiate(); }
+  static inline FINAL& instantiate() { return Global<FINAL, utils::_internal_::singleton, GlobalConverterVoid>::instantiate(); }
 #else
-  static FINAL& instantiate(void);
+  static FINAL& instantiate();
 #endif
-  static inline FINAL& instance(void) { return Global<FINAL, utils::_internal_::singleton, GlobalConverterVoid>::instance(); }
+  static inline FINAL& instance() { return Global<FINAL, utils::_internal_::singleton, GlobalConverterVoid>::instance(); }
 };
 
 #define friend_Instance friend class utils::_internal_::Instance<final_type, utils::_internal_::singleton, GlobalConverterVoid>
@@ -119,7 +119,7 @@ class SingletonInstance : public Global<FINAL, utils::_internal_::singleton, Glo
 
 #ifdef DEBUGGLOBAL
 template<class FINAL, class CHILD>
-FINAL& Singleton<FINAL, CHILD>::instantiate(void)
+FINAL& Singleton<FINAL, CHILD>::instantiate()
 {
   FINAL& ref = Global<FINAL, utils::_internal_::singleton, GlobalConverterVoid>::instantiate();
   Global<FINAL, utils::_internal_::singleton, GlobalConverterVoid>::set_instantiate_return_address0(__builtin_return_address(0));
@@ -143,7 +143,7 @@ Singleton<FINAL, CHILD>& Singleton<FINAL, CHILD>::operator=(Singleton const& s)
 
 #ifdef DEBUGGLOBAL
 template<class FINAL, class CHILD>
-Singleton<FINAL, CHILD>::Singleton(void)
+Singleton<FINAL, CHILD>::Singleton()
 {
   if (!Global<FINAL, utils::_internal_::singleton, GlobalConverterVoid>::beingInstantiatedRightNow_())
   {

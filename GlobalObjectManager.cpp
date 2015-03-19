@@ -49,7 +49,7 @@ void GlobalObjectManager::registerGlobalObject(GlobalObject* globalObject)
   globalObjects.push_back(globalObject);
 }
 
-void GlobalObjectManager::deleteGlobalObjects(void)
+void GlobalObjectManager::deleteGlobalObjects()
 {
   bool done;
   do
@@ -65,7 +65,7 @@ void GlobalObjectManager::deleteGlobalObjects(void)
 /// @endcond
 
 #ifdef DEBUGGLOBAL
-void GlobalObjectManager::main_entered(void)
+void GlobalObjectManager::main_entered()
 {
   Singleton<GlobalObjectManager>::instantiate();
   for (globalObjects_type::const_iterator i(Singleton<GlobalObjectManager>::instance().globalObjects.begin());

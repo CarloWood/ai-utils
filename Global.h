@@ -127,7 +127,7 @@
  *      class Bar {
  *        int b;
  *      public:
- *        Bar(void) : b(Global<Color, blue>::instantiate().brightness()) { }
+ *        Bar() : b(Global<Color, blue>::instantiate().brightness()) { }
  *      };
  *
  *      Bar bar;	// Instantiate a real global object of class `Bar'.
@@ -179,9 +179,9 @@ namespace _internal_
   protected:
     virtual ~GlobalObject() = default;
 #ifdef DEBUGGLOBAL
-    virtual bool instantiated_from_constructor(void) const = 0;
+    virtual bool instantiated_from_constructor() const = 0;
     virtual void print_type_name(std::ostream&) const = 0;
-    virtual void set_initialized_and_after_global_constructors(void) const = 0;
+    virtual void set_initialized_and_after_global_constructors() const = 0;
 #endif
   };
 
@@ -202,26 +202,26 @@ namespace _internal_
     static char const* instantiate_function_name;
     static void const* instantiate_return_address1;
 public:
-    static void set_initialized_and_after_global_constructors(void) { initialized_and_after_global_constructors = initialized; }
+    static void set_initialized_and_after_global_constructors() { initialized_and_after_global_constructors = initialized; }
     static void set_instantiate_return_address0(void const* addr)
 	{ instantiate_function_name = libcwd::pc_mangled_function_name((char const*)addr + libcwd::builtin_return_address_offset); }
     static void set_instantiate_return_address1(void const* addr) { instantiate_return_address1 = addr; }
 #endif
 
   public:
-    static inline TYPE& instance(void);
+    static inline TYPE& instance();
 
 #ifdef DEBUGGLOBAL
   private:
-    static void print_error_msg(void);
-    static void check_call_to_instance(void);
+    static void print_error_msg();
+    static void check_call_to_instance();
 
   public:
-    static bool gifc_(void)
+    static bool gifc_()
 	{
 	  return instantiated_from_constructor;
 	}
-    static bool beingInstantiatedRightNow_(void)
+    static bool beingInstantiatedRightNow_()
 	{
 	  return (initialized == -1);
 	}
@@ -239,9 +239,9 @@ public:
     virtual ~Instance() throw() = default;
 
 #ifdef DEBUGGLOBAL
-    virtual bool instantiated_from_constructor(void) const;
+    virtual bool instantiated_from_constructor() const;
     virtual void print_type_name(std::ostream&) const;
-    virtual void set_initialized_and_after_global_constructors(void) const;
+    virtual void set_initialized_and_after_global_constructors() const;
 #endif
   };
 
@@ -253,9 +253,9 @@ public:
     virtual ~Instance() throw() = default;
 
 #ifdef DEBUGGLOBAL
-    virtual bool instantiated_from_constructor(void) const;
+    virtual bool instantiated_from_constructor() const;
     virtual void print_type_name(std::ostream&) const;
-    virtual void set_initialized_and_after_global_constructors(void) const;
+    virtual void set_initialized_and_after_global_constructors() const;
 #endif
   };
 
@@ -315,17 +315,17 @@ class Global : public ::utils::_internal_::GlobalBase<TYPE, inst>
   typedef typename ::utils::_internal_::Instance<TYPE, inst, CONVERTER> Instance;
   typedef ::utils::_internal_::GlobalBase<TYPE, inst> base_type;
 public:
-  Global(void);
+  Global();
   ~Global();
   /// Returns a reference to the underlaying instance. Initialized the object first if necessary.
-  static inline TYPE& instantiate(void);
+  static inline TYPE& instantiate();
 #ifdef DOXYGEN
   // This is really part of utils::_internal_::GlobalBase.
   /// A reference to the underlaying instance.
-  static inline TYPE& instance(void);
+  static inline TYPE& instance();
 #endif
 private:
-  static void initialize_instance_(void);
+  static void initialize_instance_();
 };
 
 #ifdef DEBUGGLOBAL
@@ -363,7 +363,7 @@ std::ostream& operator<<(std::ostream& os, typename ::utils::_internal_::GlobalI
 // Definitions
 
 template<class TYPE, int inst, class CONVERTER>
-inline TYPE& Global<TYPE, inst, CONVERTER>::instantiate(void)
+inline TYPE& Global<TYPE, inst, CONVERTER>::instantiate()
 {
 #ifdef DEBUGGLOBAL
   utils::_internal_::GlobalBase<TYPE, inst>::instantiate_function_name =
@@ -376,7 +376,7 @@ inline TYPE& Global<TYPE, inst, CONVERTER>::instantiate(void)
 }
 
 template<class TYPE, int inst, class CONVERTER>
-Global<TYPE, inst, CONVERTER>::Global(void)
+Global<TYPE, inst, CONVERTER>::Global()
 {
 #ifdef DEBUGGLOBAL
   if (utils::_internal_::GlobalBase<TYPE, inst>::instantiated_from_constructor)
@@ -410,7 +410,7 @@ Global<TYPE, inst, CONVERTER>::~Global()
 }
 
 template<class TYPE, int inst, class CONVERTER>
-void Global<TYPE, inst, CONVERTER>::initialize_instance_(void)
+void Global<TYPE, inst, CONVERTER>::initialize_instance_()
 {
   base_type::initialized = -1;				// Stop Global<TYPE, inst>::Global() from calling us again.
   Instance* globalObject = new (base_type::instance_) Instance(inst);
@@ -436,7 +436,7 @@ namespace utils {
     char GlobalBase<TYPE, inst>::initialized;
 
     template<class TYPE, int inst>
-    inline TYPE& GlobalBase<TYPE, inst>::instance(void)
+    inline TYPE& GlobalBase<TYPE, inst>::instance()
     {
 #ifdef DEBUGGLOBAL
       if (!initialized_and_after_global_constructors)
@@ -459,7 +459,7 @@ namespace utils {
     bool GlobalBase<TYPE, inst>::instantiated_from_constructor = false;
 
     template<class TYPE, int inst>
-    void GlobalBase<TYPE, inst>::print_error_msg(void)
+    void GlobalBase<TYPE, inst>::print_error_msg()
     {
       //
       // You should use `instantiate()' instead of `instance()' in constructors of Singleton<> and Global<> objects.
@@ -489,7 +489,7 @@ namespace utils {
     }
 
     template<class TYPE, int inst>
-    void GlobalBase<TYPE, inst>::check_call_to_instance(void)
+    void GlobalBase<TYPE, inst>::check_call_to_instance()
     {
       if (!initialized)
 	print_error_msg();
@@ -528,13 +528,13 @@ namespace utils {
     }
 
     template<class TYPE, int inst, class CONVERTER>
-    bool Instance<TYPE, inst, CONVERTER>::instantiated_from_constructor(void) const
+    bool Instance<TYPE, inst, CONVERTER>::instantiated_from_constructor() const
     {
       return Global<TYPE, inst, CONVERTER>::gifc_();
     }
 
     template<class TYPE, int inst>
-    bool Instance<TYPE, inst, GlobalConverterVoid>::instantiated_from_constructor(void) const
+    bool Instance<TYPE, inst, GlobalConverterVoid>::instantiated_from_constructor() const
     {
       return Global<TYPE, inst, GlobalConverterVoid>::gifc_();
     }
@@ -554,13 +554,13 @@ namespace utils {
     }
 
     template<class TYPE, int inst, class CONVERTER>
-    void Instance<TYPE, inst, CONVERTER>::set_initialized_and_after_global_constructors(void) const
+    void Instance<TYPE, inst, CONVERTER>::set_initialized_and_after_global_constructors() const
     {
       Global<TYPE, inst, CONVERTER>::set_initialized_and_after_global_constructors();
     }
 
     template<class TYPE, int inst>
-    void Instance<TYPE, inst, GlobalConverterVoid>::set_initialized_and_after_global_constructors(void) const
+    void Instance<TYPE, inst, GlobalConverterVoid>::set_initialized_and_after_global_constructors() const
     {
       Global<TYPE, inst, GlobalConverterVoid>::set_initialized_and_after_global_constructors();
     }
