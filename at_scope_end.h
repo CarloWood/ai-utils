@@ -24,8 +24,7 @@
 //
 // Note: in most cases using just 'auto' instead of a universal reference
 // will generate the same code (and will always work), but some compilers
-// might create a temporary AtScopeEnd that can be avoided by using the
-// 'auto&&'.
+// might create a temporary AtScopeEnd that can be avoided by using the '&&'.
 //
 // Also see EXAMPLE_CODE at the end of the file.
 
@@ -44,23 +43,26 @@ class AtScopeEnd
 {
   private:
     T m_lambda;
-    bool m_execute_at_destruction;
+    mutable bool m_executed;
 
   public:
-    AtScopeEnd(T const& t) : m_lambda(t), m_execute_at_destruction(true) { }
+    AtScopeEnd(T const& t) : m_lambda(t), m_executed(false) { }
     ~AtScopeEnd() { once(); }
-    AtScopeEnd(AtScopeEnd&& obj) : m_lambda(obj.m_lambda), m_execute_at_destruction(true) { obj.m_execute_at_destruction = false; }
+    AtScopeEnd(AtScopeEnd const& obj) : m_lambda(obj.m_lambda), m_executed(false) { }
+    AtScopeEnd(AtScopeEnd&& obj) : m_lambda(obj.m_lambda), m_executed(false)
+    {
+      obj.m_executed = true;     // Prevent execution from the destructor of the moved temporary 'obj'.
+    }
 
     // Call this to execute lambda now, prior to the end of scope.
     // After calling this function, lambda will no longer be executed when this object is destructed.
-    void now() { m_lambda(); m_execute_at_destruction = false; }
-
-    // Execute lambda an extra.
-    // Lambda will still (also) be executed at destruction (if execute() wasn't called before).
-    void extra() { m_lambda(); }
+    void now() const { m_lambda(); m_executed = true; }
 
     // Execute lambda iff neither now() nor once() were called before.
-    void once() { if (m_execute_at_destruction) m_lambda(); m_execute_at_destruction = false; }
+    void once() const { if (!m_executed) m_lambda(); m_executed = true; }
+
+    // Execute lambda an additional time, regardless of calls to now() or once().
+    void extra() const { m_lambda(); }
 };
 
 } // namespace utils
@@ -75,23 +77,37 @@ utils::AtScopeEnd<T> at_scope_end(T lambda)
 
 
 #ifdef EXAMPLE_CODE
-// Compile as: g++ -std=c++11 -DEXAMPLE_CODE -x c++ AtScopeEnd.h
+// Compile as: g++ -std=c++11 -DEXAMPLE_CODE -x c++ at_scope_end.h
 
 #include <cassert>
 
 int main()
 {
-  int n = 0;
+  int n;
   try
   {
-    ++n;
+    n = 2;
     // Execute { --n; } when leaving this scope, in an exception safe manner.
     auto&& decrement_n = at_scope_end([&n]{ --n; });
+    assert(n == 2);
+    decrement_n.extra(); // Just decrement n regardless.
     assert(n == 1);
-    throw std::exception();
-    // If we would not throw, we could do for example:
-    decrement_n.once();
+    {
+      // This copies the lambda, not its internal state with
+      // regard to calls to now() and/or once().
+      auto decrement_n_once_more(decrement_n);
+      assert(n == 1);
+      decrement_n_once_more.once();
+      assert(n == 0);
+    }
     assert(n == 0);
+    ++n;
+    throw std::exception();     // n is decremented at destruction of decrement_n.
+    // If we would not throw, we could do for example:
+    decrement_n.now();
+    assert(n == 0);
+    // n is not decremented at destruction of decrement_n
+    // because we already called now().
   }
   catch(std::exception const&)
   {
