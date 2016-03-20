@@ -427,10 +427,6 @@ namespace utils {
 
     template<class TYPE, int inst>
     char GlobalBase<TYPE, inst>::instance_[sizeof(InstanceDummy)] __attribute__((__aligned__));
-    // remove this:
-    // The sizeof(void*) is to add space
-													// for virtual table pointer of
-													// GlobalObject.
 
     template<class TYPE, int inst>
     char GlobalBase<TYPE, inst>::initialized;
