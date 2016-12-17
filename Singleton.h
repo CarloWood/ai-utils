@@ -2,7 +2,10 @@
  * \file Singleton.h
  * \brief Declaraction of class Singleton.
  *
- * Copyright (C) 2014 Aleric Inglewood.
+ * Copyright (C) 2014, 2016  Carlo Wood.
+ *
+ * RSA-1024 0x624ACAD5 1997-01-26                    Sign & Encrypt
+ * Fingerprint16 = 32 EC A7 B6 AC DB 65 A6  F6 F6 55 DD 1C DC FF 61
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published

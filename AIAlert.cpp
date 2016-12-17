@@ -2,7 +2,10 @@
  * \file aialert.cpp
  * \brief Implementation of AIAlert
  *
- * Copyright (C) 2013, 2014 Aleric Inglewood.
+ * Copyright (C) 2013, 2016  Carlo Wood.
+ *
+ * RSA-1024 0x624ACAD5 1997-01-26                    Sign & Encrypt
+ * Fingerprint16 = 32 EC A7 B6 AC DB 65 A6  F6 F6 55 DD 1C DC FF 61
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -24,14 +27,17 @@
  *   - Initial version, written by Aleric Inglewood @ SL
  *
  *   05/11/2013
- *   Moved everything in namespace AIAlert, except AIArgs.
+ *   - Moved everything in namespace AIAlert, except AIArgs.
  *
  *   31/08/2014
- *   Copied the code from SingularityViewer to slavatar and
- *   relicensed it to have no license.
+ *   - Copied the code from SingularityViewer and relicensed it to have
+ *     no license (allowed because I was the only author of this code).
  *
  *   2014/12/24
- *   Added Affero GPL v3 license and Released publically on github.
+ *   - Added Affero GPL v3 license and Released publically on github.
+ *
+ *   2016/12/17
+ *   - Transfered copyright to Carlo Wood.
  */
 
 #include "AIAlert.h"
