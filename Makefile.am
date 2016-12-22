@@ -1,11 +1,8 @@
 EXTRA_DIST = *.h
 
-noinst_LTLIBRARIES = libutils.la
-# See src/Makefile.am
-DEFS = @DEFS@
 DEFAULT_INCLUDES=-iquote $(top_builddir) -iquote $(top_builddir)/src -iquote $(srcdir) -iquote $(srcdir)/.. -iquote $(srcdir)/../cwd
 
-# See src/Makefile.am.
+noinst_LTLIBRARIES = libutils.la
 libutils_la_CXXFLAGS = @CXXFLAGS@ @LIBCWD_FLAGS@
 libutils_la_SOURCES = \
 	debug_ostream_operators.cpp \

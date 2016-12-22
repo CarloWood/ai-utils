@@ -3,7 +3,7 @@
 This repository is intended to be used as a [git submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
 in a larger project that is using
 [autotools](https://en.wikipedia.org/wiki/GNU_Build_System autotools),
-[cwautomacros](https://github.com/CarloWood/cwautomacros) and
+[cwm4](https://github.com/CarloWood/cwm4) and
 [libcwd](https://github.com/CarloWood/libcwd).
 
 ## Adding ai-utils to a project
@@ -29,7 +29,7 @@ Furthermore, `configure.ac` needs to contain something like:
 
 <pre>
 dnl Because we use cwautomacros.
-CW_AUTOMACROS([20160921])
+CW_AUTOMACROS
 
 dnl Add --enable-debug (DEBUG, DOXYGEN_DEBUG), --enable-libcwd (CWDEBUG, DOXYGEN_CWDEBUG),
 dnl --enable-optimise and --enable-profile options. Update USE_LIBCWD, CWD_LIBS and CXXFLAGS accordingly.
