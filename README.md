@@ -41,10 +41,6 @@ LIBCWD_FLAGS="$CWD_R_FLAGS"
 LIBCWD_LIBS="$CWD_R_LIBS"
 AC_SUBST(LIBCWD_FLAGS)
 AC_SUBST(LIBCWD_LIBS)
-
-dnl Each Makefile.am should use DEFS = @DEFS@. Set DEFS here.
-DEFS="-DHAVE_CONFIG_H"
-AC_SUBST(DEFS)
 </pre>
 
 This is because ai-utils's `Makefile` contains the substitution templates
