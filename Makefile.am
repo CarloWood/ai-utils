@@ -4,15 +4,15 @@ noinst_LTLIBRARIES = libutils.la
 libutils_la_CXXFLAGS = @LIBCWD_FLAGS@
 libutils_la_LIBADD = @LIBCWD_LIBS@
 libutils_la_SOURCES = \
-	debug_ostream_operators.cpp \
+	debug_ostream_operators.cxx \
 	debug_ostream_operators.h \
-	AIAlert.cpp \
+	AIAlert.cxx \
 	AIAlert.h \
-	translate.cpp \
+	translate.cxx \
 	translate.h \
-	double_to_str_precision.cpp \
+	double_to_str_precision.cxx \
 	double_to_str_precision.h \
-	GlobalObjectManager.cpp \
+	GlobalObjectManager.cxx \
 	GlobalObjectManager.h \
 	Global.h \
 	Singleton.h \
