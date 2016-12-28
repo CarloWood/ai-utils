@@ -1,12 +1,49 @@
 # ai-utils submodule
 
-This repository is intended to be used as a [git submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
-in a larger project that is using
+This repository is a [git submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
+providing C++ utilities for larger projects, including:
+
+* <tt>AIAlert</tt> : an exception based error reporting system.
+* <tt>Global</tt> / <tt>Singleton</tt> : template classes for global objects.
+* Several utilities like <tt>at_scope_end</tt>, <tt>double_to_str_precision</tt>, <tt>for_each_until</tt> and convenience macros.
+
+The root project should be using
 [autotools](https://en.wikipedia.org/wiki/GNU_Build_System autotools),
 [cwm4](https://github.com/CarloWood/cwm4) and
 [libcwd](https://github.com/CarloWood/libcwd).
 
-## Adding ai-utils to a project
+## Checking out a project that uses the ai-utils submodule.
+
+To clone a project example-project that uses ai-utils simply run:
+
+<pre>
+<b>git clone --recursive</b> &lt;<i>URL-to-project</i>&gt;<b>/example-project.git</b>
+<b>cd example-project</b>
+<b>./autogen.sh</b>
+</pre>
+
+The <tt>--recursive</tt> is optional because <tt>./autogen.sh</tt> will fix
+it when you forgot it.
+
+Afterwards you probably want to use <tt>--enable-mainainer-mode</tt>
+as option to the generated <tt>configure</tt> script.
+
+## Adding the ai-utils submodule to a project
+
+To add this submodule to a project, that project should already
+be set up to use [cwm4](https://github.com/CarloWood/cwm4).
+
+Simply execute the following in a directory of that project
+where you what to have the <tt>utils</tt> subdirectory:
+
+<pre>
+git submodule add https://github.com/CarloWood/ai-utils.git utils
+</pre>
+
+This should clone ai-utils into the subdirectory <tt>utils</tt>, or
+if you already cloned it there, it should add it.
+
+You also need to make changes to autotool files:
 
 ### configure.ac
 
@@ -14,12 +51,12 @@ Add the `Makefile` of ai-utils, to the
 [`AC_CONFIG_FILES`](https://www.gnu.org/software/automake/manual/html_node/Requirements.html)
 line of `configure.ac` in the root of the project.
 
-For example,
+For example, add the line in bold:
 
 <pre>
 AC_CONFIG_FILES([...]
                  ...
-                 [<i>src</i>/utils/Makefile]
+                 <b>[<i>src</i>/utils/Makefile]</b>
                  ...)
 </pre>
 
@@ -43,12 +80,11 @@ AC_SUBST(LIBCWD_FLAGS)
 AC_SUBST(LIBCWD_LIBS)
 </pre>
 
-This is because ai-utils's `Makefile.am` contains the substitution templates
-`@LIBCWD_FLAGS@`, `@LIBCWD_LIBS@` and `@DEFS@`.
+This is because ai-utils's `Makefile.am` contains the substitution templates `@LIBCWD_FLAGS@` and `@LIBCWD_LIBS@`.
+Of course you are free to use different warning options and/or comments.
 
 These are all the requirements needed for the dependency
-on `cwautomacros` (which has to be [installed seperately](https://github.com/CarloWood/cwautomacros))
-and `libcwd`, except that the latter also means you have to supply a `debug.h`
+on `cwm4` and `libcwd`, except that the latter also means you have to supply a `debug.h`
 and `sys.h` (see the [libcwd documentation](http://libcwd.sourceforge.net/www/quickreference.html)).
 
 ### Makefile.am
@@ -68,15 +104,15 @@ must include that <code><i>src</i></code> path.
 For example, the same <code><i>src</i>/Makefile.am</code> could contain:
 
 <pre>
-DEFAULT_INCLUDES=-iquote $(top_builddir) -iquote $(top_builddir)/<i>src</i> -iquote $(srcdir)
+AM_CPPFLAGS = -iquote $(srcdir)
 </pre>
 
-Where that last `-iquote $(srcdir)` which will allow `#include "utils/AIAlert.h"`
+Where that `-iquote $(srcdir)` which will allow `#include "utils/AIAlert.h"`
 in source files in <code><i>src</i></code>, while a <code><i>src/foo</i>/Makefile.am</code>
 that wanted to use <code><i>src</i>/utils</code> would do:
 
 <pre>
-DEFAULT_INCLUDES=-iquote $(top_builddir) -iquote $(top_builddir)/<i>src</i> -iquote $(srcdir)/..
+AM_CPPFLAGS = -iquote $(srcdir)/..
 </pre>
 
 Linking works as usual. For example a module that defines a
@@ -88,8 +124,15 @@ bin_PROGRAMS = foobar
 would also define
 
 <pre>
-foobar_LDADD = ../utils/.libs/libutils.a
-foobar_DEPENDENCIES = ../utils/libutils.la
+foobar_LDADD = ../utils/libutils.la
 </pre>
 
 or whatever the path to `utils` is.
+
+Finally, run
+
+<pre>
+./autogen.sh
+</pre>
+
+and commit all your changes.
