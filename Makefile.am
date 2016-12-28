@@ -1,21 +1,30 @@
-EXTRA_DIST = *.h
-
 AM_CPPFLAGS = -iquote $(top_srcdir)
 
 noinst_LTLIBRARIES = libutils.la
-libutils_la_CXXFLAGS = @CXXFLAGS@ @LIBCWD_FLAGS@
+libutils_la_CXXFLAGS = @LIBCWD_FLAGS@
+libutils_la_LIBADD = @LIBCWD_LIBS@
 libutils_la_SOURCES = \
 	debug_ostream_operators.cpp \
+	debug_ostream_operators.h \
 	AIAlert.cpp \
+	AIAlert.h \
 	translate.cpp \
+	translate.h \
 	double_to_str_precision.cpp \
-	GlobalObjectManager.cpp
+	double_to_str_precision.h \
+	GlobalObjectManager.cpp \
+	GlobalObjectManager.h \
+	Global.h \
+	Singleton.h \
+	for_each_until.h \
+	at_scope_end.h \
+	macros.h
 
 # --------------- Maintainer's Section
 
 if MAINTAINER_MODE
 distclean-local:
-	rm -f *.s *.ii
+	-rm -f *.s *.ii
 
 clean-local:
 endif

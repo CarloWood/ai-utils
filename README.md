@@ -43,7 +43,7 @@ AC_SUBST(LIBCWD_FLAGS)
 AC_SUBST(LIBCWD_LIBS)
 </pre>
 
-This is because ai-utils's `Makefile` contains the substitution templates
+This is because ai-utils's `Makefile.am` contains the substitution templates
 `@LIBCWD_FLAGS@`, `@LIBCWD_LIBS@` and `@DEFS@`.
 
 These are all the requirements needed for the dependency

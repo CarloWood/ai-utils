@@ -27,7 +27,7 @@
 #ifdef CWDEBUG
 
 #include "translate.h"
-#include "utils/AIAlert.h"
+#include "AIAlert.h"
 
 #include <iostream>
 
