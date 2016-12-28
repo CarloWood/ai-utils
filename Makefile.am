@@ -1,6 +1,6 @@
 EXTRA_DIST = *.h
 
-DEFAULT_INCLUDES=-iquote $(top_builddir) -iquote $(top_builddir)/src -iquote $(srcdir) -iquote $(srcdir)/.. -iquote $(srcdir)/../cwd
+AM_CPPFLAGS = -iquote $(top_srcdir)
 
 noinst_LTLIBRARIES = libutils.la
 libutils_la_CXXFLAGS = @CXXFLAGS@ @LIBCWD_FLAGS@
@@ -11,7 +11,7 @@ libutils_la_SOURCES = \
 	double_to_str_precision.cpp \
 	GlobalObjectManager.cpp
 
-MAINTAINERCLEANFILES = $(srcdir)/Makefile.in
+# --------------- Maintainer's Section
 
 if MAINTAINER_MODE
 distclean-local:
@@ -19,3 +19,5 @@ distclean-local:
 
 clean-local:
 endif
+
+MAINTAINERCLEANFILES = $(srcdir)/Makefile.in
