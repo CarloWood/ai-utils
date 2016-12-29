@@ -1,6 +1,7 @@
 AM_CPPFLAGS = -iquote $(top_srcdir)
 
 noinst_LTLIBRARIES = libutils.la
+
 libutils_la_SOURCES = \
 	debug_ostream_operators.cxx \
 	debug_ostream_operators.h \
