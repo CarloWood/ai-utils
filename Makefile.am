@@ -1,8 +1,6 @@
 AM_CPPFLAGS = -iquote $(top_srcdir)
 
 noinst_LTLIBRARIES = libutils.la
-libutils_la_CXXFLAGS = @LIBCWD_FLAGS@
-libutils_la_LIBADD = @LIBCWD_LIBS@
 libutils_la_SOURCES = \
 	debug_ostream_operators.cxx \
 	debug_ostream_operators.h \
@@ -19,6 +17,9 @@ libutils_la_SOURCES = \
 	for_each_until.h \
 	at_scope_end.h \
 	macros.h
+
+libutils_la_CXXFLAGS = @LIBCWD_FLAGS@
+libutils_la_LIBADD = @LIBCWD_LIBS@
 
 # --------------- Maintainer's Section
 
