@@ -47,45 +47,14 @@ You also need to make changes to autotool files:
 
 ### configure.ac
 
-Add the `Makefile` of ai-utils, to the
-[`AC_CONFIG_FILES`](https://www.gnu.org/software/automake/manual/html_node/Requirements.html)
-line of `configure.ac` in the root of the project.
-
-For example, add the line in bold:
+Add the following line to <tt>configure.ac</tt>:
 
 <pre>
-AC_CONFIG_FILES([...]
-                 ...
-                 <b>[<i>src</i>/utils/Makefile]</b>
-                 ...)
+CW_SUBMODULE([<i>src</i>], [utils])
 </pre>
 
 where <code><i>src</i>/utils</code> is the path relative to the projects root (where `configure.ac` is).
-
-Furthermore, `configure.ac` needs to contain something like:
-
-<pre>
-dnl Because we use cwautomacros.
-CW_AUTOMACROS
-
-dnl Add --enable-debug (DEBUG, DOXYGEN_DEBUG), --enable-libcwd (CWDEBUG, DOXYGEN_CWDEBUG),
-dnl --enable-optimise and --enable-profile options. Update USE_LIBCWD, CWD_LIBS and CXXFLAGS accordingly.
-CW_OPG_FLAGS([-W -Wall -Woverloaded-virtual -Wundef -Wpointer-arith -Wwrite-strings -Winline])
-
-dnl This source code is C++11 and thread-safe.
-CXXFLAGS="$CXXFLAGS -pthread -std=c++11"
-LIBCWD_FLAGS="$CWD_R_FLAGS"
-LIBCWD_LIBS="$CWD_R_LIBS"
-AC_SUBST(LIBCWD_FLAGS)
-AC_SUBST(LIBCWD_LIBS)
-</pre>
-
-This is because ai-utils's `Makefile.am` contains the substitution templates `@LIBCWD_FLAGS@` and `@LIBCWD_LIBS@`.
-Of course you are free to use different warning options and/or comments.
-
-These are all the requirements needed for the dependency
-on `cwm4` and `libcwd`, except that the latter also means you have to supply a `debug.h`
-and `sys.h` (see the [libcwd documentation](http://libcwd.sourceforge.net/www/quickreference.html)).
+If the first argument is empty, it can be omitted (<code>CW_SUBMODULE([utils])</code>).
 
 ### Makefile.am
 
