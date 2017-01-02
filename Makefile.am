@@ -1,4 +1,4 @@
-AM_CPPFLAGS = -iquote $(top_srcdir)
+AM_CPPFLAGS = -iquote $(top_srcdir) -iquote $(top_srcdir)/cwd
 
 noinst_LTLIBRARIES = libutils.la
 
