@@ -69,3 +69,6 @@ Finally, run
 </pre>
 
 to let cwm4 do its magic, and commit all the changes.
+
+Checkout [ai-utils-testsuite](https://github.com/CarloWood/ai-utils-testsuite)
+for an example of a project that uses this submodule.
