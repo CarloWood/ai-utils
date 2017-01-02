@@ -43,48 +43,11 @@ git submodule add https://github.com/CarloWood/ai-utils.git utils
 This should clone ai-utils into the subdirectory <tt>utils</tt>, or
 if you already cloned it there, it should add it.
 
-You also need to make changes to autotool files:
+Changes to <tt>configure.ac</tt> and <tt>Makefile.am</tt>
+are taken care of my <tt>cwm4</tt>, except for linking
+which works as usual.
 
-### configure.ac
-
-Add the following line to <tt>configure.ac</tt>:
-
-<pre>
-CW_SUBMODULE([<i>src</i>], [utils])
-</pre>
-
-where <code><i>src</i>/utils</code> is the path relative to the projects root (where `configure.ac` is).
-If the first argument is empty, it can be omitted (<code>CW_SUBMODULE([utils])</code>).
-
-### Makefile.am
-
-Also add <code>utils</code> to `SUBDIRS` of the `Makefile.am`
-of the parent directory (ie <code><i>src</i>/Makefile.am</code>).
-For example,
-
-<pre>
-SUBDIRS = utils
-</pre>
-
-A directory with source files that include headers
-from the ai-utils submodule (as in <code>#include "utils/AIAlert.h"</code>, for example)
-must include that <code><i>src</i></code> path.
-
-For example, the same <code><i>src</i>/Makefile.am</code> could contain:
-
-<pre>
-AM_CPPFLAGS = -iquote $(srcdir)
-</pre>
-
-Where that `-iquote $(srcdir)` which will allow `#include "utils/AIAlert.h"`
-in source files in <code><i>src</i></code>, while a <code><i>src/foo</i>/Makefile.am</code>
-that wanted to use <code><i>src</i>/utils</code> would do:
-
-<pre>
-AM_CPPFLAGS = -iquote $(srcdir)/..
-</pre>
-
-Linking works as usual. For example a module that defines a
+For example a module that defines a
 
 <pre>
 bin_PROGRAMS = foobar
@@ -96,7 +59,8 @@ would also define
 foobar_LDADD = ../utils/libutils.la
 </pre>
 
-or whatever the path to `utils` is.
+or whatever the path to `utils` is,
+to link with libutils.
 
 Finally, run
 
@@ -104,4 +68,4 @@ Finally, run
 ./autogen.sh
 </pre>
 
-and commit all your changes.
+to let cwm4 do its magic, and commit all the changes.
