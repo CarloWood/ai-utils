@@ -1,6 +1,6 @@
 /**
- * \file double_to_str_precision.cpp
- * \brief Implementation of double_to_str_precision.
+ * @file
+ * @brief Implementation of double_to_str_precision.
  *
  * Copyright (C) 2014, 2016  Carlo Wood.
  *

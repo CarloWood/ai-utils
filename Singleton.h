@@ -1,6 +1,6 @@
 /**
- * \file Singleton.h
- * \brief Declaraction of class Singleton.
+ * @file
+ * @brief Declaraction of class Singleton.
  *
  * Copyright (C) 2014, 2016  Carlo Wood.
  *
@@ -53,12 +53,10 @@
 
 #include "Global.h"		// Must be included before Singleton.h
 
-#ifndef LIBCW_SINGLETON_H
-#define LIBCW_SINGLETON_H
+#ifndef UTILS_LIBCW_SINGLETON_H
+#define UTILS_LIBCW_SINGLETON_H
 
-#ifndef USE_PCH
 #include "debug.h"
-#endif
 
 /// @cond Doxygen_Suppress
 namespace utils {
@@ -156,4 +154,4 @@ Singleton<FINAL, CHILD>::Singleton()
 }
 #endif
 
-#endif // LIBCW_SINGLETON_H
+#endif // UTILS_LIBCW_SINGLETON_H

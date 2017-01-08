@@ -1,6 +1,6 @@
 /**
- * \file Global.h
- * \brief Declaration of template class Global.
+ * @file
+ * @brief Declaration of template class Global.
  *
  * Copyright (C) 2014, 2016  Carlo Wood.
  *
@@ -144,10 +144,8 @@
  * and it will tell you exactly what you did wrong, if anything.
  */
 
-#ifndef UTILS_GLOBAL_H
-#define UTILS_GLOBAL_H
+#pragma once
 
-#ifndef USE_PCH
 #include "debug.h"
 #if defined(DEBUGGLOBAL) && (!defined(CWDEBUG) || !CWDEBUG_ALLOC)
 #error "You cannot define DEBUGGLOBAL without defining CWDEBUG and CWDEBUG_ALLOC"
@@ -156,7 +154,6 @@
 #include <execinfo.h>
 #endif
 #include <new>
-#endif
 
 // Forward declarations.
 template<class TYPE, int inst, class CONVERTER> class Global;
@@ -569,8 +566,6 @@ namespace utils {
   }	// namespace _internal_
 /// @endcond
 }	// namespace libcw
-
-#endif // UTILS_GLOBAL_H
 
 /*
 // NOTE1

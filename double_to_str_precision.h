@@ -1,6 +1,6 @@
 /**
- * \file double_to_str_precision.h
- * \brief Declaration of double_to_str_precision.
+ * @file
+ * @brief Declaration of double_to_str_precision.
  *
  * Copyright (C) 2014, 2016  Carlo Wood.
  *
@@ -21,8 +21,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UTILS_DOUBLE_TO_STR_PRECISION_H
-#define UTILS_DOUBLE_TO_STR_PRECISION_H
+#pragma once
 
 #ifndef USE_PCH
 #include <string>
@@ -30,5 +29,3 @@
 
 /// Convert a double to a string with a minimal and maximal precision.
 std::string double_to_str_precision(double d, int min, int max);
-
-#endif // UTILS_DOUBLE_TO_STR_PRECISION_H
