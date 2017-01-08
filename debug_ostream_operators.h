@@ -1,6 +1,6 @@
 /**
- * \file debug_ostream_operators.h
- * \brief This file contains the declaration of debug serializers.
+ * @file
+ * @brief This file contains the declaration of debug serializers.
  *
  * Copyright (C) 2014, 2016  Carlo Wood.
  *
@@ -21,8 +21,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UTILS_DEBUG_OSTREAM_OPERATORS_H
-#define UTILS_DEBUG_OSTREAM_OPERATORS_H
+#pragma once
 
 #ifdef CWDEBUG
 
@@ -35,4 +34,3 @@ namespace AIAlert {
 extern std::ostream& operator<<(std::ostream& os, AIAlert::Error const& error);
 
 #endif // CWDEBUG
-#endif // UTILS_DEBUG_OSTREAM_OPERATORS_H

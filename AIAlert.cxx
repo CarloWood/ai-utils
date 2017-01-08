@@ -1,6 +1,6 @@
 /**
- * \file aialert.cpp
- * \brief Implementation of AIAlert
+ * @file
+ * @brief Implementation of AIAlert.
  *
  * Copyright (C) 2013, 2016  Carlo Wood.
  *

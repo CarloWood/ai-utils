@@ -1,6 +1,6 @@
 /**
- * \file GlobalObjectManager.cpp
- * \brief Implementation of class GlobalObjectManager.
+ * @file
+ * @brief Implementation of class GlobalObjectManager.
  *
  * Copyright (C) 2014, 2016  Carlo Wood.
  *

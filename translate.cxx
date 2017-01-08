@@ -1,6 +1,6 @@
 /**
- * \file translate.cpp
- * \brief Implementation of translate::getString.
+ * @file
+ * @brief Implementation of translate::getString.
  *
  * Copyright (C) 2014, 2016  Carlo Wood.
  *

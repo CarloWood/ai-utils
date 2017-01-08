@@ -1,6 +1,6 @@
 /**
- * \file AIAlert.h
- * \brief Declaration of AIArgs and AIAlert classes.
+ * @file
+ * @brief Declaration of AIArgs and AIAlert classes.
  *
  * Copyright (C) 2013, 2016  Carlo Wood.
  *
@@ -41,18 +41,15 @@
  *   - Transfered copyright to Carlo Wood.
  */
 
-#ifndef UTILS_AIALERT_H
-#define UTILS_AIALERT_H
+#pragma once
 
 #include "translate.h"
 
-#ifndef USE_PCH
 #include <deque>
 #include <exception>
 #include <string>
 #include <map>
 #include <boost/lexical_cast.hpp>
-#endif
 
 //===================================================================================================================================
 // Facility to throw errors that can easily be converted to an informative pop-up floater for the user.
@@ -384,5 +381,3 @@ class ErrorCode : public Error
 };
 
 } // namespace AIAlert
-
-#endif // UTILS_AIALERT_H

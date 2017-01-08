@@ -1,6 +1,6 @@
 /**
- * \file translate.h
- * \brief Declaraction of namespace translate.
+ * @file
+ * @brief Declaraction of namespace translate.
  *
  * Copyright (C) 2014, 2016  Carlo Wood.
  *
@@ -21,13 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UTILS_TRANSLATE_H
-#define UTILS_TRANSLATE_H
+#pragma once
 
-#ifndef USE_PCH
 #include <map>
 #include <string>
-#endif
 
 namespace translate {
 
@@ -35,5 +32,3 @@ typedef std::map<std::string, std::string> format_map_t;
 std::string getString(std::string const& xmlDesc, format_map_t const& format_map);
 
 } // namespace translate
-
-#endif // UTILS_TRANSLATE_H

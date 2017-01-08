@@ -31,8 +31,7 @@
 //
 // Also see EXAMPLE_CODE at the end of the file.
 
-#ifndef UTILS_AT_SCOPE_END_H
-#define UTILS_AT_SCOPE_END_H
+#pragma once
 
 #include <functional>
 
@@ -75,9 +74,6 @@ utils::AtScopeEnd<T> at_scope_end(T lambda)
 {
   return {lambda};
 }
-
-#endif // UTILS_AT_SCOPE_END_H
-
 
 #ifdef EXAMPLE_CODE
 // Compile as: g++ -std=c++11 -DEXAMPLE_CODE -x c++ at_scope_end.h

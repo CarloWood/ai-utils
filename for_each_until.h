@@ -1,6 +1,6 @@
 /**
- * \file for_each_until.h
- * \brief Declaration of for_each_until.
+ * @file
+ * @brief Declaration of for_each_until.
  *
  * Copyright (C) 2014, 2016  Carlo Wood.
  *
@@ -21,8 +21,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef UTILS_FOR_EACH_UNTIL_H
-#define UTILS_FOR_EACH_UNTIL_H
+#pragma once
 
 namespace utils {
 
@@ -41,5 +40,3 @@ bool for_each_until(InputIterator first, InputIterator last, Function& fn)
 }
 
 } // namespace utils
-
-#endif // UTILS_FOR_EACH_UNTIL_H

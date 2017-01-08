@@ -1,6 +1,6 @@
 /**
- * \file debug_ostream_operators.cpp
- * \brief This file contains the definition of debug serializers.
+ * @file
+ * @brief This file contains the definition of debug serializers.
  *
  * Copyright (C) 2014, 2016  Carlo Wood.
  *
