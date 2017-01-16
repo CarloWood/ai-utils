@@ -446,10 +446,10 @@ namespace utils {
     bool GlobalBase<TYPE, inst>::initialized_and_after_global_constructors = false;
 
     template<class TYPE, int inst>
-    char const* GlobalBase<TYPE, inst>::instantiate_function_name = NULL;
+    char const* GlobalBase<TYPE, inst>::instantiate_function_name = nullptr;
 
     template<class TYPE, int inst>
-    void const* GlobalBase<TYPE, inst>::instantiate_return_address1 = NULL;
+    void const* GlobalBase<TYPE, inst>::instantiate_return_address1 = nullptr;
 
     template<class TYPE, int inst>
     bool GlobalBase<TYPE, inst>::instantiated_from_constructor = false;
@@ -491,7 +491,7 @@ namespace utils {
 	print_error_msg();
 
       // Do a backtrace looking for a common function from which instantiate() was called:
-      void* prev_addr = NULL;
+      void* prev_addr = nullptr;
       void* addresses[400];
       int depth = backtrace(addresses, sizeof(addresses) / sizeof(void*));
       int i = 0;
