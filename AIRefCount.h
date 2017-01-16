@@ -24,6 +24,7 @@
 #pragma once
 
 #include <atomic>
+#include <boost/intrusive_ptr.hpp>
 
 // Usage:
 //
@@ -68,5 +69,5 @@ class AIRefCount {
 
   public:
     bool unique() const { return std::atomic_load_explicit(&m_count, std::memory_order_relaxed) == 1; }
-    int count() const { return m_count; }
+    int ref_count() const { return m_count; }
 };
