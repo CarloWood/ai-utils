@@ -34,7 +34,7 @@ To add this submodule to a project, that project should already
 be set up to use [cwm4](https://github.com/CarloWood/cwm4).
 
 Simply execute the following in a directory of that project
-where you what to have the <tt>utils</tt> subdirectory:
+where you want to have the <tt>utils</tt> subdirectory:
 
 <pre>
 git submodule add https://github.com/CarloWood/ai-utils.git utils
@@ -45,9 +45,9 @@ if you already cloned it there, it should add it.
 
 Changes to <tt>configure.ac</tt> and <tt>Makefile.am</tt>
 are taken care of my <tt>cwm4</tt>, except for linking
-which works as usual.
+which works as usual;
 
-For example a module that defines a
+for example, a module that defines a
 
 <pre>
 bin_PROGRAMS = foobar
