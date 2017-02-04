@@ -56,12 +56,11 @@ bin_PROGRAMS = foobar
 would also define
 
 <pre>
-foobar_CXXFLAGS = @LIBCWD_FLAGS@
-foobar_LDADD = ../utils/libutils.la ../cwd/libcwd.la @LIBCWD_LIBS@
+foobar_LDADD = ../utils/libutils.la ../cwds/libcwds.la
 </pre>
 
 or whatever the path to `utils` etc. is, to link with the required submodules,
-libraries, and assuming you'd also use the [cwd](https://github.com/CarloWood/cwd) submodule.
+libraries, and assuming you'd also use the [cwds](https://github.com/CarloWood/cwds) submodule.
 
 Finally, run
 
