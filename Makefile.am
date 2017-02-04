@@ -1,4 +1,4 @@
-AM_CPPFLAGS = -iquote $(top_srcdir) -iquote $(top_srcdir)/cwd
+AM_CPPFLAGS = -iquote $(top_builddir) -iquote $(top_srcdir) -iquote $(top_srcdir)/cwd
 
 noinst_LTLIBRARIES =
 if CW_NON_THREADED
