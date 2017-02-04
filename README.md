@@ -50,17 +50,21 @@ which works as usual;
 for example, a module that defines a
 
 <pre>
-bin_PROGRAMS = foobar
+bin_PROGRAMS = singlethreaded_foobar multithreaded_foobar
 </pre>
 
 would also define
 
 <pre>
-foobar_LDADD = ../utils/libutils.la ../cwds/libcwds.la
+singlethreaded_foobar_CXXFLAGS = @LIBCWD_FLAGS@
+singlethreaded_foobar_LDADD = ../utils/libutils.la ../cwds/libcwds.la
+
+multithreaded_foobar_CXXFLAGS = @LIBCWD_R_FLAGS@
+multithreaded_foobar_LDADD = ../utils/libutils_r.la ../cwds/libcwds_r.la
 </pre>
 
 or whatever the path to `utils` etc. is, to link with the required submodules,
-libraries, and assuming you'd also use the [cwds](https://github.com/CarloWood/cwds) submodule.
+libraries, and assuming you also use the [cwds](https://github.com/CarloWood/cwds) submodule.
 
 Finally, run
 
