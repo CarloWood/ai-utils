@@ -9,3 +9,9 @@
 #endif
 
 #define UNUSED_ARG(x)
+
+#if __SIZEOF_SIZE_T__ == __SIZEOF_LONG__
+#define CW_FORMAT_SIZE_T "l"
+#else
+#define CW_FORMAT_SIZE_T "ll"
+#endif
