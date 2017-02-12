@@ -57,13 +57,13 @@ would also define
 
 <pre>
 singlethreaded_foobar_CXXFLAGS = @LIBCWD_FLAGS@
-singlethreaded_foobar_LDADD = ../utils/libutils.la ../cwds/libcwds.la
+singlethreaded_foobar_LDADD = ../utils/libutils.la $(top_builddir)/cwds/libcwds.la
 
 multithreaded_foobar_CXXFLAGS = @LIBCWD_R_FLAGS@
-multithreaded_foobar_LDADD = ../utils/libutils_r.la ../cwds/libcwds_r.la
+multithreaded_foobar_LDADD = ../utils/libutils_r.la $(top_builddir)/cwds/libcwds_r.la
 </pre>
 
-or whatever the path to `utils` etc. is, to link with the required submodules,
+or whatever the path to `utils` is, to link with the required submodules,
 libraries, and assuming you also use the [cwds](https://github.com/CarloWood/cwds) submodule.
 
 Finally, run
