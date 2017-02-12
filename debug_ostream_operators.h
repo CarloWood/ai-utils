@@ -23,8 +23,6 @@
 
 #pragma once
 
-#ifdef CWDEBUG
-
 #include <iosfwd>                       // std::ostream&
 
 namespace AIAlert {
@@ -32,5 +30,3 @@ namespace AIAlert {
 } // namespace AIAlert
 
 extern std::ostream& operator<<(std::ostream& os, AIAlert::Error const& error);
-
-#endif // CWDEBUG

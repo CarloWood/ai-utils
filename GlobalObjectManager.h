@@ -33,13 +33,12 @@
 #define UTILS_GLOBAL_OBJECT_MANAGER_H
 
 #include "Singleton.h"
+#include "debug.h"
 
-#ifndef USE_PCH
 #include <vector>
+
 #if defined(CWDEBUG) && CWDEBUG_ALLOC
 #include <libcwd/private_internal_stringbuf.h>
-#endif
-#include "debug.h"
 #endif
 
 class GlobalObjectManager : public Singleton<GlobalObjectManager>

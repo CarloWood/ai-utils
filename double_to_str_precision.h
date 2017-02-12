@@ -23,9 +23,7 @@
 
 #pragma once
 
-#ifndef USE_PCH
 #include <string>
-#endif
 
 /// Convert a double to a string with a minimal and maximal precision.
 std::string double_to_str_precision(double d, int min, int max);

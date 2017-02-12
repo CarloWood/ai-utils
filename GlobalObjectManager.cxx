@@ -27,17 +27,12 @@
  * of global instances and their destruction.
  */
 
-#ifndef USE_PCH
 #include "sys.h"
-#endif
-
 #include "GlobalObjectManager.h"
-
-#ifndef USE_PCH
 #include "debug.h"
+
 #ifdef CWDEBUG
 #include <libcwd/cwprint.h>
-#endif
 #endif
 
 using namespace utils::_internal_;

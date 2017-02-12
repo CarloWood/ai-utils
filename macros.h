@@ -7,5 +7,3 @@
 #define AI_LIKELY(EXPR) (EXPR)
 #define AI_UNLIKELY(EXPR) (EXPR)
 #endif
-
-#define UNUSED_ARG(x)

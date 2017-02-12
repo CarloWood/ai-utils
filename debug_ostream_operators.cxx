@@ -24,8 +24,6 @@
 #include "sys.h"        // Put this outside the #ifdef CWDEBUG .. #endif in order
                         // to force recompilation after the configuration changed.
 
-#ifdef CWDEBUG
-
 #include "translate.h"
 #include "AIAlert.h"
 
@@ -44,5 +42,3 @@ std::ostream& operator<<(std::ostream& os, AIAlert::Error const& error)
   }
   return os;
 }
-
-#endif // CWDEBUG

@@ -23,10 +23,8 @@
 
 #include "double_to_str_precision.h"
 
-#ifndef USE_PCH
 #include <sstream>
 #include <iomanip>
-#endif
 
 std::string double_to_str_precision(double d, int min, int max)
 {
