@@ -26,11 +26,11 @@ SOURCES = \
 	macros.h
 
 libutils_la_SOURCES = ${SOURCES}
-libutils_la_CXXFLAGS = @LIBCWD_FLAGS@
+libutils_la_CXXFLAGS = -std=c++11 @LIBCWD_FLAGS@
 libutils_la_LIBADD = @LIBCWD_LIBS@
 
 libutils_r_la_SOURCES = ${SOURCES}
-libutils_r_la_CXXFLAGS = @LIBCWD_R_FLAGS@
+libutils_r_la_CXXFLAGS = -std=c++11 @LIBCWD_R_FLAGS@
 libutils_r_la_LIBADD = @LIBCWD_R_LIBS@
 
 # --------------- Maintainer's Section
