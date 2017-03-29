@@ -87,8 +87,8 @@ template<class FINAL, class CHILD = FINAL>
 class Singleton
 {
 protected:
-  typedef FINAL final_type;
-  typedef utils::_internal_::Instance<FINAL, utils::_internal_::singleton, GlobalConverterVoid> Instance;
+  using final_type = FINAL;
+  using Instance = utils::_internal_::Instance<FINAL, utils::_internal_::singleton, GlobalConverterVoid>;
   ~Singleton() { }
 #ifndef DEBUGGLOBAL
   Singleton() { }
@@ -109,11 +109,7 @@ public:
 
 #define friend_Instance friend class utils::_internal_::Instance<final_type, utils::_internal_::singleton, GlobalConverterVoid>
 
-// template `typedef'
-template<class FINAL>
-class SingletonInstance : public Global<FINAL, utils::_internal_::singleton, GlobalConverterVoid>
-{
-};
+template<class FINAL> using SingletonInstance = Global<FINAL, utils::_internal_::singleton, GlobalConverterVoid>;
 
 //-------------------------------------------------------------------------
 // Definitions

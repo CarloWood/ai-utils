@@ -57,7 +57,7 @@
  * 3) If you want to call the default constructor of `Foo`, use:
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
- *      typedef Global<Foo, red, GlobalConverterVoid> GlobalRedFoo;
+ *      using GlobalRedFoo = Global<Foo, red, GlobalConverterVoid>;
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *
  *    If you want the constructor `Foo(int instance)` to be called,
@@ -65,7 +65,7 @@
  *    (`red` in the last example), then use:
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
- *      typedef Global<Foo, red> GlobalRedFoo;
+ *      using GlobalRedFoo = Global<Foo, red>;
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *
  *    If you want other data to be passed to the constructor of
@@ -83,7 +83,7 @@
  *    a string.
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
- *      typedef Global<Foo, red, GlobalConverterString> GlobalRedFoo;
+ *      using GlobalRedFoo = Global<Foo, red, GlobalConverterString>;
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *
  *    This is especially useful for library classes since it allows
@@ -100,7 +100,7 @@
  *      }
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *
- *    Note that there is no need to use a typedef.
+ *    Note that there is no need to use a type alias.
  *    You can do as well:
  *
  * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
@@ -312,8 +312,8 @@ public:
 template<class TYPE, int inst, class CONVERTER = GlobalConverterInt>
 class Global : public ::utils::_internal_::GlobalBase<TYPE, inst>
 {
-  typedef typename ::utils::_internal_::Instance<TYPE, inst, CONVERTER> Instance;
-  typedef ::utils::_internal_::GlobalBase<TYPE, inst> base_type;
+  using Instance = typename ::utils::_internal_::Instance<TYPE, inst, CONVERTER>;
+  using base_type = ::utils::_internal_::GlobalBase<TYPE, inst>;
 public:
   Global();
   ~Global();

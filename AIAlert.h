@@ -296,7 +296,7 @@ class Line
 class Error : public std::exception
 {
   public:
-    typedef std::deque<Line> lines_type;	///< The type of mLines.
+    using lines_type = std::deque<Line>; ///< The type of mLines.
 
     /// The destructor may not throw.
     ~Error() throw() { }

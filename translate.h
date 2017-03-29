@@ -28,7 +28,7 @@
 
 namespace translate {
 
-typedef std::map<std::string, std::string> format_map_t;
+using format_map_t = std::map<std::string, std::string>;
 std::string getString(std::string const& xmlDesc, format_map_t const& format_map);
 
 } // namespace translate

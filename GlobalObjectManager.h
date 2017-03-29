@@ -46,10 +46,10 @@ class GlobalObjectManager : public Singleton<GlobalObjectManager>
   friend_Instance;
 private:
 #if defined(CWDEBUG) && CWDEBUG_ALLOC
-  typedef std::vector<utils::_internal_::GlobalObject*,
-      libcwd::_private_::auto_internal_allocator::rebind<utils::_internal_::GlobalObject*>::other> globalObjects_type;
+  using globalObjects_type = std::vector<utils::_internal_::GlobalObject*,
+      libcwd::_private_::auto_internal_allocator::rebind<utils::_internal_::GlobalObject*>::other>;
 #else
-  typedef std::vector<utils::_internal_::GlobalObject*> globalObjects_type;
+  using globalObjects_type = std::vector<utils::_internal_::GlobalObject*>;
 #endif
   globalObjects_type globalObjects;
   int number_of_global_objects;
