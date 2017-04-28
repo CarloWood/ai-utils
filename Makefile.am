@@ -21,6 +21,7 @@ SOURCES = \
 	GlobalObjectManager.h \
 	Global.h \
 	Singleton.h \
+	AIFIFOBuffer.h \
 	for_each_until.h \
 	at_scope_end.h \
 	macros.h
