@@ -119,7 +119,7 @@
   {
      if (error.getCode() != EEXIST)
      {
-       AIAlert::add(alert, AIAlert::pretty_function_prefix);
+       AIAlert::add(error, AIAlert::pretty_function_prefix);
      }
   }
   //----------------------------------------------------------
@@ -168,7 +168,7 @@ class AIArgs
     /// The destructor may not throw.
     ~AIArgs() throw() { }
 
-    /// Accessor, returns the the underlaying map.
+    /// Accessor, returns the underlaying map.
     translate::format_map_t const& operator*() const { return mArgs; }
 };
 
@@ -329,7 +329,7 @@ class Error : public std::exception
           Error const& alert);
 
   private:
-    lines_type mLines;		///< The lines (or prefixes) of text to be displayed, each consisting on a keyword (to be looked up in strings.xml) and a replacement map.
+    lines_type mLines;		///< The lines (or prefixes) of text to be displayed, each consisting of a keyword (to be looked up in strings.xml) and a replacement map.
     modal_nt mModal;		///< If true, make the alert box a modal floater.
 };
 
