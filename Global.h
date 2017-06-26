@@ -187,6 +187,7 @@ namespace _internal_
 
   template<class TYPE, int inst>
   class GlobalBase {
+  public:
     // Needed to calculate the size of Global<>::Instance
     // and to calculate the offset between Instance* and TYPE*.
     class InstanceDummy : public TYPE, public GlobalObject {
@@ -250,7 +251,10 @@ public:
   private:	// Make sure nobody instantiates Instance itself except for Global<TYPE, inst, GlobalConverterVoid>.
     friend class Global<TYPE, inst, GlobalConverterVoid>;
     Instance(int) { }		// TYPE is private (compile error)? Look at NOTE1 at the bottom of this file.
-    virtual ~Instance() throw() = default;
+    virtual ~Instance() throw() = default;      // "error: deleted function '~Instance' cannot override a non-deleted function" means:
+                                                // * you forgot to add friendInstance to class TYPE (the final class) (ERROR1), or
+                                                // * you are using Global instead of Singleton for singleton (ERROR2), or
+                                                // * you are trying to use Global instead of Singleton in order to pass a parameter (ERROR2a), or
 
 #ifdef DEBUGGLOBAL
     virtual bool instantiated_from_constructor() const;
@@ -382,7 +386,7 @@ Global<TYPE, inst, CONVERTER>::Global()
   if (utils::_internal_::GlobalBase<TYPE, inst>::instantiated_from_constructor)
   {
     typename utils::_internal_::GlobalInstanceTypeName<TYPE, inst, CONVERTER> name;
-    __LibcwDoutFatal( dc::core,
+    DoutFatal( dc::core,
 	"The class `" << name << "' is defined more then once.\n"
 	"          There should be one and only one code line reading:\n"
 	"          static " << name << " dummy;" );
@@ -471,12 +475,12 @@ namespace utils {
       {
         GlobalInstanceTypeName<TYPE, inst> name;
 	initialized = -2;		// Stop endless loop (instance() below calling print_err_msg() again).
-	__LibcwDoutFatal( dc::core, "Missing global/static initialization of `" << name << "'.\n"
+	DoutFatal( dc::core, "Missing global/static initialization of `" << name << "'.\n"
 	    "          There should be one and only one code line reading:\n"
 	    "          static " << name << " dummy;" );
       }
       else
-	__LibcwDoutFatal( dc::core,
+	DoutFatal( dc::core,
 	    "Using `instance()' in global constructor.  Use `instantiate()' inside the\n"
 	    "          constructor instead, or add `instantiate()' to the constructor before calling\n"
 	    "          the function that calls `instance()' when `instance()' wasn't called directly\n"
@@ -518,7 +522,7 @@ namespace utils {
         GlobalTypeName<TYPE, inst> name;
 	libcwd::location_ct loc(inst < 0 ? ((char*)__builtin_return_address(2) + libcwd::builtin_return_address_offset)
 	                                : ((char*)__builtin_return_address(1) + libcwd::builtin_return_address_offset));
-        __LibcwDoutFatal(dc::core, loc << ": Calling " << name << "::instance() in (or indirectly from)\n"
+        DoutFatal(dc::core, loc << ": Calling " << name << "::instance() in (or indirectly from)\n"
             "          constructor of static or global object instead of (or without first) calling " << name << "::instantiate().");
       }
     }

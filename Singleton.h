@@ -107,7 +107,8 @@ public:
   static inline FINAL& instance() { return Global<FINAL, utils::_internal_::singleton, GlobalConverterVoid>::instance(); }
 };
 
-#define friend_Instance friend class utils::_internal_::Instance<final_type, utils::_internal_::singleton, GlobalConverterVoid>
+#define friend_Instance friend class utils::_internal_::Instance<final_type, utils::_internal_::singleton, GlobalConverterVoid>; \
+                        friend class utils::_internal_::GlobalBase<final_type, utils::_internal_::singleton>::InstanceDummy
 
 template<class FINAL> using SingletonInstance = Global<FINAL, utils::_internal_::singleton, GlobalConverterVoid>;
 
