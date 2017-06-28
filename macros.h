@@ -7,3 +7,5 @@
 #define AI_LIKELY(EXPR) (EXPR)
 #define AI_UNLIKELY(EXPR) (EXPR)
 #endif
+
+#define AI_CASE_RETURN(x) do { case x: return #x; } while(0)
