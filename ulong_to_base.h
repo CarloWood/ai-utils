@@ -27,9 +27,11 @@
 
 // Usage:
 //
-// std::cout << ulong_to_base(n, "abcdefghijklmnopqrstuvwxyz") << std::endl;
+// std::cout << utils::ulong_to_base(n, "abcdefghijklmnopqrstuvwxyz") << std::endl;
 //
 // Converts 'n' to base 26 where 'a' = 0, 'b' = 1, ... 'z' = 25.
+
+namespace utils {
 
 template<int base_plus_one>
 std::string ulong_to_base(unsigned long n, char const (&digits) [base_plus_one])
@@ -41,3 +43,5 @@ std::string ulong_to_base(unsigned long n, char const (&digits) [base_plus_one])
   do buf[end - ++count] = digits[n % base]; while ((n /= base));
   return std::string(buf + end - count, count);
 }
+
+} // namespace utils
