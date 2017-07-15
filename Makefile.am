@@ -25,9 +25,15 @@ SOURCES = \
 	Global.h \
 	Singleton.h \
 	AIFIFOBuffer.h \
-	for_each_until.h \
+	AIRefCount.h \
+	FunctionView.h \
+	MultiLoop.h \
+	apply_function.h \
 	at_scope_end.h \
-	macros.h
+	for_each_until.h \
+	is_power_of_two.h \
+	macros.h \
+	ulong_to_base.h
 
 libutils_la_SOURCES = ${SOURCES}
 libutils_la_CXXFLAGS = -std=c++11 @LIBCWD_FLAGS@
