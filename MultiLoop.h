@@ -35,11 +35,11 @@
 //   for(; ml() < 3; ++ml)	// Each loops runs from 0 to 3 (in this case).
 //   {
 //     // Here we are at the top of loop *ml with value ml().
-//     // The values of (previous) loop counters are available through ml[1..*ml]
+//     // The values of (previous) loop counters are available through ml[0..*ml]
 //     // (ml() returns ml[*ml]).
 //
-//     if (*ml == 7 && ml[5] == 2; && ml() == 1)	// We're at the top of loop 7, the value of
-//     							// loop 5 is 2 and the current loop (loop 7)
+//     if (*ml == 7 && ml[5] == 2; && ml() == 1)	// We're at the top of loop number 7 (the 8th loop),
+//                                                      // the value of loop #5 is 2 and the current loop (loop 7)
 //     							// has value 1.
 //     {
 //       if (...)
@@ -85,7 +85,7 @@ class MultiLoop {
     // Destructor.
     ~MultiLoop() { delete [] M_counters; }
 
-    // Return the current loop number (0 ... n).
+    // Return the current loop number (0 ... n-1).
     unsigned int operator*(void) const { return M_current_loop - 1; }
 
     // Return the value of counter number i.
@@ -95,7 +95,7 @@ class MultiLoop {
     int& operator[](unsigned int i) { assert((int)i < M_current_loop); return M_counters[i + 1]; }
 
     // Return the value of the counter of the current inner loop (operator[](operator()())).
-    unsigned int operator()(void) const { return M_counters[M_current_loop]; }
+    int operator()(void) const { return M_counters[M_current_loop]; }
 
     // Advance the counters.
     void operator++(void);
