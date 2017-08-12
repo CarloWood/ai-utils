@@ -30,9 +30,10 @@
  *   friend_Instance;
  * private:    // IMPORTANT! DO NOT FORGET THIS `private:' and the three declarations below!
  *             // Without it, this is not a real singleton!
- *   MySingleton();
- *   ~MySingleton();
- *   MySingleton(MySingleton const&);
+ *   MySingleton() { }
+ *   ~MySingleton() { }
+ *   MySingleton(MySingleton const&) = delete;
+ *
  * public:
  *   // ...
  * };
@@ -41,6 +42,11 @@
  *
  * int main(int argc, char* argv[])
  * {
+ * #ifdef DEBUGGLOBAL
+ *   GlobalObjectManager::main_entered();
+ * #endif
+ *   Debug(NAMESPACE_DEBUG::init());
+ *
  *   // ...
  *   // Use `MySingleton::instance()' here.
  *
