@@ -110,7 +110,7 @@ class Sticky
 {
  protected:
   DataTransfer m_data;
- 
+
  protected:
   Sticky(Index& index, long iword) : m_data(index, iword) { }
   Sticky(Index& index, void* pword) : m_data(index, pword) { }
