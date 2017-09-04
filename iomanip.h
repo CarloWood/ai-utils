@@ -155,7 +155,7 @@ template<int max_number_of_streams = 1>
 class Unsticky : public Sticky
 {
  private:
-  friend class UnstickyStore<max_number_of_streams>;
+  friend struct UnstickyStore<max_number_of_streams>;
   std::ostream* m_os[max_number_of_streams];
   UnstickyStore<max_number_of_streams> m_store;
 

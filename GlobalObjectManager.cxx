@@ -84,5 +84,7 @@ void GlobalObjectManager::main_entered()
 #endif
 
 namespace {
-  static SingletonInstance<GlobalObjectManager> GlobalObjectManager_instance __attribute__ ((unused));
-}
+
+SingletonInstance<GlobalObjectManager> GlobalObjectManager_instance __attribute__ ((unused));
+
+} // namespace

@@ -38,7 +38,9 @@
  *   // ...
  * };
  *
- * static SingletonInstance<MySingleton> dummy __attribute__ ((__unused__));
+ * namespace {
+ * SingletonInstance<MySingleton> dummy __attribute__ ((__unused__));
+ * } // namespace
  *
  * int main(int argc, char* argv[])
  * {
