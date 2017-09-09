@@ -32,13 +32,13 @@
 // // Have 23 nested for loops.
 // for (MultiLoop ml(23); !ml.finished(); ml.next_loop())
 //   // No code should go here!
-//   for(; ml() < 3; ++ml)	// Each loops runs from 0 to 3 (in this case).
+//   for (; ml() < 3; ++ml)	// Each loops runs from 0 to 3 (in this case).
 //   {
 //     // Here we are at the top of loop *ml with value ml().
 //     // The values of (previous) loop counters are available through ml[0..*ml]
 //     // (ml() returns ml[*ml]).
 //
-//     if (*ml == 7 && ml[5] == 2; && ml() == 1)	// We're at the top of loop number 7 (the 8th loop),
+//     if (*ml == 7 && ml[5] == 2 && ml() == 1)         // We're at the top of loop number 7 (the 8th loop),
 //                                                      // the value of loop #5 is 2 and the current loop (loop 7)
 //     							// has value 1.
 //     {
