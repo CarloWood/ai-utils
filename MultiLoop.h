@@ -80,7 +80,7 @@
 class MultiLoop {
   public:
     // Construct a MultiLoop of n loops.
-    MultiLoop(unsigned int n) : M_loops(n), M_counters(new int[n + 1]), M_current_loop(n > 0 ? 1 : 0), M_breaks(0) { M_counters[M_current_loop] = 0; }
+    MultiLoop(unsigned int n) : M_loops(n), M_counters(new int[n + 1]), M_current_loop(n > 0 ? 1 : 0) { M_counters[M_current_loop] = 0; }
 
     // Destructor.
     ~MultiLoop() { delete [] M_counters; }
@@ -116,7 +116,6 @@ class MultiLoop {
     unsigned int  M_loops;
     int*          M_counters;
     int           M_current_loop;
-    unsigned int  M_breaks;
 };
 
 inline void MultiLoop::operator++(void)
