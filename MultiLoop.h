@@ -121,7 +121,7 @@ class MultiLoop {
     void operator=(int n) { M_counters[M_current_loop] = n; }
 
     // Advance the counters. Start the next loop with value b.
-    void start_next_loop_at(int b = 0);
+    void start_next_loop_at(int b);
 
     // Break out of the current loop and increment previous loop.
     void next_loop(void) { ++M_counters[--M_current_loop]; M_continued = false; }
