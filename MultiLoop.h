@@ -83,9 +83,10 @@
 //     // Loop start values.
 //     ml.start_next_loop_at(ml());     // This causes each loop to begin at with the value of the previous loop.
 //   }
-//   if (ml.end_of_loop())
+//
+//   if (int loop = ml.end_of_loop(); loop >= 0)
 //   {
-//     // End of loop code for all loops except the inner loop.
+//     // End of loop code for loop 'loop'.
 //   }
 // }
 
@@ -96,7 +97,7 @@ class MultiLoop {
       M_loops(n),
       M_counters(new int[n + 1]),
       M_current_loop(n > 0 ? 1 : 0),
-      M_did_break(false)
+      M_continued(false)
       {
         M_counters[M_current_loop] = b;
       }
@@ -123,10 +124,11 @@ class MultiLoop {
     void start_next_loop_at(int b = 0);
 
     // Break out of the current loop and increment previous loop.
-    void next_loop(void) { ++M_counters[--M_current_loop]; M_did_break = false; }
+    void next_loop(void) { ++M_counters[--M_current_loop]; M_continued = false; }
 
     // On the next call to start_next_loop_at(), break out of n loops.
-    void breaks(int n) { M_did_break = M_current_loop == (int)M_loops; M_current_loop -= (n - 1); assert(M_current_loop > 0); }
+    // A value of n == 0 means a `continue` of the current loop.
+    void breaks(int n) { M_continued = !n; M_current_loop -= (n - 1); assert(M_current_loop > 0); }
 
     // Return true when all loops are finished.
     bool finished(void) const { return M_current_loop == 0; }
@@ -135,13 +137,13 @@ class MultiLoop {
     bool inner_loop(void) const { return M_current_loop == (int)M_loops; }
 
     // Return true when we're at the end of a loop (but not the inner loop).
-    bool end_of_loop() const { return !M_did_break && M_current_loop > 1; }
+    int end_of_loop() const { return M_continued ? -1 : M_current_loop - 2; }
 
   private:
     unsigned int  M_loops;
     int*          M_counters;
     int           M_current_loop;
-    bool          M_did_break;
+    bool          M_continued;
 };
 
 inline void MultiLoop::start_next_loop_at(int b)
