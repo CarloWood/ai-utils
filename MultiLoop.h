@@ -27,7 +27,7 @@
 #include <cassert>
 
 // Implements a variable number of loops inside eachother.
-// Use:
+// Usage:
 //
 // // Have 23 nested for loops.
 // for (MultiLoop ml(23); !ml.finished(); ml.next_loop())
