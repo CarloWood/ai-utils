@@ -6,6 +6,7 @@ providing C++ utilities for larger projects, including:
 * <tt>AIAlert</tt> : an exception based error reporting system.
 * <tt>Global</tt> / <tt>Singleton</tt> : template classes for global objects.
 * <tt>MultiLoop</tt> : A variable number of nested for loops.
+* <tt>Vector</tt> : A wrapper around <tt>std::vector</tt> that only allows specific type as index.
 * Several utilities like <tt>at_scope_end</tt>, <tt>double_to_str_precision</tt>, <tt>for_each_until</tt> and convenience macros.
 
 The root project should be using
