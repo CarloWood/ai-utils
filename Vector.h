@@ -17,7 +17,7 @@ class VectorIndex {
   std::size_t m_value;
 
  public:
-  VectorIndex() { }
+  VectorIndex() : m_value(-1) { }
   explicit VectorIndex(std::size_t value) : m_value(value) { }
   std::size_t get_value() const { return m_value; }
 
@@ -28,6 +28,7 @@ class VectorIndex {
 
   void clear() { m_value = 0; }
   bool is_zero() const { return m_value == 0; }
+  bool undefined() const { return m_value == (std::size_t)-1; }
 
   bool operator==(VectorIndex const& index) const { return m_value == index.m_value; }
   bool operator!=(VectorIndex const& index) const { return m_value != index.m_value; }
