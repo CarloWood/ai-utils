@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <iostream>
+#include "debug.h"
 
 namespace utils {
 
@@ -103,8 +104,8 @@ class Vector : public std::vector<T, _Alloc> {
 #endif
 
  public:
-  reference operator[](index_type __n) _GLIBCXX_NOEXCEPT { return _Base::operator[](__n.get_value()); }
-  const_reference operator[](index_type __n) const _GLIBCXX_NOEXCEPT { return _Base::operator[](__n.get_value()); }
+  reference operator[](index_type __n) _GLIBCXX_NOEXCEPT { ASSERT(ibegin() <= __n && __n < iend()); return _Base::operator[](__n.get_value()); }
+  const_reference operator[](index_type __n) const _GLIBCXX_NOEXCEPT { ASSERT(ibegin() <= __n && __n < iend()); return _Base::operator[](__n.get_value()); }
 
   index_type ibegin() const { return index_type((size_t)0); }
   index_type iend() const { return index_type(_Base::size()); }
