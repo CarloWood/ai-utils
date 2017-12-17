@@ -109,10 +109,6 @@ class Vector : public std::vector<T, _Alloc> {
 
   index_type ibegin() const { return index_type((size_t)0); }
   index_type iend() const { return index_type(_Base::size()); }
-
- private:
-  reference operator[](size_type __n) _GLIBCXX_NOEXCEPT;
-  const_reference operator[](size_type __n) const _GLIBCXX_NOEXCEPT;
 };
 
 } // namespace utils
