@@ -13,7 +13,8 @@ template<typename Category>
 std::ostream& operator<<(std::ostream& os, VectorIndex<Category> const& index);
 
 template <typename Category>
-class VectorIndex {
+class VectorIndex
+{
  private:
   std::size_t m_value;
 
@@ -49,7 +50,8 @@ std::ostream& operator<<(std::ostream& os, VectorIndex<Category> const& index)
 }
 
 template <typename T, typename _Index = VectorIndex<T>, typename _Alloc = std::allocator<T>>
-class Vector : public std::vector<T, _Alloc> {
+class Vector : public std::vector<T, _Alloc>
+{
  protected:
   using _Base = std::vector<T, _Alloc>;
   typedef __gnu_cxx::__alloc_traits<_Alloc> _Alloc_traits;      // FIXME?

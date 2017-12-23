@@ -90,60 +90,61 @@
 //   }
 // }
 
-class MultiLoop {
-  public:
-    // Construct a MultiLoop of n loops.
-    explicit MultiLoop(unsigned int n, int b = 0) :
-      M_loops(n),
-      M_counters(new int[n + 1]),
-      M_current_loop(n > 0 ? 1 : 0),
-      M_continued(false)
-      {
-        M_counters[M_current_loop] = b;
-      }
+class MultiLoop
+{
+ public:
+  // Construct a MultiLoop of n loops.
+  explicit MultiLoop(unsigned int n, int b = 0) :
+    M_loops(n),
+    M_counters(new int[n + 1]),
+    M_current_loop(n > 0 ? 1 : 0),
+    M_continued(false)
+    {
+      M_counters[M_current_loop] = b;
+    }
 
-    // Destructor.
-    ~MultiLoop() { delete [] M_counters; }
+  // Destructor.
+  ~MultiLoop() { delete [] M_counters; }
 
-    // Return the current loop number (0 ... n-1).
-    unsigned int operator*(void) const { return M_current_loop - 1; }
+  // Return the current loop number (0 ... n-1).
+  unsigned int operator*(void) const { return M_current_loop - 1; }
 
-    // Return the value of counter number i.
-    int operator[](unsigned int i) const { assert((int)i < M_current_loop); return M_counters[i + 1]; }
+  // Return the value of counter number i.
+  int operator[](unsigned int i) const { assert((int)i < M_current_loop); return M_counters[i + 1]; }
 
-    // Return a reference to counter number i.
-    int& operator[](unsigned int i) { assert((int)i < M_current_loop); return M_counters[i + 1]; }
+  // Return a reference to counter number i.
+  int& operator[](unsigned int i) { assert((int)i < M_current_loop); return M_counters[i + 1]; }
 
-    // Return the value of the counter for the n-th previous loop.
-    int operator()(unsigned int n = 0) const { assert((int)n < M_current_loop); return M_counters[M_current_loop - n]; }
+  // Return the value of the counter for the n-th previous loop.
+  int operator()(unsigned int n = 0) const { assert((int)n < M_current_loop); return M_counters[M_current_loop - n]; }
 
-    // Set the loop counter to value n.
-    void operator=(int n) { M_counters[M_current_loop] = n; }
+  // Set the loop counter to value n.
+  void operator=(int n) { M_counters[M_current_loop] = n; }
 
-    // Advance the counters. Start the next loop with value b.
-    void start_next_loop_at(int b);
+  // Advance the counters. Start the next loop with value b.
+  void start_next_loop_at(int b);
 
-    // Break out of the current loop and increment previous loop.
-    void next_loop(void) { ++M_counters[--M_current_loop]; M_continued = false; }
+  // Break out of the current loop and increment previous loop.
+  void next_loop(void) { ++M_counters[--M_current_loop]; M_continued = false; }
 
-    // On the next call to start_next_loop_at(), break out of n loops.
-    // A value of n == 0 means a `continue` of the current loop.
-    void breaks(int n) { M_continued = !n; M_current_loop -= (n - 1); assert(M_current_loop > 0); }
+  // On the next call to start_next_loop_at(), break out of n loops.
+  // A value of n == 0 means a `continue` of the current loop.
+  void breaks(int n) { M_continued = !n; M_current_loop -= (n - 1); assert(M_current_loop > 0); }
 
-    // Return true when all loops are finished.
-    bool finished(void) const { return M_current_loop == 0; }
+  // Return true when all loops are finished.
+  bool finished(void) const { return M_current_loop == 0; }
 
-    // Return true when we are in the inner loop.
-    bool inner_loop(void) const { return M_current_loop == (int)M_loops; }
+  // Return true when we are in the inner loop.
+  bool inner_loop(void) const { return M_current_loop == (int)M_loops; }
 
-    // Return true when we're at the end of a loop (but not the inner loop).
-    int end_of_loop() const { return M_continued ? -1 : M_current_loop - 2; }
+  // Return true when we're at the end of a loop (but not the inner loop).
+  int end_of_loop() const { return M_continued ? -1 : M_current_loop - 2; }
 
-  private:
-    unsigned int  M_loops;
-    int*          M_counters;
-    int           M_current_loop;
-    bool          M_continued;
+ private:
+  unsigned int  M_loops;
+  int*          M_counters;
+  int           M_current_loop;
+  bool          M_continued;
 };
 
 inline void MultiLoop::start_next_loop_at(int b)

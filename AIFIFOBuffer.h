@@ -74,7 +74,8 @@
 // Empty the buffer (sets m_tail and m_readptr to where m_head is).
 //
 template <int T_per_chunk, typename T>
-class AIFIFOBuffer {
+class AIFIFOBuffer
+{
   // This buffer uses std::memcpy to move the objects around.
   static_assert(std::is_trivially_copyable<T>::value, "AIFIFOBuffer requires a trivially copyable type.");
   // If this fails than reallocate_buffer needs to be changed to allocate memory aligned to 'alignment'.

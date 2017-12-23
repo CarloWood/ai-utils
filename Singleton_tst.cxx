@@ -37,36 +37,40 @@
 #define ERROR2
 #endif
 
-class Foo : public Singleton<Foo> {
+class Foo : public Singleton<Foo>
+{
   friend_Instance;
-private:
+ private:
   int data;
 
   Foo(void) : data(1) { }
   ~Foo() { }
   Foo(Foo const& foo) : Singleton<Foo, Foo>(foo) { }
 
-public:
+ public:
   int get_data(void) const { return data; }
 };
 
-class Test {
-public:
+class Test
+{
+ public:
   Test(int) { }
   Test(void) : j(0) { }
   int j;
 };
 
-class GlobalConverterTest2 {
-public:
+class GlobalConverterTest2
+{
+ public:
   const char *operator()(int) {
     return "Test2";
   }
 };
 
-class Test2 {
+class Test2
+{
   const char *s;
-public:
+ public:
   Test2(const char *s_) : s(s_) { }
   Test2(void) : s("default constructor") { }
   char const* str(void) const { return s; }
@@ -74,17 +78,18 @@ public:
 
 class Instance { };	// This doesn't confuse the `friend' in the below class.
 
-class Bar : public Singleton<Bar> {
+class Bar : public Singleton<Bar>
+{
 #ifndef ERROR1
   friend_Instance;
 #else
   friend class Test;
 #endif
-private:
+ private:
   int data;
 
 #ifdef ERROR7
-public:
+ public:
 #endif
   Bar(void) : data(2) {
 #ifdef ERROR5a
@@ -102,10 +107,10 @@ public:
   Bar(int) { }
 #endif
   ~Bar() { }
-private:
+ private:
   Bar(Bar const& bar) : Singleton<Bar>(bar) { }
 
-public:
+ public:
   int get_data(void) const { return data; }
 };
 
@@ -134,8 +139,10 @@ static SingletonInstance<Foo> test __attribute__ ((unused));
 #endif
 
 namespace {
-  static Global<Test2, 0, GlobalConverterTest2> S_dummy_Test2;
-}
+
+static Global<Test2, 0, GlobalConverterTest2> S_dummy_Test2;
+
+} // namespace
 
 int main(int UNUSED_ARG(argc), char *UNUSED_ARG(argv)[])
 {

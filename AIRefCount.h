@@ -28,7 +28,8 @@
 
 // Usage:
 //
-// class MyClass : public AIRefCount {
+// class MyClass : public AIRefCount
+// {
 // };
 //
 // int main()
@@ -41,33 +42,34 @@
 //   my_class->print();
 // }                                                            // m_count = 0 --> destruction of MyClass.
 
-class AIRefCount {
-  private:
-    mutable std::atomic<int> m_count;
+class AIRefCount
+{
+ private:
+  mutable std::atomic<int> m_count;
 
-  public:
-    friend void intrusive_ptr_add_ref(AIRefCount const* ptr)
+ public:
+  friend void intrusive_ptr_add_ref(AIRefCount const* ptr)
+  {
+    ptr->m_count.fetch_add(1, std::memory_order_relaxed);
+  }
+
+  friend void intrusive_ptr_release(AIRefCount const* ptr)
+  {
+    if (ptr->m_count.fetch_sub(1, std::memory_order_release) == 1)
     {
-      ptr->m_count.fetch_add(1, std::memory_order_relaxed);
+      std::atomic_thread_fence(std::memory_order_acquire);
+      delete ptr;
     }
+  }
 
-    friend void intrusive_ptr_release(AIRefCount const* ptr)
-    {
-      if (ptr->m_count.fetch_sub(1, std::memory_order_release) == 1)
-      {
-        std::atomic_thread_fence(std::memory_order_acquire);
-        delete ptr;
-      }
-    }
+ protected:
+  AIRefCount() : m_count(0) { }
+  AIRefCount(AIRefCount const&) : m_count(0) { }
+  AIRefCount& operator=(AIRefCount const&) { return *this; }
+  virtual ~AIRefCount() { }
+  void swap(AIRefCount&) { }
 
-  protected:
-    AIRefCount() : m_count(0) { }
-    AIRefCount(AIRefCount const&) : m_count(0) { }
-    AIRefCount& operator=(AIRefCount const&) { return *this; }
-    virtual ~AIRefCount() { }
-    void swap(AIRefCount&) { }
-
-  public:
-    bool unique() const { return std::atomic_load_explicit(&m_count, std::memory_order_relaxed) == 1; }
-    int ref_count() const { return m_count; }
+ public:
+  bool unique() const { return std::atomic_load_explicit(&m_count, std::memory_order_relaxed) == 1; }
+  int ref_count() const { return m_count; }
 };

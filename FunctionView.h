@@ -43,7 +43,8 @@ namespace utils {
 template <typename T>
 class FunctionView;  // Undefined.
 template <typename RetT, typename... ArgT>
-class FunctionView<RetT(ArgT...)> final {
+class FunctionView<RetT(ArgT...)> final
+{
  public:
   // Constructor for lambdas and other callables; it accepts every type of
   // argument except those noted in its enable_if call.
@@ -115,4 +116,4 @@ class FunctionView<RetT(ArgT...)> final {
   RetT (*call_)(VoidUnion, ArgT...);
 };
 
-}  // namespace utils
+} // namespace utils
