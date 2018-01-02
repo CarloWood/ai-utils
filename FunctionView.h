@@ -1,16 +1,17 @@
+// ai-utils -- C++ Core utilities
 /*
- *  Copyright 2016 The WebRTC Project Authors. All rights reserved.
+ * Copyright 2016 The WebRTC Project Authors. All rights reserved.
  *
- *  Use of this source code is governed by a BSD-style license
- *  that can be found in the LICENSE.FunctionView file in the source
- *  tree.
+ * Use of this source code is governed by a BSD-style license
+ * that can be found in the LICENSE.FunctionView file in the source
+ * tree.
  *
- *  This file was copied from https://chromium.googlesource.com/external/webrtc/+/master/webrtc/base/function_view.h
- *  at Apr 19 2017 (blob 861bccff3e09166020c65298b7caa74354f4a37f).
- *  The encloding namespace was renamed from rtc to utils.
- *  Guard macros replaced with #pragma once.
- *  Include of "webrtc/base/checks.h" replaced with "debug.h" and RTC_DCHECK with ASSERT.
- *  -- Carlo Wood
+ * This file was copied from https://chromium.googlesource.com/external/webrtc/+/master/webrtc/base/function_view.h
+ * at Apr 19 2017 (blob 861bccff3e09166020c65298b7caa74354f4a37f).
+ * The encloding namespace was renamed from rtc to utils.
+ * Guard macros replaced with #pragma once.
+ * Include of "webrtc/base/checks.h" replaced with "debug.h" and RTC_DCHECK with ASSERT.
+ * -- Carlo Wood
  */
 
 #pragma once

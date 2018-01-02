@@ -1,8 +1,11 @@
-// These utilities are available in C++17 and later.
-// Added here in order not to demand C++17 (but instead only C++11, still).
-//
-// This was pasted to me on IRC (original author moonchild) and apparently
-// falls under Public Domain (CC0) license.
+// ai-utils -- C++ Core utilities
+/*
+ * These utilities are available in C++17 and later.
+ * Added here in order not to demand C++17 (but instead only C++11, still).
+ *
+ * This was pasted to me on IRC (original author moonchild) and apparently
+ * falls under Public Domain (CC0) license.
+ */
 
 #pragma once
 

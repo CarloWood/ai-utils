@@ -1,148 +1,150 @@
-/**
- * @file
- * @brief Declaration of template class Global.
- *
- * Copyright (C) 2014, 2016  Carlo Wood.
- *
- * RSA-1024 0x624ACAD5 1997-01-26                    Sign & Encrypt
- * Fingerprint16 = 32 EC A7 B6 AC DB 65 A6  F6 F6 55 DD 1C DC FF 61
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Affero General Public License as published
- * by the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * \class Global
- * \brief Initialization order fiasco free global instances.
- *
- * Usage:
- *
- * Note: Below we assume that you want to instantiate global objects of type `class Foo`.
- *
- * 1) Call GlobalObjectManager::main_entered() at the _very_ top of `main()`.
- *    This call signifies the end of the global constructors.
- *
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
- *      int main(int argc, void* argv[])
- *      {
- *      #ifdef DEBUGGLOBAL
- *        GlobalObjectManager::main_entered();
- *      #endif
- *        //...
- *      }
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *
- * 2) Create a list of human readable integer constants, one for each
- *    instance that you want to instantiate in the current application.
- *    You may use any value except -1.  Other negative values are reserved.
- *
- *    For example:
- *
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
- *      enum FooInstance {
- *        red,
- *        green,
- *	  yellow
- *      };
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *
- * 3) If you want to call the default constructor of `Foo`, use:
- *
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
- *      using GlobalRedFoo = Global<Foo, red, GlobalConverterVoid>;
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *
- *    If you want the constructor `Foo(int instance)` to be called,
- *    where `instance` is the integer constant of that instance
- *    (`red` in the last example), then use:
- *
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
- *      using GlobalRedFoo = Global<Foo, red>;
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *
- *    If you want other data to be passed to the constructor of
- *    `Foo`, then you should define a `GlobalConverter' class yourself.
- *    For example:
- *
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
- *      class GlobalConverterString {
- *      public:
- *        string operator()(int instance);
- *      };
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *
- *    Where `operator()` should convert the `instance` variable into
- *    a string.
- *
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
- *      using GlobalRedFoo = Global<Foo, red, GlobalConverterString>;
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *
- *    This is especially useful for library classes since it allows
- *    the set of instances to be extended later, independ of the library.
- *
- * 4) For each instance of `Foo`, instantiate a Global<> object.
- *    For example:
- *
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
- *      namespace {
- *      GlobalRedFoo    redDummy;
- *      GlobalGreenFoo  greenDummy;
- *      GlobalYellowFoo yellowDummy;
- *      }
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *
- *    Note that there is no need to use a type alias.
- *    You can do as well:
- *
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
- *      namespace {
- *      Global<Foo, red,    GlobalConverterString> redDummy;
- *      Global<Foo, green>                         greenDummy;
- *      Global<Foo, yellow, GlobalConverterVoid>   yellowDummy;
- *      }
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *
- *    The name of the dummy doesn't matter of course, as long as
- *    it doesn't collide - you don't even need the anonymous namespace actually:
- *    it's just handy to make sure that the dummy names won't collide.
- *
- * 5) Now access the instances as follows:
- *    In constructors of other Global<> objects and in constructors of real global/static objects, use:
- *
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
- *      GlobalRedFoo::instantiate()
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *
- *    which returns a Foo& to the `red' instance.
- *
- *    For example:
- *
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
- *      class Bar {
- *        int b;
- *      public:
- *        Bar() : b(Global<Color, blue>::instantiate().brightness()) { }
- *      };
- *
- *      Bar bar;	// Instantiate a real global object of class `Bar'.
- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- *
- *    Anywhere else (that is, in code called from `main()`) use `GlobalRedFoo::``#instance()`,
- *    or `Global<Foo, red>::``#instance()` because the converter class doesn't matter in this case.
- *
- *
- * If you want to check whether you did everything correctly, define `DEBUGGLOBAL`
- * and it will tell you exactly what you did wrong, if anything.
- */
+// ai-utils -- C++ Core utilities
+//
+//! @file
+//! @brief Declaration of template class Global.
+//
+// Copyright (C) 2014, 2016  Carlo Wood.
+//
+// RSA-1024 0x624ACAD5 1997-01-26                    Sign & Encrypt
+// Fingerprint16 = 32 EC A7 B6 AC DB 65 A6  F6 F6 55 DD 1C DC FF 61
+//
+// This file is part of ai-utils.
+//
+// ai-utils is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// ai-utils is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with ai-utils.  If not, see <http://www.gnu.org/licenses/>.
+
+//! @class Global
+//! @brief Initialization order fiasco free global instances.
+//
+// Usage:
+//
+// Note: Below we assume that you want to instantiate global objects of type `class Foo`.
+//
+// 1) Call GlobalObjectManager::main_entered() at the _very_ top of `main()`.
+//    This call signifies the end of the global constructors.
+//
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+//      int main(int argc, void* argv[])
+//      {
+//      #ifdef DEBUGGLOBAL
+//        GlobalObjectManager::main_entered();
+//      #endif
+//        //...
+//      }
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+// 2) Create a list of human readable integer constants, one for each
+//    instance that you want to instantiate in the current application.
+//    You may use any value except -1.  Other negative values are reserved.
+//
+//    For example:
+//
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+//      enum FooInstance {
+//        red,
+//        green,
+//	  yellow
+//      };
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+// 3) If you want to call the default constructor of `Foo`, use:
+//
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+//      using GlobalRedFoo = Global<Foo, red, GlobalConverterVoid>;
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+//    If you want the constructor `Foo(int instance)` to be called,
+//    where `instance` is the integer constant of that instance
+//    (`red` in the last example), then use:
+//
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+//      using GlobalRedFoo = Global<Foo, red>;
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+//    If you want other data to be passed to the constructor of
+//    `Foo`, then you should define a `GlobalConverter' class yourself.
+//    For example:
+//
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+//      class GlobalConverterString {
+//      public:
+//        string operator()(int instance);
+//      };
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+//    Where `operator()` should convert the `instance` variable into
+//    a string.
+//
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+//      using GlobalRedFoo = Global<Foo, red, GlobalConverterString>;
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+//    This is especially useful for library classes since it allows
+//    the set of instances to be extended later, independ of the library.
+//
+// 4) For each instance of `Foo`, instantiate a Global<> object.
+//    For example:
+//
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+//      namespace {
+//      GlobalRedFoo    redDummy;
+//      GlobalGreenFoo  greenDummy;
+//      GlobalYellowFoo yellowDummy;
+//      }
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+//    Note that there is no need to use a type alias.
+//    You can do as well:
+//
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+//      namespace {
+//      Global<Foo, red,    GlobalConverterString> redDummy;
+//      Global<Foo, green>                         greenDummy;
+//      Global<Foo, yellow, GlobalConverterVoid>   yellowDummy;
+//      }
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+//    The name of the dummy doesn't matter of course, as long as
+//    it doesn't collide - you don't even need the anonymous namespace actually:
+//    it's just handy to make sure that the dummy names won't collide.
+//
+// 5) Now access the instances as follows:
+//    In constructors of other Global<> objects and in constructors of real global/static objects, use:
+//
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+//      GlobalRedFoo::instantiate()
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+//    which returns a Foo& to the `red' instance.
+//
+//    For example:
+//
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+//      class Bar {
+//        int b;
+//      public:
+//        Bar() : b(Global<Color, blue>::instantiate().brightness()) { }
+//      };
+//
+//      Bar bar;	// Instantiate a real global object of class `Bar'.
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+//    Anywhere else (that is, in code called from `main()`) use `GlobalRedFoo::``#instance()`,
+//    or `Global<Foo, red>::``#instance()` because the converter class doesn't matter in this case.
+//
+//
+// If you want to check whether you did everything correctly, define `DEBUGGLOBAL`
+// and it will tell you exactly what you did wrong, if anything.
 
 #pragma once
 
