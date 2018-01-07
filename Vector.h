@@ -53,8 +53,9 @@ class VectorIndex
   VectorIndex& operator--() { --m_value; return *this; }
   VectorIndex operator--(int) { VectorIndex old(m_value); --m_value; return old; }
 
-  void clear() { m_value = 0; }
+  void set_to_zero() { m_value = 0; }
   bool is_zero() const { return m_value == 0; }
+  void set_to_undefined() { m_value = -1; }
   bool undefined() const { return m_value == (std::size_t)-1; }
 
   bool operator==(VectorIndex const& index) const { return m_value == index.m_value; }
