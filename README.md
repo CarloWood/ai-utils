@@ -10,7 +10,7 @@ providing C++ utilities for larger projects, including:
 * Several utilities like <tt>at_scope_end</tt>, <tt>double_to_str_precision</tt>, <tt>for_each_until</tt> and convenience macros.
 
 The root project should be using
-[autotools](https://en.wikipedia.org/wiki/GNU_Build_System autotools),
+[autotools](https://en.wikipedia.org/wiki/GNU_Build_System%20autotools),
 [cwm4](https://github.com/CarloWood/cwm4) and
 [libcwd](https://github.com/CarloWood/libcwd).
 
