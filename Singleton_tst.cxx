@@ -58,19 +58,19 @@ class Foo : public Singleton<Foo>
  private:
   int data;
 
-  Foo(void) : data(1) { }
+  Foo() : data(1) { }
   ~Foo() { }
   Foo(Foo const& foo) : Singleton<Foo, Foo>(foo) { }
 
  public:
-  int get_data(void) const { return data; }
+  int get_data() const { return data; }
 };
 
 class Test
 {
  public:
   Test(int) { }
-  Test(void) : j(0) { }
+  Test() : j(0) { }
   int j;
 };
 
@@ -87,8 +87,8 @@ class Test2
   const char *s;
  public:
   Test2(const char *s_) : s(s_) { }
-  Test2(void) : s("default constructor") { }
-  char const* str(void) const { return s; }
+  Test2() : s("default constructor") { }
+  char const* str() const { return s; }
 };
 
 class Instance { };	// This doesn't confuse the `friend' in the below class.
@@ -106,7 +106,7 @@ class Bar : public Singleton<Bar>
 #ifdef ERROR7
  public:
 #endif
-  Bar(void) : data(2) {
+  Bar() : data(2) {
 #ifdef ERROR5a
     Global<Test, 2>::instance().j = 9;
 #else
@@ -126,7 +126,7 @@ class Bar : public Singleton<Bar>
   Bar(Bar const& bar) : Singleton<Bar>(bar) { }
 
  public:
-  int get_data(void) const { return data; }
+  int get_data() const { return data; }
 };
 
 static SingletonInstance<Foo> singletonFoo __attribute__ ((unused));
