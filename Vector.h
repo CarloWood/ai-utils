@@ -65,6 +65,9 @@ class VectorIndex
   bool operator<=(VectorIndex const& index) const { return m_value <= index.m_value; }
   bool operator>=(VectorIndex const& index) const { return m_value >= index.m_value; }
 
+  VectorIndex operator-(int n) const { return VectorIndex{m_value - n}; }
+  VectorIndex operator+(int n) const { return VectorIndex{m_value + n}; }
+
   friend std::ostream& operator<<<>(std::ostream& os, VectorIndex<Category> const& index);
 };
 
