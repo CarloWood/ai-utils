@@ -48,6 +48,9 @@ class VectorIndex
   explicit VectorIndex(std::size_t value) : m_value(value) { }
   std::size_t get_value() const { return m_value; }
 
+  VectorIndex(VectorIndex const& rhs) : m_value(rhs.m_value) { }
+  VectorIndex& operator=(VectorIndex const& rhs) { m_value = rhs.m_value; return *this; }
+
   VectorIndex& operator++() { ++m_value; return *this; }
   VectorIndex operator++(int) { VectorIndex old(m_value); ++m_value; return old; }
   VectorIndex& operator--() { --m_value; return *this; }
