@@ -32,7 +32,7 @@
 namespace utils {
 
 template<typename T>
-inline bool is_power_of_two(T n)
+inline bool constexpr is_power_of_two(T n)
 {
   return n > 0 && ((n - 1) & n) == 0;
 }
