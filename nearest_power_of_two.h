@@ -37,7 +37,9 @@ T constexpr max_shift_or(T n)
 // Specializations. Unfortunately, partial non-type specialization are not allowed.
 template<> uint64_t constexpr max_shift_or<32, 32>(uint64_t n) { return n | (n >> 32); }
 template<> uint32_t constexpr max_shift_or<16, 16>(uint32_t n) { return n | (n >> 16); }
+#if __SIZEOF_INT__ > 4  // For 64-bit int's.
 template<> int constexpr max_shift_or<32, 32>(int n) { return n | (n >> 32); }
+#endif
 template<> int constexpr max_shift_or<16, 16>(int n) { return n | (n >> 16); }
 template<> int constexpr max_shift_or<8, 8>(int n) { return n | (n >> 8); }
 template<> int constexpr max_shift_or<4, 4>(int n) { return n | (n >> 4); }
