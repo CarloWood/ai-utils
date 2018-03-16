@@ -106,7 +106,7 @@ class MultiLoop
   ~MultiLoop() { delete [] M_counters; }
 
   // Return the current loop number (0 ... n-1).
-  unsigned int operator*(void) const { return M_current_loop - 1; }
+  unsigned int operator*() const { return M_current_loop - 1; }
 
   // Return the value of counter number i.
   int operator[](unsigned int i) const { assert((int)i < M_current_loop); return M_counters[i + 1]; }
@@ -124,17 +124,17 @@ class MultiLoop
   void start_next_loop_at(int b);
 
   // Break out of the current loop and increment previous loop.
-  void next_loop(void) { ++M_counters[--M_current_loop]; M_continued = false; }
+  void next_loop() { ++M_counters[--M_current_loop]; M_continued = false; }
 
   // On the next call to start_next_loop_at(), break out of n loops.
   // A value of n == 0 means a `continue` of the current loop.
   void breaks(int n) { M_continued = !n; M_current_loop -= (n - 1); assert(M_current_loop > 0); }
 
   // Return true when all loops are finished.
-  bool finished(void) const { return M_current_loop == 0; }
+  bool finished() const { return M_current_loop == 0; }
 
   // Return true when we are in the inner loop.
-  bool inner_loop(void) const { return M_current_loop == (int)M_loops; }
+  bool inner_loop() const { return M_current_loop == (int)M_loops; }
 
   // Return true when we're at the end of a loop (but not the inner loop).
   int end_of_loop() const { return M_continued ? -1 : M_current_loop - 2; }
