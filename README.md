@@ -46,7 +46,7 @@ This should clone ai-utils into the subdirectory <tt>utils</tt>, or
 if you already cloned it there, it should add it.
 
 Changes to <tt>configure.ac</tt> and <tt>Makefile.am</tt>
-are taken care of my <tt>cwm4</tt>, except for linking
+are taken care of by <tt>cwm4</tt>, except for linking
 which works as usual;
 
 for example, a module that defines a
