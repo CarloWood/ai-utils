@@ -25,6 +25,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 namespace utils {
 
 // Helper function for nearest_power_of_two.
