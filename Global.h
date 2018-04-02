@@ -378,7 +378,8 @@ inline TYPE& Global<TYPE, inst, CONVERTER>::instantiate()
 #endif
   if (!base_type::initialized)
     initialize_instance_();
-  return *static_cast<TYPE*>(reinterpret_cast<Instance*>(base_type::instance_));
+  Instance* ptr = reinterpret_cast<Instance*>(base_type::instance_);
+  return *static_cast<TYPE*>(ptr);
 }
 
 template<class TYPE, int inst, class CONVERTER>
@@ -444,7 +445,8 @@ namespace utils {
       if (!initialized_and_after_global_constructors)
 	check_call_to_instance();
 #endif
-      return *static_cast<TYPE*>(reinterpret_cast<InstanceDummy*>(instance_));	// If `instance_' is not yet initialized, then define DEBUGGLOBAL to find out why.
+      InstanceDummy* ptr = reinterpret_cast<InstanceDummy*>(instance_);
+      return *static_cast<TYPE*>(ptr);	// If `instance_' is not yet initialized, then define DEBUGGLOBAL to find out why.
     }
 
 #ifdef DEBUGGLOBAL
