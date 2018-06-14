@@ -152,12 +152,6 @@ magic_nt const REMOVEDNODE = 0x12345678;
 #  define whoami() "<unknown>"
 #endif
 
-enum lteqgt_nt {
-  LESS = -1,
-  EQUAL = 0,
-  GREATER = 1
-};
-
 /*
  * State of a node.
  * To save memory, we use the LSB of the pointer to the previous node
@@ -195,6 +189,11 @@ protected:
     else
       bitfield = (unsigned long)node;
   }
+  enum lteqgt_nt {
+    LESS = -1,
+    EQUAL = 0,
+    GREATER = 1
+  };
 #ifdef DEBUGLLISTS
   magic_nt magicnumber;
 #endif
@@ -270,7 +269,7 @@ public:
  * Base class for your Bi-directional Linked Lists
  *
  *****************************************************************************/
-class SbllNodeImpl : /*private  SEE BELOW*/ protected SbllBase {
+class SbllNodeImpl : protected SbllBase {
   friend class SbllListImpl;
   //friend class cbll_node_ct;
 private:
@@ -480,15 +479,15 @@ protected:
     del();
   }
 protected:
-  virtual lteqgt_nt insert_cmp(DATA_CT const& UNUSED_ARG(listdata)) const
+  virtual typename NODE_IMPL::lteqgt_nt insert_cmp(DATA_CT const& UNUSED_ARG(listdata)) const
   {
     Dout(dc::llists, "Using default " << ::libcwd::type_info_of(*this).demangled_name() << "::insert_cmp()");
-    return GREATER;	// Insert immedeately
+    return NODE_IMPL::GREATER;	// Insert immedeately
   }
   virtual ~SbllNode(void) { };		// Use `new' to allocate new objects that inherit SbllNodeImpl
 
 private:
-  virtual lteqgt_nt internal_insert_cmp(SbllBase const& listdata) const
+  virtual typename NODE_IMPL::lteqgt_nt internal_insert_cmp(SbllBase const& listdata) const
       { return insert_cmp((DATA_CT const&)listdata); }
 };
 
@@ -496,7 +495,7 @@ private:
 #  define DEBUGLLISTS_LLISTS_METHODS(x)
 #else
 #  define DEBUGLLISTS_LLISTS_METHODS(x) \
-  virtual char const* whoami(void) const /* Return my actual type */ \
+  char const* whoami(void) const override /* Return my actual type */ \
       { return #x; }
 #endif
 
