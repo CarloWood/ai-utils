@@ -9,9 +9,13 @@ AC_ARG_ENABLE(debug-global,
 
 AC_SUBST(CW_CONFIG_DEBUGGLOBAL)
 CW_CONFIG_DEBUGGLOBAL=undef
+CW_EXTRA_CWDS_LIBS=
+CW_EXTRA_CWDS_R_LIBS=
 
 if test "$cw_config_debug_global" = yes; then
   CW_CONFIG_DEBUGGLOBAL=define
+  CW_EXTRA_CWDS_LIBS="../utils/libutils.la"
+  CW_EXTRA_CWDS_R_LIBS="../utils/libutils_r.la"
 fi
 
 AC_ARG_ENABLE(debug-llists,
