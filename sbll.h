@@ -43,7 +43,7 @@
  *
  * struct XxxxData { ... };     // Your data type.
  *
- * class XxxxNode: public SbllNode<SbllNodeImpl, XxxxNode>
+ * class XxxxNode: public utils::SbllNode<utils::SbllNodeImpl, XxxxNode>
  * {
  *   XxxxData data;	        // Stores your data
  *
@@ -60,12 +60,12 @@
  *                             //  matches this node or not resp.
  *   }
  *
- *   void delinked(void) override
+ *   void delinked() override
  *   {
  *     ...                     // Called when this node is delinked
  *   }
  *
- *   void done(void) override
+ *   void done() override
  *   {
  *     ...                     // Called when this node is being removed
  *   }
@@ -75,6 +75,8 @@
  *     ...                     // Called when the crosslink parent node
  *                             //  is removed
  *   }
+ *
+ *   LLISTS_METHODS(XxxxNode);  // Use LLISTS_DTOR(XxxxNode) instead if you have a non-empty destructor.
  * };
  *
  * and
@@ -110,7 +112,7 @@
  *  private:
  *   init(...) { ... }
  *  public:
- *   XxxxList(void) : SbllList<SbllListImpl, XxxxNode>("XxxxList")
+ *   XxxxList() : SbllList<SbllListImpl, XxxxNode>("XxxxList")
  *   { init(...); }
  *   XxxxList(char const* name) : SbllList<SbllListImpl, XxxxNode>(name)
  *   { init(...); }
@@ -158,7 +160,8 @@ magic_nt const REMOVEDNODE = 0x12345678;
  * so we only have 1 bit. Therefore, 'SBLL_STATE_BEING_REMOVED' is
  * also used for a node that is being created.
  */
-enum sbll_state_nt {
+enum sbll_state_nt
+{
   SBLL_STATE_BEING_REMOVED = 0,
   SBLL_STATE_IN_USE = 1
 };
@@ -170,15 +173,16 @@ enum sbll_state_nt {
  * Base class for the base classes, internal use only.
  *
  *****************************************************************************/
-class SbllBase {
+class SbllBase
+{
   friend class SbllNodeImpl;
   friend class SbllListImpl;
-protected:
-  SbllBase(void) { }
-  ~SbllBase(void) { }
+ protected:
+  SbllBase() { }
+  ~SbllBase() { }
   unsigned long bitfield;
   SbllNodeImpl* next;		// Next node, or first node.
-  SbllBase* prev(void) const
+  SbllBase* prev() const
   {
     return (SbllBase*)(bitfield & ~1);
   }
@@ -206,16 +210,17 @@ protected:
  * Base class for your Bi-directional Linked Lists
  *
  *****************************************************************************/
-class SbllListImpl : /*private  SEE BELOW*/ protected SbllBase {
-private:
-  void remove_all_nodes(void);
-protected:
+class SbllListImpl : /*private  SEE BELOW*/ protected SbllBase
+{
+ private:
+  void remove_all_nodes();
+ protected:
   using SbllBase::prev;	// Adjust access
   //using SbllBase::next;	// 3.5.0-20040530 cores on this - therefore inherite protected instead.
 #ifdef DEBUGLLISTS
   using SbllBase::magicnumber;
 #endif
-  SbllListImpl(void)
+  SbllListImpl()
   {
     Dout(dc::llists, "this = " << this << "; SbllListImpl()" );
     next = 0;				// Empty list
@@ -243,7 +248,7 @@ protected:
     magicnumber = MAGICLIST;
 #endif
   }
-  ~SbllListImpl(void);			// Don't use 'virtual' for optimisation.
+  ~SbllListImpl();			// Don't use 'virtual' for optimisation.
   					// This demands however that nobody ever
   					// fucks up with using a delete on this
   					// base class.
@@ -254,11 +259,11 @@ protected:
   {
     return find(next, key);
   }
-public:
+ public:
 #ifdef DEBUGLLISTS
   char name[LLISTNAMESIZE];
-  void check_consistency(void);
-  void showlist(void);
+  void check_consistency();
+  void showlist();
 #endif
 };
 
@@ -269,11 +274,12 @@ public:
  * Base class for your Bi-directional Linked Lists
  *
  *****************************************************************************/
-class SbllNodeImpl : protected SbllBase {
+class SbllNodeImpl : protected SbllBase
+{
   friend class SbllListImpl;
   //friend class cbll_node_ct;
-private:
-  sbll_state_nt get_state(void)
+ private:
+  sbll_state_nt get_state()
   {
     return (sbll_state_nt)(bitfield & 1);
   }
@@ -284,8 +290,8 @@ private:
     else
       bitfield &= ~1;
   }
-public:
-  SbllNodeImpl(void)
+ public:
+  SbllNodeImpl()
   {
     Dout(dc::llists, "this = " << this << "; SbllNodeImpl()" );
     set_state(SBLL_STATE_BEING_REMOVED); /* Being created actually */
@@ -295,7 +301,7 @@ public:
 #endif
   }
 #ifdef DEBUGLLISTS
-  virtual char const* whoami(void) const	// Return my actual type
+  virtual char const* whoami() const	// Return my actual type
   {
     return "SbllNodeImpl";
   }
@@ -316,13 +322,13 @@ public:
     Dout(dc::continued, ')' );
   }
 #endif
-protected:
+ protected:
 #ifndef DEBUGLLISTS
-  virtual ~SbllNodeImpl(void) { }	// Destructor; protected: You _must_ use 'new' to make new objects.
+  virtual ~SbllNodeImpl() { }	// Destructor; protected: You _must_ use 'new' to make new objects.
   					// Every object derived from SbllNodeImpl destructs itself through
   					// SbllNodeImpl.
 #else
-  virtual ~SbllNodeImpl(void)
+  virtual ~SbllNodeImpl()
   {
     Dout(dc::llists|continued_cf, "this = " << this << "; ~SbllNodeImpl()" );
     print_whoami(this);
@@ -339,15 +345,15 @@ protected:
 #ifdef DEBUGLLISTS
   using SbllBase::magicnumber;
 #endif
-  SbllNodeImpl* delink(void);
-  SbllNodeImpl* del(void);
+  SbllNodeImpl* delink();
+  SbllNodeImpl* del();
   virtual lteqgt_nt internal_insert_cmp(SbllBase const& UNUSED_ARG(listdata)) const = 0;
   virtual bool find_cmp(void const* UNUSED_ARG(key)) const = 0;
-  virtual void delinked(void) = 0;
-  virtual void done(void) = 0;
+  virtual void delinked() = 0;
+  virtual void done() = 0;
   virtual void deceased(SbllNodeImpl* UNUSED_ARG(node), void* UNUSED_ARG(label)) = 0;
   void insert_after(SbllNodeImpl* new_node);
-  bool we_are_the_first(void) const
+  bool we_are_the_first() const
   {
     return (prev()->bitfield == (unsigned long)-1);
   }
@@ -361,24 +367,25 @@ protected:
  *
  *****************************************************************************/
 template<class LIST_IMPL, class DATA_CT>
-class SbllList: public LIST_IMPL {
-public:
+class SbllList: public LIST_IMPL
+{
+ public:
 #ifdef DEBUGLLISTS
   SbllList(char const* listname) : LIST_IMPL(listname) { }
-  SbllList(void) : LIST_IMPL("<unknown>") { }
+  SbllList() : LIST_IMPL("<unknown>") { }
 #else
   SbllList(char const* DEBUG_ONLY(listname))
   {
     Dout(dc::llists, "this = " << this << "; " << libcwd::type_info_of(*this).demangled_name() << "(\"" << listname << "\")" );
   }
-  SbllList(void) { }
+  SbllList() { }
 #endif
-  ~SbllList(void) { }   // Still not using virtual...
-  inline DATA_CT* start_node(void)
+  ~SbllList() { }   // Still not using virtual...
+  inline DATA_CT* start_node()
   {
     return (DATA_CT*)LIST_IMPL::next;
   }
-  inline DATA_CT const* const_start_node(void) const
+  inline DATA_CT const* const_start_node() const
   {
     return (DATA_CT const*)LIST_IMPL::next;
   }
@@ -420,34 +427,35 @@ public:
  *
  *****************************************************************************/
 template<class NODE_IMPL, class DATA_CT>
-class SbllNode : public NODE_IMPL {
-public:
-  SbllNode(void) { }
-  DATA_CT* next_node(void)
+class SbllNode : public NODE_IMPL
+{
+ public:
+  SbllNode() { }
+  DATA_CT* next_node()
   {
     return (DATA_CT*)NODE_IMPL::next;
   }
-  DATA_CT const* const_next_node(void) const
+  DATA_CT const* const_next_node() const
   {
     return (DATA_CT const*)NODE_IMPL::next;
   }
-  DATA_CT* prev_node(void)
+  DATA_CT* prev_node()
   {
     if (NODE_IMPL::we_are_the_first())		// Isn't it the list ?
       return 0;
     return (DATA_CT*)NODE_IMPL::prev();
   }
-  DATA_CT const* const_prev_node(void) const
+  DATA_CT const* const_prev_node() const
   {
     if (NODE_IMPL::we_are_the_first())		// Isn't it the list ?
       return 0;
     return (DATA_CT const*)NODE_IMPL::prev();
   }
-  DATA_CT* delink(void)
+  DATA_CT* delink()
   {
     return (DATA_CT*)NODE_IMPL::delink();
   }
-  DATA_CT* del(void)
+  DATA_CT* del()
   {
     return (DATA_CT*)NODE_IMPL::del();
   }
@@ -456,20 +464,20 @@ public:
     NODE_IMPL::insert_after((NODE_IMPL*)new_node);	// The cast is needed if DATA_CT privately inherites NODE_IMPL
   }
 #ifdef DEBUGLLISTS
-  virtual char const* whoami(void) const = 0;	  // Return my actual type
+  virtual char const* whoami() const = 0;	  // Return my actual type
 #endif
 
-protected:
+ protected:
   virtual bool find_cmp(void const* UNUSED_ARG(key)) const
   {
     DoutFatal(dc::core, "If you want to use 'find()' you must define a find_cmp()");
     return false;	// Never reached.
   }
-  virtual void delinked(void)
+  virtual void delinked()
   {
     Dout(dc::llists, "this = " << this << "; Default delinked() (nothing to do)");
   }
-  virtual void done(void)
+  virtual void done()
   {
     Dout(dc::llists, "this = " << this << "; Default done() (nothing to do)");
   }
@@ -478,15 +486,15 @@ protected:
     Dout(dc::llists, "this = " << this << "; Default deceased(" << node << ", " << label << "), " << "deleting this too");
     del();
   }
-protected:
+ protected:
   virtual typename NODE_IMPL::lteqgt_nt insert_cmp(DATA_CT const& UNUSED_ARG(listdata)) const
   {
     Dout(dc::llists, "Using default " << ::libcwd::type_info_of(*this).demangled_name() << "::insert_cmp()");
     return NODE_IMPL::GREATER;	// Insert immedeately
   }
-  virtual ~SbllNode(void) { };		// Use `new' to allocate new objects that inherit SbllNodeImpl
+  virtual ~SbllNode() { };		// Use `new' to allocate new objects that inherit SbllNodeImpl
 
-private:
+ private:
   virtual typename NODE_IMPL::lteqgt_nt internal_insert_cmp(SbllBase const& listdata) const
       { return insert_cmp((DATA_CT const&)listdata); }
 };
@@ -495,21 +503,21 @@ private:
 #  define DEBUGLLISTS_LLISTS_METHODS(x)
 #else
 #  define DEBUGLLISTS_LLISTS_METHODS(x) \
-  char const* whoami(void) const override /* Return my actual type */ \
+  char const* whoami() const override /* Return my actual type */ \
       { return #x; }
 #endif
 
 #define LLISTS_METHODS(class_type) \
   protected: \
     DEBUGLLISTS_LLISTS_METHODS(class_type) \
-    ~class_type(void) { }
+    ~class_type() { }
       // Always use 'new' to allocate a new object derived from `SbllNodeImpl'.
       // Never delete it, call method `del()' instead.
 
 #define LLISTS_DTOR(class_type) \
   protected: \
     DEBUGLLISTS_LLISTS_METHODS(class_type) \
-    ~class_type(void)
+    ~class_type()
       // Always use 'new' to allocate a new object derived from `SbllNodeImpl'.
       // Never delete it, call method `del()' instead.
 
