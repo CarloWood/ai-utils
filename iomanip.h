@@ -70,10 +70,7 @@ class DataTransfer
 
   // Transfer other value(s) to a stream.
   void set_iword_on(std::ostream& os, long iword) const { os.iword(m_index) = iword; }
-  void set_pword_on(std::ostream& os, void* pword) const
-  {
-    os.pword(m_index) = pword;
-  }
+  void set_pword_on(std::ostream& os, void* pword) const { os.pword(m_index) = pword; }
   void swap_with(std::ostream& os)
   {
     // Swap os.*word() with m_*word.
