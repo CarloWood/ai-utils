@@ -96,8 +96,8 @@ void SbllListImpl::add(SbllNodeImpl* new_node, SbllNodeImpl* start_node)
 #endif
   new_node->set_state(SBLL_STATE_IN_USE);
 
-  register SbllBase* p1;
-  register SbllNodeImpl* p2;
+  SbllBase* p1;
+  SbllNodeImpl* p2;
 
   if (!(p2 = start_node)) // List empty ?
   {
@@ -109,7 +109,7 @@ void SbllListImpl::add(SbllNodeImpl* new_node, SbllNodeImpl* start_node)
   }
 
   /* Look for right place to insert: between p1 and p2 */
-  register lteqgt_nt d;
+  lteqgt_nt d;
   if ((d = new_node->internal_insert_cmp(*p2)) == EQUAL ||
       (p2 == next && d == GREATER))
   {
@@ -200,8 +200,8 @@ void SbllListImpl::insert_before(SbllNodeImpl* new_node, SbllNodeImpl* target_no
 #endif
   new_node->set_state(SBLL_STATE_IN_USE);
 
-  register SbllBase* p1;
-  register SbllNodeImpl* p2;
+  SbllBase* p1;
+  SbllNodeImpl* p2;
 
   if (!(p2 = target_node)) // List empty ?
   {
@@ -236,7 +236,7 @@ void SbllListImpl::insert_before(SbllNodeImpl* new_node, SbllNodeImpl* target_no
  * or nullptr if there is no next node (used for running over all nodes
  * in a loop that can delink/remove them).
  */
-SbllNodeImpl* SbllNodeImpl::delink(void)
+SbllNodeImpl* SbllNodeImpl::delink()
 {
 #ifdef DEBUGLLISTS
   Dout(dc::llists, "SbllNodeImpl::delink() " << this);
@@ -297,7 +297,7 @@ SbllNodeImpl* SbllNodeImpl::delink(void)
  * or nullptr if there is no next node (used for running over all nodes
  * in a loop that (can) remove(s) them).
  */
-SbllNodeImpl* SbllNodeImpl::del(void)
+SbllNodeImpl* SbllNodeImpl::del()
 {
 #ifdef DEBUGLLISTS
   Dout(dc::llists, "SbllNodeImpl::del() " << this);
@@ -407,7 +407,7 @@ SbllNodeImpl* SbllListImpl::find(SbllNodeImpl* start_node, void const* key) cons
   return nullptr;
 }
 
-void SbllListImpl::remove_all_nodes(void)
+void SbllListImpl::remove_all_nodes()
 {
 #ifdef DEBUGLLISTS
   Dout(dc::llists, "Removing list \"" << name << "\" which still has nodes");
@@ -419,7 +419,7 @@ void SbllListImpl::remove_all_nodes(void)
     node = node->del();
 }
 
-SbllListImpl::~SbllListImpl(void)
+SbllListImpl::~SbllListImpl()
 {
 #ifdef DEBUGLLISTS
   if (magicnumber != MAGICLIST)
@@ -442,7 +442,7 @@ SbllListImpl::~SbllListImpl(void)
 }
 
 #ifdef DEBUGLLISTS
-void SbllListImpl::check_consistency(void)
+void SbllListImpl::check_consistency()
 {
   if (magicnumber != MAGICLIST)
     DoutFatal(dc::core, "Not a list");
@@ -455,7 +455,7 @@ void SbllListImpl::check_consistency(void)
   }
 }
 
-void SbllListImpl::showlist(void)
+void SbllListImpl::showlist()
 {
   Dout(dc::notice|continued_cf, name << ": " << next);
   SbllNodeImpl* node = next;
