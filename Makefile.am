@@ -24,6 +24,8 @@ SOURCES = \
 	GlobalObjectManager.h \
 	Global.h \
 	Singleton.h \
+	MemoryPool.cxx \
+	MemoryPool.h \
 	sbll.cxx \
 	sbll.h \
 	AIFIFOBuffer.h \

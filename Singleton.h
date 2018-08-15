@@ -28,7 +28,7 @@
 //
 // Usage:
 //
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.h}
 // class MySingleton : public Singleton<MySingleton> {
 //   friend_Instance;
 // private:    // IMPORTANT! DO NOT FORGET THIS `private:' and the three declarations below!
@@ -41,6 +41,7 @@
 //   // ...
 // };
 //
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 // namespace {
 // SingletonInstance<MySingleton> dummy __attribute__ ((__unused__));
 // } // namespace
