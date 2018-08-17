@@ -149,4 +149,5 @@ std::ostream& operator<<(std::ostream& os, utils::NodeMemoryPool const& pool)
   ASSERT(num_free_chunks == pool.m_total_free);
   os << "NodeMemoryPool stats: node size: " << pool.m_size << "; allocated size: " << allocated_size <<
       "; total/used/free: " << num_chunks << '/' << (num_chunks - num_free_chunks) << '/' << num_free_chunks;
+  return os;
 }

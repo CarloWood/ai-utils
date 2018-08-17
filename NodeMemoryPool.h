@@ -25,6 +25,7 @@
 
 #pragma once
 
+#include "debug.h"
 #include <vector>
 #include <mutex>
 #include <iosfwd>
@@ -51,7 +52,9 @@ struct FreeList;
 // Usage:
 //
 // NodeMemoryPool pool(64); // Will allocate 64 objects at a time.
-// std::shared_ptr<MyObject> = std::allocate_shared<MyObject>(pool, ...MyObject constructor arguments...);
+//
+// utils::Allocator<MyObject, utils::NodeMemoryPool> allocator(pool);
+// std::shared_ptr<MyObject> = std::allocate_shared<MyObject>(allocator, ...MyObject constructor arguments...);
 //
 class NodeMemoryPool
 {
@@ -76,5 +79,26 @@ class NodeMemoryPool
 
   friend std::ostream& ::operator<<(std::ostream& os, NodeMemoryPool const& pool);
 };
+
+template<class Tp, class Mp>
+struct Allocator
+{
+  Mp& m_memory_pool;
+
+  using value_type = Tp;
+  Tp* allocate(std::size_t n);
+  void deallocate(Tp* p, std::size_t DEBUG_ONLY(n)) { ASSERT(n == 1); m_memory_pool.free(p); }
+  Allocator(Mp& memory_pool) : m_memory_pool(memory_pool) { }
+  template<class T> Allocator(Allocator<T, Mp> const& other) : m_memory_pool(other.m_memory_pool) { }
+  template<class T> bool operator==(Allocator<T, Mp> const& other) { return &m_memory_pool == &other.m_memory_pool; }
+  template<class T> bool operator!=(Allocator<T, Mp> const& other) { return &m_memory_pool != &other.m_memory_pool; }
+};
+
+template<class Tp, class Mp>
+Tp* Allocator<Tp, Mp>::allocate(std::size_t DEBUG_ONLY(n))
+{
+  ASSERT(n == 1);
+  return m_memory_pool.template malloc<Tp>();
+}
 
 } // namespace utils
