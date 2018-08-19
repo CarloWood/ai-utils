@@ -94,7 +94,7 @@ void* NodeMemoryPool::alloc(size_t size)
   {
     size_t n = ptr->m_next.n;
     ptr->m_next.ptr = reinterpret_cast<FreeList*>(reinterpret_cast<char*>(ptr) + size + sizeof(ssize_t*));
-    ASSERT(ptr->m_next.n >= m_nchunks); // Smaller values are used a 'magic' values.
+    ASSERT(ptr->m_next.n >= m_nchunks); // Smaller values are used as 'magic' values.
     ptr->m_next.ptr->m_next.n = n - 1;
     ptr->m_next.ptr->free = ptr->free;
   }

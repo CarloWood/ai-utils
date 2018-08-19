@@ -51,7 +51,7 @@ struct FreeList;
 //
 // Usage:
 //
-// NodeMemoryPool pool(64); // Will allocate 64 objects at a time.
+// utils::NodeMemoryPool pool(64); // Will allocate 64 objects at a time.
 //
 // utils::Allocator<MyObject, utils::NodeMemoryPool> allocator(pool);
 // std::shared_ptr<MyObject> = std::allocate_shared<MyObject>(allocator, ...MyObject constructor arguments...);
@@ -86,6 +86,7 @@ struct Allocator
   Mp& m_memory_pool;
 
   using value_type = Tp;
+  size_t max_size() const { return 1; }
   Tp* allocate(std::size_t n);
   void deallocate(Tp* p, std::size_t DEBUG_ONLY(n)) { ASSERT(n == 1); m_memory_pool.free(p); }
   Allocator(Mp& memory_pool) : m_memory_pool(memory_pool) { }
