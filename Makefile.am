@@ -26,6 +26,8 @@ SOURCES = \
 	Singleton.h \
 	NodeMemoryPool.cxx \
 	NodeMemoryPool.h \
+	itoa.cxx \
+	itoa.h \
 	sbll.cxx \
 	sbll.h \
 	AIFIFOBuffer.h \

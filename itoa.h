@@ -1,35 +1,18 @@
+#pragma once
+
 #include <array>
 #include <cmath>
 
 namespace utils {
 
-inline char* backwards_itoa_unsigned(char* p, unsigned long n, unsigned int base)
-{
-  static char const digit[36] = {
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-    'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-    'u', 'v', 'w', 'x', 'y', 'z' };
+char* backwards_itoa_unsigned(char* p, unsigned long n, unsigned int base);
+char* backwards_itoa_signed(char* p, long n, int base);
 
-  *p = 0;
-  do
-  {
-    *--p = digit[n % base];
-    n /= base;
-  }
-  while (n > 0);
-  return p;
-}
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wattributes"
 
-inline char* backwards_itoa_signed(char* p, long n, int base)
-{
-  unsigned long const mask = n >> (sizeof(long) * 8 - 1);        // All 1's when n < 0, all 0's otherwise.
-  unsigned long abs_n = (n + mask) ^ mask;
-  p = backwards_itoa_unsigned(p, abs_n, base);
-  if (mask)
-    *--p = '-';
-  return p;
-}
+template<typename T, size_t sz>
+char const* itoa(std::array<char, sz>& buf, T n) __attribute__ ((always_inline));
 
 template<typename T, size_t sz>
 char const* itoa(std::array<char, sz>& buf, T n)
@@ -43,5 +26,7 @@ char const* itoa(std::array<char, sz>& buf, T n)
   else
     return backwards_itoa_unsigned(&buf[sz], n, 10);
 }
+
+#pragma GCC diagnostic pop
 
 } // namespace utils
