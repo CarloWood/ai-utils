@@ -41,4 +41,7 @@ code (--enable-debug).
   fi
 fi
 
+# Test if we have the __builtin_expect builtin.
+CW_HAVE_BUILTIN_EXPECT
+
 AH_BOTTOM([#include "utils/config.h"])
