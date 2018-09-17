@@ -35,6 +35,7 @@ class NodeMemoryPool;
 }
 
 std::ostream& operator<<(std::ostream& os, utils::NodeMemoryPool const& pool);
+inline void* operator new(std::size_t size, utils::NodeMemoryPool& pool);
 
 namespace utils {
 
@@ -65,14 +66,28 @@ struct FreeList;
 //
 // Just makes sure to FIRST allocate an object of the largest size; or
 // make use of the pool constructor that sets the size in advance
-// (this requires that you know the size in that case):
+// (this requires that you know the size in advance however):
 //
 // utils::NodeMemoryPool pool(64, 32); // Will allocate 64 objects of 32 bytes at a time.
 //
-// MyObject30* obj = new (pool) MyObject30(args...);
+// It is also possible to use this memory pool to replace heap allocation with new
+// by adding an operator delete to an object and then using new with placement to
+// create those objects. For example,
 //
-// Note that you must always pass 1 to allocate().
+// class Foo {
+//  public:
+//   Foo(int);
+//   void operator delete(void* ptr) { utils::NodeMemoryPool::static_free(ptr); }
+// };
 //
+// and then create objects like
+//
+// utils::NodeMemoryPool pool(128, sizeof(Foo));
+//
+// Foo* foo = new(pool) Foo(42);        // Allocate memory from memory pool and contruct object.
+// delete foo;                          // Destruct object and return memory to the memory pool.
+//
+
 class NodeMemoryPool
 {
  private:
@@ -85,6 +100,7 @@ class NodeMemoryPool
                                         // alloc() always returns a chunk of this size except the first time when m_free_list is still 0.
   size_t m_total_free;                  // The current total number of free chunks in the memory pool.
 
+  friend void* ::operator new(std::size_t size, NodeMemoryPool& pool);
   void* alloc(size_t size);
 
  public:
@@ -94,6 +110,7 @@ class NodeMemoryPool
   Tp* malloc() { return static_cast<Tp*>(alloc(sizeof(Tp))); }
 
   void free(void* ptr);
+  static void static_free(void* ptr);
 
   friend std::ostream& ::operator<<(std::ostream& os, NodeMemoryPool const& pool);
 };
@@ -121,3 +138,5 @@ Tp* Allocator<Tp, Mp>::allocate(std::size_t DEBUG_ONLY(n))
 }
 
 } // namespace utils
+
+inline void* operator new(std::size_t size, utils::NodeMemoryPool& pool) { return pool.alloc(size); }
