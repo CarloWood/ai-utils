@@ -71,15 +71,16 @@ static constexpr size_t chunk_align_mask = alignof(Chunk) - 1;
 
 void* NodeMemoryPool::alloc(size_t size)
 {
-  // size must be greater or equal sizeof(Next), and a multiple of alignof(Chunk).
-  ASSERT(size >= sizeof(Next) && (size & chunk_align_mask) == 0);
   std::unique_lock<std::mutex> lock(m_free_list_mutex);
   FreeList* ptr = m_free_list;
   if (AI_UNLIKELY(!ptr))
   {
-    // Allocate one size_t followed by m_nchunks of size (sizeof(ssize_t*) + size) (the size of Allocated).
-    m_size = size;
-    Begin* begin = static_cast<Begin*>(std::malloc(sizeof(size_t) + m_nchunks * (sizeof(ssize_t*) + size)));
+    if (AI_UNLIKELY(!m_size))
+      m_size = size;    // If m_size wasn't initialized yet, set it to the size of the first allocation.
+    // m_size must be greater or equal sizeof(Next), and a multiple of alignof(Chunk).
+    ASSERT(m_size >= sizeof(Next) && (m_size & chunk_align_mask) == 0);
+    // Allocate one size_t followed by m_nchunks of m_size (sizeof(ssize_t*) + m_size) (the size of Allocated).
+    Begin* begin = static_cast<Begin*>(std::malloc(sizeof(size_t) + m_nchunks * (sizeof(ssize_t*) + m_size)));
     ptr = m_free_list = &begin->first_chunk.free_list;
     ptr->m_next.n = m_nchunks - 1;
     ptr->free = &begin->free;
@@ -88,12 +89,12 @@ void* NodeMemoryPool::alloc(size_t size)
     m_blocks.push_back(begin);
     m_total_free += m_nchunks;
   }
-  // size must be the same every call.
-  ASSERT(size == m_size);
+  // size must fit.
+  ASSERT(size <= m_size);
   if (AI_UNLIKELY(ptr->m_next.n < m_nchunks && ptr->m_next.ptr))
   {
     size_t n = ptr->m_next.n;
-    ptr->m_next.ptr = reinterpret_cast<FreeList*>(reinterpret_cast<char*>(ptr) + size + sizeof(ssize_t*));
+    ptr->m_next.ptr = reinterpret_cast<FreeList*>(reinterpret_cast<char*>(ptr) + m_size + sizeof(ssize_t*));
     ASSERT(ptr->m_next.n >= m_nchunks); // Smaller values are used as 'magic' values.
     ptr->m_next.ptr->m_next.n = n - 1;
     ptr->m_next.ptr->free = ptr->free;

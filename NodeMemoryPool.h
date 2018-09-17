@@ -56,21 +56,39 @@ struct FreeList;
 // utils::Allocator<MyObject, utils::NodeMemoryPool> allocator(pool);
 // std::shared_ptr<MyObject> = std::allocate_shared<MyObject>(allocator, ...MyObject constructor arguments...);
 //
+// The Allocator can also be used to allocate objects of different types provided
+// that their sizes are (about) the same. For example, if you want to allocate objects
+// of size 32 and 30 bytes you could do:
+//
+// utils::Allocator<MyObject32, utils::NodeMemoryPool> allocator1(pool);
+// utils::Allocator<MyObject30, utils::NodeMemoryPool> allocator2(pool);
+//
+// Just makes sure to FIRST allocate an object of the largest size; or
+// make use of the pool constructor that sets the size in advance
+// (this requires that you know the size in that case):
+//
+// utils::NodeMemoryPool pool(64, 32); // Will allocate 64 objects of 32 bytes at a time.
+//
+// MyObject30* obj = new (pool) MyObject30(args...);
+//
+// Note that you must always pass 1 to allocate().
+//
 class NodeMemoryPool
 {
  private:
-  size_t const m_nchunks;               // The number of `size' sized chunks to allocate at once. Should always be larger than 0.
+  size_t const m_nchunks;               // The number of `m_size' sized chunks to allocate at once. Should always be larger than 0.
   mutable std::mutex m_free_list_mutex;
   FreeList* m_free_list;                // The next free chunk, or nullptr if there isn't any left.
   mutable std::mutex m_blocks_mutex;
   std::vector<Begin*> m_blocks;         // A list of all allocated blocks.
-  size_t m_size;
-  size_t m_total_free;
+  size_t m_size;                        // The (fixed) size of a single chunk in bytes.
+                                        // alloc() always returns a chunk of this size except the first time when m_free_list is still 0.
+  size_t m_total_free;                  // The current total number of free chunks in the memory pool.
 
   void* alloc(size_t size);
 
  public:
-  NodeMemoryPool(int nchunks) : m_nchunks(nchunks), m_free_list(nullptr), m_total_free(0) { }
+  NodeMemoryPool(int nchunks, size_t chunk_size = 0) : m_nchunks(nchunks), m_free_list(nullptr), m_size(chunk_size), m_total_free(0) { }
 
   template<class Tp>
   Tp* malloc() { return static_cast<Tp*>(alloc(sizeof(Tp))); }
