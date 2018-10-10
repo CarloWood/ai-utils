@@ -76,7 +76,7 @@ static constexpr size_t chunk_align_mask = alignof(Chunk) - 1;
 
 void* NodeMemoryPool::alloc(size_t size)
 {
-  std::unique_lock<std::mutex> lock(m_free_list_mutex);
+  std::unique_lock<std::mutex> lock(m_pool_mutex);
   FreeList* ptr = m_free_list;
   if (AI_UNLIKELY(!ptr))
   {
@@ -91,7 +91,6 @@ void* NodeMemoryPool::alloc(size_t size)
     ptr->m_next.n = m_nchunks - 1;
     ptr->free = &begin->free;
     *ptr->free = m_nchunks;
-    std::unique_lock<std::mutex> lock(m_blocks_mutex);
     m_blocks.push_back(begin);
     m_total_free += m_nchunks;
   }
@@ -116,7 +115,7 @@ void NodeMemoryPool::free(void* p)
 {
   // Interpret the pointer p as pointing to Chunk::allocated::data and reinterpret/convert it to a pointer to Chunk::free_list.
   FreeList* ptr = reinterpret_cast<FreeList*>(reinterpret_cast<char*>(p) - offsetof(Allocated, data));
-  std::unique_lock<std::mutex> lock(m_free_list_mutex);
+  std::unique_lock<std::mutex> lock(m_pool_mutex);
   ptr->m_next.ptr = m_free_list;
   m_free_list = ptr;
   ++*ptr->free;
@@ -137,7 +136,6 @@ void NodeMemoryPool::free(void* p)
     }
     m_total_free -= m_nchunks;
     std::free(begin);
-    std::unique_lock<std::mutex> lock(m_blocks_mutex);
     m_blocks.erase(std::remove(m_blocks.begin(), m_blocks.end(), reinterpret_cast<Begin*>(begin)));
   }
 }
@@ -154,8 +152,7 @@ void NodeMemoryPool::static_free(void* ptr)
 
 std::ostream& operator<<(std::ostream& os, utils::NodeMemoryPool const& pool)
 {
-  std::unique_lock<std::mutex> lock1(pool.m_free_list_mutex);
-  std::unique_lock<std::mutex> lock2(pool.m_blocks_mutex);
+  std::unique_lock<std::mutex> lock(pool.m_pool_mutex);
   size_t allocated_size = (offsetof(utils::Begin, first_chunk) + pool.m_nchunks * (offsetof(utils::Allocated, data) + pool.m_size)) * pool.m_blocks.size();
   size_t num_chunks = pool.m_nchunks * pool.m_blocks.size();
   size_t num_free_chunks = 0;

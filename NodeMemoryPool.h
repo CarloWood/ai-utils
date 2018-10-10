@@ -87,14 +87,15 @@ struct FreeList;
 // Foo* foo = new(pool) Foo(42);        // Allocate memory from memory pool and contruct object.
 // delete foo;                          // Destruct object and return memory to the memory pool.
 //
+// NodeMemoryPool is thread-safe.
 
 class NodeMemoryPool
 {
  private:
+  mutable std::mutex m_pool_mutex;      // Protects the pool against concurrent accesses.
+
   size_t const m_nchunks;               // The number of `m_size' sized chunks to allocate at once. Should always be larger than 0.
-  mutable std::mutex m_free_list_mutex;
   FreeList* m_free_list;                // The next free chunk, or nullptr if there isn't any left.
-  mutable std::mutex m_blocks_mutex;
   std::vector<Begin*> m_blocks;         // A list of all allocated blocks.
   size_t m_size;                        // The (fixed) size of a single chunk in bytes.
                                         // alloc() always returns a chunk of this size except the first time when m_free_list is still 0.
