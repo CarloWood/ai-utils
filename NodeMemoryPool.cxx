@@ -125,14 +125,28 @@ void NodeMemoryPool::free(void* p)
   {
     // The last chunk of this block was freed; delete it.
     // Find begin and end of the block.
-    char* const begin = reinterpret_cast<char*>(ptr->free);
-    char* const end = begin + offsetof(Begin, first_chunk) + m_nchunks * (offsetof(Allocated, data) + m_size);
+    char* const begin = reinterpret_cast<char*>(ptr->free) - offsetof(Begin, free);                             // The actual start of the allocated memory block (Begin*).
+    char* const end = begin + offsetof(Begin, first_chunk) + m_nchunks * (offsetof(Allocated, data) + m_size);  // One passed the end of the allocated memory block.
+    // Run over the whole free list. Note that when FreeList* == nullptr we reached the end of the free list.
+    // However, if a pointer value interpreted as a size_t is less than m_nchunks then that means that the
+    // next size_t chunks are free chunks and then the free list ends.
+    // m_free_list itself always points to the first free chunk, so the first test is always true.
     for (FreeList** fpp = &m_free_list; reinterpret_cast<size_t>(*fpp) >= m_nchunks; fpp = &(*fpp)->m_next.ptr)
     {
+      // When *fpp points inside the block that we're about to delete, then just skip it until we
+      // either reach the end of the free list (*fpp == nullptr) or reinterpret_cast<size_t>(*fpp) is
+      // less than m_nchunks (in which case it will not be >= begin either).
       while (begin <= reinterpret_cast<char*>(*fpp) && reinterpret_cast<char*>(*fpp) < end)
         *fpp = (*fpp)->m_next.ptr;
+      // Hence, if at this point reinterpret_cast<size_t>(*fpp) < m_nchunks, then that happened
+      // because *fpp was just assigned that value in the above while loop, which means that
+      // all remaining chunks are also part of the deleted block. And we need to set *fpp to nullptr.
       if (reinterpret_cast<size_t>(*fpp) < m_nchunks)
+      {
+        // We reached the end of the free list.
+        *fpp = nullptr; // Any remaining "free" chunk count refers to the block that is being deleted.
         break;
+      }
     }
     m_total_free -= m_nchunks;
     std::free(begin);
