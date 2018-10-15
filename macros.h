@@ -25,6 +25,14 @@
 
 #pragma once
 
+#include <boost/preprocessor/stringize.hpp>
+#include <boost/preprocessor/expand.hpp>
+
+#if defined(CWDEBUG) && !defined(LIBCWD_SYS_H)
+// We need sys.h included because that includes config.h, which defines HAVE_BUILTIN_EXPECT.
+#error #include "sys.h" at the top of every source file!
+#endif
+
 #if HAVE_BUILTIN_EXPECT
 #define AI_LIKELY(EXPR) __builtin_expect (static_cast<bool>(EXPR), true)
 #define AI_UNLIKELY(EXPR) __builtin_expect (static_cast<bool>(EXPR), false)
@@ -34,3 +42,20 @@
 #endif
 
 #define AI_CASE_RETURN(x) do { case x: return #x; } while(0)
+
+#if defined(__GNUC__) && !defined(__clang__) // clang doesn't have a -Wmaybe-uninitialized warning.
+#define PRAGMA_DIAGNOSTIC_PUSH_IGNORE_maybe_uninitialized \
+  _Pragma("GCC diagnostic push") \
+  _Pragma("GCC diagnostic ignored \"-Wmaybe-uninitialized\"")
+#elif
+#define PRAGMA_DIAGNOSTIC_PUSH_IGNORE_maybe_uninitialized
+#endif
+
+#define PRAGMA_DIAGNOSTIC_PUSH_IGNORED(warn_option) \
+  _Pragma("GCC diagnostic push") \
+  _Pragma(BOOST_PP_STRINGIZE(GCC diagnostic ignored BOOST_PP_EXPAND(warn_option)))
+
+#ifdef __GNUC__
+#define PRAGMA_DIAGNOSTIC_POP \
+  _Pragma("GCC diagnostic pop")
+#endif
