@@ -377,7 +377,11 @@ inline TYPE& Global<TYPE, inst, CONVERTER>::instantiate()
   utils::_internal_::GlobalBase<TYPE, inst>::instantiate_return_address1 = __builtin_return_address(1);
 #endif
   if (!base_type::initialized)
+  {
+    base_type::initialized = -1;			// Stop the next line from doing something if this is the GlobalObjectManager.
+    Singleton<GlobalObjectManager>::instantiate();	// initialize_instance_() uses GlobalObjectManager
     initialize_instance_();
+  }
   Instance* ptr = reinterpret_cast<Instance*>(base_type::instance_);
   return *static_cast<TYPE*>(ptr);
 }

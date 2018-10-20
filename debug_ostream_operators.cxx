@@ -35,12 +35,22 @@
 std::ostream& operator<<(std::ostream& os, AIAlert::Error const& error)
 {
   os << "AIAlert: ";
-  int lines = error.lines().size();
+  int lines = 0;
+  for (auto& line : error.lines())
+    if (!line.is_prefix())
+      ++lines;
+  char const* indent_str = "\n    ";
+  if (lines > 1)
+    os << indent_str;
   int count = 0;
-  for (AIAlert::Error::lines_type::const_iterator line = error.lines().begin(); line != error.lines().end(); ++line)
+  unsigned int suppress_mask = 0;
+  for (auto& line : error.lines())
   {
-    if (++count < lines && lines > 1) os << "\n    ";
-    os << translate::getString(line->getXmlDesc(), line->args());
+    if (lines > 1 && line.prepend_newline())   // Empty line.
+      os << indent_str;
+    os << translate::getString(line.getXmlDesc(), line.args());
+    if (!line.is_prefix() && ++count < lines)
+      os << indent_str;                        // Normal line separation.
   }
   return os;
 }

@@ -136,9 +136,9 @@
   THROW_ALERT("ExampleKey", AIArgs("[FIRST]", first)("[SECOND]", second), error);          // E) As B, but followed by a colon and a newline, and then the text of 'error'.
   THROW_ALERT(error, "ExampleKey", AIArgs("[FIRST]", first)("[SECOND]", second));          // F) The text of 'error', followed by a colon and a newline and then as B.
   // where 'error' is a caught Error object (as above) in a rethrow.
-  // Prepend ALERT with M and/or F to make the alert box Modal and/or prepend the text with the current function name.
+  // Prepend ALERT with F and/or M to prepend the text with the current function name and/or make the alert box Modal.
   // For example,
-  THROW_MFALERT("ExampleKey", AIArgs("[FIRST]", first));    // Throw a Modal alert box that is prefixed with the current Function name.
+  THROW_FMALERT("ExampleKey", AIArgs("[FIRST]", first));    // Throw a Modal alert box that is prefixed with the current Function name.
   // Append E after ALERT to throw an ErrorCode class that contains the current errno.
   // For example,
   THROW_FALERTE("ExampleKey", AIArgs("[FIRST]", first));    // Throw an alert box that is prefixed with the current Function name and pass errno to the catcher.
@@ -221,6 +221,8 @@ class Prefix
     Prefix() : mType(empty_prefix) { }
     /// Construct a prefix \a str of type \a type.
     Prefix(char const* str, alert_line_type_nt type) : mStr(str), mType(type) { }
+    /// Construct a prefix \a str of type \a type.
+    Prefix(std::string str, alert_line_type_nt type) : mStr(str), mType(type) { }
 
     /// Return true if the prefix is not empty.
     operator bool() const { return mType != empty_prefix; }
@@ -259,7 +261,7 @@ class Line
     /// Construct a line with replacements \a args.
     Line(std::string const& xml_desc, AIArgs const& args, bool newline = false) : mNewline(newline), mXmlDesc(xml_desc), mArgs(args), mType(normal) { }
     /// Construct a prefix line.
-    Line(Prefix const& prefix, bool newline = false) : mNewline(newline), mXmlDesc("AIPrefix"), mArgs("[PREFIX]", prefix.str()), mType(prefix.type()) { }
+    Line(Prefix const& prefix, bool newline = false) : mNewline(newline), mXmlDesc("[PREFIX]"), mArgs("[PREFIX]", prefix.str()), mType(prefix.type()) { }
     /// The destructor may not throw.
     ~Line() throw() { }
 
