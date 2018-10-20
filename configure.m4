@@ -44,4 +44,36 @@ fi
 # Test if we have the __builtin_expect builtin.
 CW_HAVE_BUILTIN_EXPECT
 
+AC_LANG_SAVE
+AC_LANG_CPLUSPLUS
+
+# Check if the mandatory sparsehash/dense_hash_map exists.
+AC_CHECK_HEADER([sparsehash/dense_hash_map], [],
+[AC_MSG_ERROR([
+
+Please install the libsparsehash-dev package.
+])
+])
+
+# Check for the existence of required boost headers.
+AC_CHECK_HEADERS([boost/lexical_cast.hpp boost/intrusive_ptr.hpp boost/preprocessor/stringize.hpp boost/preprocessor/expand.hpp], [],
+[AC_MSG_ERROR([
+
+You need the boost libraries.
+])
+])
+
+if test "$cw_config_debug_global" = yes; then
+# Check if the mandatory exec_info.h exists.
+AC_CHECK_HEADER([execinfo.h], [],
+[AC_MSG_FAILURE([
+
+Sorry, --enable-debug-global requires execinfo.h for the backtrace(3) function.
+Please specify --disable-debug-global as configure option or fix this problem.
+])
+])
+fi
+
+AC_LANG_RESTORE
+
 AH_BOTTOM([#include "utils/config.h"])

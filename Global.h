@@ -153,7 +153,7 @@
 #error "You cannot define DEBUGGLOBAL without defining CWDEBUG and CWDEBUG_ALLOC"
 #endif
 #ifdef DEBUGGLOBAL
-#include <execinfo.h>
+#include <execinfo.h>   // For backtrace(3).
 #endif
 #include <new>
 
