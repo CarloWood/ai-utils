@@ -43,7 +43,6 @@ std::ostream& operator<<(std::ostream& os, AIAlert::Error const& error)
   if (lines > 1)
     os << indent_str;
   int count = 0;
-  unsigned int suppress_mask = 0;
   for (auto& line : error.lines())
   {
     if (lines > 1 && line.prepend_newline())   // Empty line.

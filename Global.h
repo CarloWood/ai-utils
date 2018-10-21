@@ -153,6 +153,7 @@
 #error "You cannot define DEBUGGLOBAL without defining CWDEBUG and CWDEBUG_ALLOC"
 #endif
 #ifdef DEBUGGLOBAL
+#include "utils/macros.h"
 #include <execinfo.h>   // For backtrace(3).
 #endif
 #include <new>
@@ -374,7 +375,9 @@ inline TYPE& Global<TYPE, inst, CONVERTER>::instantiate()
 #ifdef DEBUGGLOBAL
   utils::_internal_::GlobalBase<TYPE, inst>::instantiate_function_name =
       libcwd::pc_mangled_function_name((char*)__builtin_return_address(0) + libcwd::builtin_return_address_offset);
+  PRAGMA_DIAGNOSTIC_PUSH_IGNORED("-Wframe-address")
   utils::_internal_::GlobalBase<TYPE, inst>::instantiate_return_address1 = __builtin_return_address(1);
+  PRAGMA_DIAGNOSTIC_POP
 #endif
   if (!base_type::initialized)
   {
@@ -528,8 +531,11 @@ namespace utils {
 	//                           }
 	//
         GlobalTypeName<TYPE, inst> name;
+        PRAGMA_DIAGNOSTIC_PUSH_IGNORED("-Wframe-address")
+        _Pragma("GCC diagnostic ignored \"-Winline\"")
 	libcwd::location_ct loc(inst < 0 ? ((char*)__builtin_return_address(2) + libcwd::builtin_return_address_offset)
 	                                : ((char*)__builtin_return_address(1) + libcwd::builtin_return_address_offset));
+        PRAGMA_DIAGNOSTIC_POP
         DoutFatal(dc::core, loc << ": Calling " << name << "::instance() in (or indirectly from)\n"
             "          constructor of static or global object instead of (or without first) calling " << name << "::instantiate().");
       }

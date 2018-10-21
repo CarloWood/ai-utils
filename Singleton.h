@@ -128,7 +128,9 @@ FINAL& Singleton<FINAL, CHILD>::instantiate()
 {
   FINAL& ref = Global<FINAL, utils::_internal_::singleton, GlobalConverterVoid>::instantiate();
   Global<FINAL, utils::_internal_::singleton, GlobalConverterVoid>::set_instantiate_return_address0(__builtin_return_address(0));
+  PRAGMA_DIAGNOSTIC_PUSH_IGNORED("-Wframe-address")
   Global<FINAL, utils::_internal_::singleton, GlobalConverterVoid>::set_instantiate_return_address1(__builtin_return_address(1));
+  PRAGMA_DIAGNOSTIC_POP
   return ref;
 }
 #endif
