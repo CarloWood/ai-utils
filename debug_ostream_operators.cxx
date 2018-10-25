@@ -42,14 +42,21 @@ std::ostream& operator<<(std::ostream& os, AIAlert::Error const& error)
   char const* indent_str = "\n    ";
   if (lines > 1)
     os << indent_str;
-  int count = 0;
+  unsigned int suppress_mask = 0;
   for (auto& line : error.lines())
   {
+    if (line.suppressed(suppress_mask))
+      continue;
     if (lines > 1 && line.prepend_newline())   // Empty line.
       os << indent_str;
-    os << translate::getString(line.getXmlDesc(), line.args());
-    if (!line.is_prefix() && ++count < lines)
-      os << indent_str;                        // Normal line separation.
+    if (line.is_prefix())
+    {
+      os << line.getXmlDesc();
+      if (line.is_function_name())
+        os << ": ";
+    }
+    else
+      os << translate::getString(line.getXmlDesc(), line.args());
   }
   return os;
 }
