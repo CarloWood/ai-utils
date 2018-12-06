@@ -47,8 +47,18 @@
 #define PRAGMA_DIAGNOSTIC_PUSH_IGNORE_maybe_uninitialized \
   _Pragma("GCC diagnostic push") \
   _Pragma("GCC diagnostic ignored \"-Wmaybe-uninitialized\"")
-#elif
-#define PRAGMA_DIAGNOSTIC_PUSH_IGNORE_maybe_uninitialized
+#else
+#define PRAGMA_DIAGNOSTIC_PUSH_IGNORE_maybe_uninitialized \
+  _Pragma("GCC diagnostic push")
+#endif
+
+#if defined(__GNUC__) && !defined(__clang__) // clang doesn't have a -Wframe-address warning.
+#define PRAGMA_DIAGNOSTIC_PUSH_IGNORE_frame_address \
+  _Pragma("GCC diagnostic push") \
+  _Pragma("GCC diagnostic ignored \"-Wframe-address\"")
+#else
+#define PRAGMA_DIAGNOSTIC_PUSH_IGNORE_frame_address \
+  _Pragma("GCC diagnostic push")
 #endif
 
 #define PRAGMA_DIAGNOSTIC_PUSH_IGNORED(warn_option) \
