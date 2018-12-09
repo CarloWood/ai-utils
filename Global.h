@@ -153,7 +153,8 @@
 #error "You cannot define DEBUGGLOBAL without defining CWDEBUG and CWDEBUG_ALLOC"
 #endif
 #ifdef DEBUGGLOBAL
-#include <execinfo.h>
+#include "utils/macros.h"
+#include <execinfo.h>   // For backtrace(3).
 #endif
 #include <new>
 
@@ -194,7 +195,7 @@ namespace _internal_
     // and to calculate the offset between Instance* and TYPE*.
     class InstanceDummy : public TYPE, public GlobalObject {
       friend class GlobalObject; // To suppress a warning
-      virtual ~InstanceDummy() throw() = default;
+      virtual ~InstanceDummy() noexcept = default;
     };
   protected:
     static char instance_[/*sizeof(InstanceDummy)*/];
@@ -239,7 +240,7 @@ public:
   private:	// Make sure nobody instantiates Instance itself except for Global<TYPE, inst, CONVERTER>.
     friend class Global<TYPE, inst, CONVERTER>;
     Instance(int) : TYPE(parameter_converter(inst)) { }	// TYPE is private (compile error)? Look at NOTE2 at the bottom of this file.
-    virtual ~Instance() throw() = default;
+    virtual ~Instance() noexcept = default;
 
 #ifdef DEBUGGLOBAL
     virtual bool instantiated_from_constructor() const;
@@ -253,7 +254,7 @@ public:
   private:	// Make sure nobody instantiates Instance itself except for Global<TYPE, inst, GlobalConverterVoid>.
     friend class Global<TYPE, inst, GlobalConverterVoid>;
     Instance(int) { }		// TYPE is private (compile error)? Look at NOTE1 at the bottom of this file.
-    virtual ~Instance() throw() = default;      // "error: deleted function '~Instance' cannot override a non-deleted function" means:
+    virtual ~Instance() noexcept = default;      // "error: deleted function '~Instance' cannot override a non-deleted function" means:
                                                 // * you forgot to add friendInstance to class TYPE (the final class) (ERROR1), or
                                                 // * you are using Global instead of Singleton for singleton (ERROR2), or
                                                 // * you are trying to use Global instead of Singleton in order to pass a parameter (ERROR2a), or
@@ -374,10 +375,16 @@ inline TYPE& Global<TYPE, inst, CONVERTER>::instantiate()
 #ifdef DEBUGGLOBAL
   utils::_internal_::GlobalBase<TYPE, inst>::instantiate_function_name =
       libcwd::pc_mangled_function_name((char*)__builtin_return_address(0) + libcwd::builtin_return_address_offset);
+  PRAGMA_DIAGNOSTIC_PUSH_IGNORE_frame_address
   utils::_internal_::GlobalBase<TYPE, inst>::instantiate_return_address1 = __builtin_return_address(1);
+  PRAGMA_DIAGNOSTIC_POP
 #endif
   if (!base_type::initialized)
+  {
+    base_type::initialized = -1;			// Stop the next line from doing something if this is the GlobalObjectManager.
+    Singleton<GlobalObjectManager>::instantiate();	// initialize_instance_() uses GlobalObjectManager
     initialize_instance_();
+  }
   Instance* ptr = reinterpret_cast<Instance*>(base_type::instance_);
   return *static_cast<TYPE*>(ptr);
 }
@@ -524,8 +531,11 @@ namespace utils {
 	//                           }
 	//
         GlobalTypeName<TYPE, inst> name;
+        PRAGMA_DIAGNOSTIC_PUSH_IGNORE_frame_address
+        _Pragma("GCC diagnostic ignored \"-Winline\"")
 	libcwd::location_ct loc(inst < 0 ? ((char*)__builtin_return_address(2) + libcwd::builtin_return_address_offset)
 	                                : ((char*)__builtin_return_address(1) + libcwd::builtin_return_address_offset));
+        PRAGMA_DIAGNOSTIC_POP
         DoutFatal(dc::core, loc << ": Calling " << name << "::instance() in (or indirectly from)\n"
             "          constructor of static or global object instead of (or without first) calling " << name << "::instantiate().");
       }

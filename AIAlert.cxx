@@ -50,14 +50,14 @@
 namespace AIAlert {
 
 Error::Error(Prefix const& prefix, modal_nt type,
-             Error const& alert) : mLines(alert.mLines), mModal(type)
+             Error const& alert) : mLines(alert.mLines), mModal(type), mErrorCode(false)
 {
   if (alert.mModal == modal) mModal = modal;
   if (prefix) mLines.push_front(Line(prefix));
 }
 
 Error::Error(Prefix const& prefix, modal_nt type,
-             std::string const& xml_desc, AIArgs const& args) : mModal(type)
+             std::string const& xml_desc, AIArgs const& args) : mModal(type), mErrorCode(false)
 {
   if (prefix) mLines.push_back(Line(prefix));
   mLines.push_back(Line(xml_desc, args));
@@ -65,7 +65,7 @@ Error::Error(Prefix const& prefix, modal_nt type,
 
 Error::Error(Prefix const& prefix, modal_nt type,
              Error const& alert,
-             std::string const& xml_desc, AIArgs const& args) : mLines(alert.mLines), mModal(type)
+             std::string const& xml_desc, AIArgs const& args) : mLines(alert.mLines), mModal(type), mErrorCode(false)
 {
   if (alert.mModal == modal) mModal = modal;
   if (prefix) mLines.push_back(Line(prefix, !mLines.empty()));
@@ -74,7 +74,7 @@ Error::Error(Prefix const& prefix, modal_nt type,
 
 Error::Error(Prefix const& prefix, modal_nt type,
              std::string const& xml_desc,
-             Error const& alert) : mLines(alert.mLines), mModal(type)
+             Error const& alert) : mLines(alert.mLines), mModal(type), mErrorCode(false)
 {
   if (alert.mModal == modal) mModal = modal;
   if (!mLines.empty()) { mLines.front().set_newline(); }
@@ -84,12 +84,21 @@ Error::Error(Prefix const& prefix, modal_nt type,
 
 Error::Error(Prefix const& prefix, modal_nt type,
              std::string const& xml_desc, AIArgs const& args,
-             Error const& alert) : mLines(alert.mLines), mModal(type)
+             Error const& alert) : mLines(alert.mLines), mModal(type), mErrorCode(false)
 {
   if (alert.mModal == modal) mModal = modal;
   if (!mLines.empty()) { mLines.front().set_newline(); }
   mLines.push_front(Line(xml_desc, args));
   if (prefix) mLines.push_front(Line(prefix));
+}
+
+void ErrorCode::finish_init()
+{
+  mErrorCode = true;
+  if (is_prefix())
+    mLines.push_front(Prefix(mCode.message() + ": ", error_code));
+  else
+    mLines.push_back(": " + mCode.message());
 }
 
 } // namespace AIAlert

@@ -136,9 +136,9 @@
   THROW_ALERT("ExampleKey", AIArgs("[FIRST]", first)("[SECOND]", second), error);          // E) As B, but followed by a colon and a newline, and then the text of 'error'.
   THROW_ALERT(error, "ExampleKey", AIArgs("[FIRST]", first)("[SECOND]", second));          // F) The text of 'error', followed by a colon and a newline and then as B.
   // where 'error' is a caught Error object (as above) in a rethrow.
-  // Prepend ALERT with M and/or F to make the alert box Modal and/or prepend the text with the current function name.
+  // Prepend ALERT with F and/or M to prepend the text with the current function name and/or make the alert box Modal.
   // For example,
-  THROW_MFALERT("ExampleKey", AIArgs("[FIRST]", first));    // Throw a Modal alert box that is prefixed with the current Function name.
+  THROW_FMALERT("ExampleKey", AIArgs("[FIRST]", first));    // Throw a Modal alert box that is prefixed with the current Function name.
   // Append E after ALERT to throw an ErrorCode class that contains the current errno.
   // For example,
   THROW_FALERTE("ExampleKey", AIArgs("[FIRST]", first));    // Throw an alert box that is prefixed with the current Function name and pass errno to the catcher.
@@ -170,7 +170,7 @@ class AIArgs
     /// Add another replacement.
     template<typename T> AIArgs& operator()(char const* key, T const& replacement) { mArgs[key] = boost::lexical_cast<std::string>(replacement); return *this; }
     /// The destructor may not throw.
-    ~AIArgs() throw() { }
+    ~AIArgs() noexcept { }
 
     /// Accessor, returns the underlaying map.
     translate::format_map_t const& operator*() const { return mArgs; }
@@ -200,7 +200,8 @@ enum alert_line_type_nt
 {
   normal = 0,			///< Empty mask, used for normal lines.
   empty_prefix = 1,		///< Mask bit for an empty prefix.
-  pretty_function_prefix = 2	///< Mask bit for a function name prefix.
+  pretty_function_prefix = 2,	///< Mask bit for a function name prefix.
+  error_code = 4                ///< Mask bit for a error code message prefix.
   // These must exist of single bits (a mask).
 };
 
@@ -221,6 +222,8 @@ class Prefix
     Prefix() : mType(empty_prefix) { }
     /// Construct a prefix \a str of type \a type.
     Prefix(char const* str, alert_line_type_nt type) : mStr(str), mType(type) { }
+    /// Construct a prefix \a str of type \a type.
+    Prefix(std::string str, alert_line_type_nt type) : mStr(str), mType(type) { }
 
     /// Return true if the prefix is not empty.
     operator bool() const { return mType != empty_prefix; }
@@ -259,9 +262,9 @@ class Line
     /// Construct a line with replacements \a args.
     Line(std::string const& xml_desc, AIArgs const& args, bool newline = false) : mNewline(newline), mXmlDesc(xml_desc), mArgs(args), mType(normal) { }
     /// Construct a prefix line.
-    Line(Prefix const& prefix, bool newline = false) : mNewline(newline), mXmlDesc("AIPrefix"), mArgs("[PREFIX]", prefix.str()), mType(prefix.type()) { }
+    Line(Prefix const& prefix, bool newline = false) : mNewline(newline), mXmlDesc(prefix.str()), mType(prefix.type()) { }
     /// The destructor may not throw.
-    ~Line() throw() { }
+    ~Line() noexcept { }
 
     /// Prepend a newline before this line.
     void set_newline() { mNewline = true; }
@@ -279,6 +282,8 @@ class Line
     bool suppressed(unsigned int suppress_mask) const { return (suppress_mask & mType) != 0; }
     /// Return true if this is a prefix Line.
     bool is_prefix() const { return mType != normal; }
+    /// Return true if this is a function name prefix.
+    bool is_function_name() const { return mType == pretty_function_prefix; }
 };
 
 /**
@@ -303,7 +308,7 @@ class Error : public std::exception
     using lines_type = std::deque<Line>; ///< The type of mLines.
 
     /// The destructor may not throw.
-    ~Error() throw() { }
+    ~Error() noexcept { }
 
     // Accessors.
     /// Accessor for the lines deque.
@@ -332,10 +337,34 @@ class Error : public std::exception
           std::string const& xml_desc, AIArgs const& args,
           Error const& alert);
 
-  private:
+    /// Returns true if this object is really an ErrorCode class.
+    bool is_ErrorCode() const { return mErrorCode; }
+
+  protected:
     lines_type mLines;		///< The lines (or prefixes) of text to be displayed, each consisting of a keyword (to be looked up in strings.xml) and a replacement map.
     modal_nt mModal;		///< If true, make the alert box a modal floater.
+    bool mErrorCode;            ///< True if this is an ErrorCode class.
 };
+
+// Helper function.
+
+template<typename ERROR_CODE>
+std::error_code convert_to_error_code(ERROR_CODE code)
+{
+  return code;
+}
+
+template<>
+inline std::error_code convert_to_error_code(int code)
+{
+  return std::error_code(code, std::generic_category());
+}
+
+template<>
+inline std::error_code convert_to_error_code(std::errc code)
+{
+  return std::make_error_code(code);
+}
 
 /**
  * \class ErrorCode
@@ -347,41 +376,56 @@ class Error : public std::exception
 class ErrorCode : public Error
 {
   private:
-    int mCode;		///< The underlaying error code.
+    std::error_code mCode;		///< The underlaying error code.
 
   public:
     /// The destructor may not throw.
-    ~ErrorCode() throw() { }
+    ~ErrorCode() noexcept { }
 
     /// Accessor for the error code.
-    int getCode() const { return mCode; }
+    std::error_code getCode() const { return mCode; }
 
-    /// Construct just an Error with a code (no args).
-    ErrorCode(Prefix const& prefix, modal_nt type, int code,
+    /// Construct just an Error with a POSIX code (no args).
+    template<typename ERROR_CODE>
+    ErrorCode(Prefix const& prefix, modal_nt type, ERROR_CODE code,
               Error const& alert) :
-      Error(prefix, type, alert), mCode(code) { }
+      Error(prefix, type, alert), mCode(convert_to_error_code(code)) { finish_init(); }
 
     /// Construct a string with zero or more replacements (with args).
-    ErrorCode(Prefix const& prefix, modal_nt type, int code,
+    template<typename ERROR_CODE>
+    ErrorCode(Prefix const& prefix, modal_nt type, ERROR_CODE code,
               std::string const& xml_desc, AIArgs const& args = AIArgs()) :
-      Error(prefix, type, xml_desc, args), mCode(code) { }
+      Error(prefix, type, xml_desc, args), mCode(convert_to_error_code(code)) { finish_init(); }
 
     /// Construct a string (with args), prepending the message with the text of another alert.
-    ErrorCode(Prefix const& prefix, modal_nt type, int code,
+    template<typename ERROR_CODE>
+    ErrorCode(Prefix const& prefix, modal_nt type, ERROR_CODE code,
               Error const& alert,
               std::string const& xml_desc, AIArgs const& args = AIArgs()) :
-      Error(prefix, type, alert, xml_desc, args), mCode(code) { }
+      Error(prefix, type, alert, xml_desc, args), mCode(convert_to_error_code(code)) { finish_init(); }
 
     /// Construct a string (no args), appending the message with the text of another alert (no args).
-    ErrorCode(Prefix const& prefix, modal_nt type, int code,
+    template<typename ERROR_CODE>
+    ErrorCode(Prefix const& prefix, modal_nt type, ERROR_CODE code,
               std::string const& xml_desc,
               Error const& alert) :
-      Error(prefix, type, xml_desc, alert), mCode(code) { }
+      Error(prefix, type, xml_desc, alert), mCode(convert_to_error_code(code)) { finish_init(); }
+
     /// Construct an Error with a code, appending the message with the text of another alert (with args).
-    ErrorCode(Prefix const& prefix, modal_nt type, int code,
+    template<typename ERROR_CODE>
+    ErrorCode(Prefix const& prefix, modal_nt type, ERROR_CODE code,
               std::string const& xml_desc, AIArgs const& args,
               Error const& alert) :
-      Error(prefix, type, xml_desc, args, alert), mCode(code) { }
+      Error(prefix, type, xml_desc, args, alert), mCode(convert_to_error_code(code)) { finish_init(); }
+
+    /// Return the message corresponding to the current error value and category.
+    std::string message() const { return mCode.message(); }
+
+    /// Return true if this message should be printed up front.
+    bool is_prefix() const { return mCode.value() < 0; }
+
+  private:
+    void finish_init();
 };
 
 } // namespace AIAlert
