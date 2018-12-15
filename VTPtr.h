@@ -111,7 +111,7 @@ class D : public B
 
 namespace utils {
 
-template<class Self, class Base = void>
+template<class Self, class Base1 = void, class Base2 = void>
 struct VTPtr
 {
   using VT_type = typename Self::VT_type;
@@ -119,14 +119,28 @@ struct VTPtr
 
   VT_type const* VT_ptr = &VT_impl::VT;                 // Virtual Table pointer.
 
-  void set(Self* self, VT_type const* vt_ptr) { VT_ptr = vt_ptr; self->Base::VT_ptr.set(self, VT_ptr); }
+  void set(Self* self, VT_type const* vt_ptr) { VT_ptr = vt_ptr; self->Base1::VT_ptr.set(self, VT_ptr); self->Base2::VT_ptr.set(self, VT_ptr); }
   VT_type const* operator->() { return VT_ptr; }
 
-  VTPtr(Self* self) : VT_ptr(&VT_impl::VT) { self->Base::VT_ptr.set(self, VT_ptr); }
+  VTPtr(Self* self) : VT_ptr(&VT_impl::VT) { self->Base1::VT_ptr.set(self, VT_ptr); self->Base2::VT_ptr.set(self, VT_ptr); }
+};
+
+template<class Self, class Base1>
+struct VTPtr<Self, Base1, void>
+{
+  using VT_type = typename Self::VT_type;
+  using VT_impl = typename Self::VT_impl;
+
+  VT_type const* VT_ptr = &VT_impl::VT;                 // Virtual Table pointer.
+
+  void set(Self* self, VT_type const* vt_ptr) { VT_ptr = vt_ptr; self->Base1::VT_ptr.set(self, VT_ptr); }
+  VT_type const* operator->() { return VT_ptr; }
+
+  VTPtr(Self* self) : VT_ptr(&VT_impl::VT) { self->Base1::VT_ptr.set(self, VT_ptr); }
 };
 
 template<class Self>
-struct VTPtr<Self, void>
+struct VTPtr<Self, void, void>
 {
   using VT_type = typename Self::VT_type;
   using VT_impl = typename Self::VT_impl;
