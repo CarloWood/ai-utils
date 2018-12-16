@@ -59,7 +59,7 @@ class B
 
   utils::VTPtr<B> VT_ptr;                                                            // Virtual table pointer of this instance.
 
-  D() : VT_ptr(this) { }                                                             // Initialize VT_ptr with `this'.
+  B() : VT_ptr(this) { }                                                             // Initialize VT_ptr with `this'.
 
  protected:
    // For each (new) function in VT_type, add a hook:
@@ -97,6 +97,7 @@ class D : public B
       y,       // Virtual function of B that we do not override.
       nullptr,                                                                       // Pure virtual function that we added.
       vf                                                                             // Virtual function that we added.
+    };
   };
 
   utils::VTPtr<D, B> VT_ptr;                                                         // Virtual table pointer of this instance.
@@ -111,6 +112,29 @@ class D : public B
 
 namespace utils {
 
+// Virtual base class of VT_impl's.
+struct VT_base
+{
+  virtual ~VT_base() { }
+  virtual std::shared_ptr<VT_base> copy() const = 0;
+
+  template<typename T>
+  std::shared_ptr<VT_base> copy_vt() const
+  {
+    // FIXME
+    return std::make_shared<T>();
+  }
+};
+
+template<typename T>
+struct HasCopyMethod
+{
+  template<typename U, std::shared_ptr<VT_base> (U::*)() const> struct SFINAE {};
+  template<typename U> static char Test(SFINAE<U, &U::copy>*);
+  template<typename U> static int Test(...);
+  static const bool value = sizeof(Test<T>(nullptr)) == sizeof(char);
+};
+
 template<class Self, class Base1 = void, class Base2 = void>
 struct VTPtr
 {
@@ -123,6 +147,16 @@ struct VTPtr
   VT_type const* operator->() { return VT_ptr; }
 
   VTPtr(Self* self) : VT_ptr(&VT_impl::VT) { self->Base1::VT_ptr.set(self, VT_ptr); self->Base2::VT_ptr.set(self, VT_ptr); }
+
+  // Make sure that VT_impl has the copy() function.
+  // Note that this function must be public for this test to work :/
+  //
+  // The last two lines of every VT_impl should be:
+#if -0
+    // Allow copying this virtual table.
+    std::shared_ptr<utils::VT_base> copy() const override { return copy_vt<VT_impl>(); }
+#endif
+  static_assert(HasCopyMethod<VT_impl>::value, "VT_impl needs to override copy().");
 };
 
 template<class Self, class Base1>
@@ -137,6 +171,16 @@ struct VTPtr<Self, Base1, void>
   VT_type const* operator->() { return VT_ptr; }
 
   VTPtr(Self* self) : VT_ptr(&VT_impl::VT) { self->Base1::VT_ptr.set(self, VT_ptr); }
+
+  // Make sure that VT_impl has the copy() function.
+  // Note that this function must be public for this test to work :/
+  //
+  // The last two lines of every VT_impl should be:
+#if -0
+    // Allow copying this virtual table.
+    std::shared_ptr<utils::VT_base> copy() const override { return copy_vt<VT_impl>(); }
+#endif
+  static_assert(HasCopyMethod<VT_impl>::value, "VT_impl needs to override copy().");
 };
 
 template<class Self>
@@ -151,6 +195,16 @@ struct VTPtr<Self, void, void>
   VT_type const* operator->() { return VT_ptr; }
 
   VTPtr(Self*) : VT_ptr(&VT_impl::VT) { }
+
+  // Make sure that VT_impl has the copy() function.
+  // Note that this function must be public for this test to work :/
+  //
+  // The last two lines of every VT_impl should be:
+#if -0
+    // Allow copying this virtual table.
+    std::shared_ptr<utils::VT_base> copy() const override { return copy_vt<VT_impl>(); }
+#endif
+  static_assert(HasCopyMethod<VT_impl>::value, "VT_impl needs to override copy().");
 };
 
 } // namespace utils
