@@ -75,7 +75,9 @@ struct Clz<unsigned long long>
 template<typename T>
 constexpr int clz(T n)
 {
-  return _clz(static_cast<typename Clz<T>::type>(n));
+  static_assert(std::is_same<T, unsigned int>::value || std::is_same<T, unsigned long>::value || std::is_same<T, unsigned long long>::value,
+      "The type of the argument to clz can only be unsigned int, unsigned long or unsigned long long.");
+  return _clz(n);
 }
 
 // Function utils::log2(n)
@@ -88,7 +90,7 @@ constexpr int clz(T n)
 template<typename T>
 constexpr int log2(T n)
 {
-  return n == 0 ? -1 : 8 * sizeof(typename Clz<T>::type) - 1 - clz(n);
+  return n == 0 ? -1 : 8 * sizeof(typename Clz<T>::type) - 1 - clz(static_cast<typename Clz<T>::type>(n));
 }
 
 // Function utils::ceil_log2(n)
