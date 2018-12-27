@@ -40,7 +40,8 @@ SOURCES = \
 	is_power_of_two.h \
 	macros.h \
 	ulong_to_base.h \
-	cpu_relax.h
+	cpu_relax.h \
+	log2.h
 
 libutils_la_SOURCES = ${SOURCES}
 libutils_la_CXXFLAGS = @LIBCWD_FLAGS@
