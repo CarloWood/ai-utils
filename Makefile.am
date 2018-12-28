@@ -30,6 +30,8 @@ SOURCES = \
 	itoa.h \
 	sbll.cxx \
 	sbll.h \
+	malloc_size.cxx \
+	malloc_size.h \
 	AIFIFOBuffer.h \
 	AIRefCount.h \
 	FunctionView.h \

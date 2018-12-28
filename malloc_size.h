@@ -1,7 +1,7 @@
 // ai-utils -- C++ Core utilities
 //
 //! @file
-//! @brief Definition of nearest_multiple_of_power_of_two.
+//! @brief Definition of malloc_size.
 //
 // Copyright (C) 2018 Carlo Wood.
 //
@@ -25,16 +25,14 @@
 
 #pragma once
 
-#include "debug.h"
-#include <cstdint>
+#include <cstddef>      // size_t
 
 namespace utils {
 
-template<typename T>
-T constexpr nearest_multiple_of_power_of_two(T const n, T const power_of_two)
-{
-  ASSERT(power_of_two && ((power_of_two & (power_of_two - 1)) == 0));
-  return (n + power_of_two - 1) & -power_of_two;
-}
+// Return the size to allocate (using malloc) when at least min_size
+// bytes must be available. The returned size might be larger, but
+// without causing more heap to be used.
+
+size_t malloc_size(size_t min_size);
 
 } // namespace utils
