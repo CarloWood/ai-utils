@@ -44,6 +44,9 @@ fi
 # Test if we have the __builtin_expect builtin.
 CW_HAVE_BUILTIN_EXPECT
 
+# Determine the overhead in bytes of an allocation with malloc(2).
+CW_SYS_MALLOC_OVERHEAD
+
 AC_LANG_SAVE
 AC_LANG_CPLUSPLUS
 
