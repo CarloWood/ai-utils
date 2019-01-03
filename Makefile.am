@@ -32,6 +32,8 @@ SOURCES = \
 	sbll.h \
 	malloc_size.cxx \
 	malloc_size.h \
+	FuzzyBool.cxx \
+	FuzzyBool.h \
 	AIFIFOBuffer.h \
 	AIRefCount.h \
 	FunctionView.h \
