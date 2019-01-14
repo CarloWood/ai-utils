@@ -29,10 +29,7 @@
 
 namespace utils {
 
-// Return the size to allocate (using malloc) when at least min_size
-// bytes must be available. The returned size might be larger, but
-// without causing more heap to be used.
-
 size_t malloc_size(size_t min_size);
+size_t max_malloc_size(size_t max_size);
 
 } // namespace utils

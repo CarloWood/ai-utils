@@ -84,8 +84,8 @@ constexpr int clz(T n)
 //
 // Returns, if
 //
-//   n == 0:    -1 (this is used by CeilLog2)
-//   n > 0:     floor(log2(n))
+//   n == 0:    -1 (this is used by ceil_log2)
+//   n > 0:     floor(log2(n)) (the index of the most significant set bit, aka 1 << log2(n) == n iff n is a power of 2).
 //
 template<typename T>
 constexpr int log2(T n)

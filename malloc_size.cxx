@@ -31,6 +31,9 @@
 
 namespace utils {
 
+static size_t const page_size = sysconf(_SC_PAGE_SIZE);   // It is assumed that this is a power of two.
+static constexpr size_t minimum_heap_size = 32;
+
 // It seems that glibc 2.27 malloc is pretty efficient with memory;
 // it uses a multiple of 16 bytes (mostly for alignment reasons)
 // and has an overhead of 8 bytes. Sizes larger than 128kB are
@@ -46,17 +49,28 @@ namespace utils {
 // 4096 bytes.
 size_t malloc_size(size_t min_size)
 {
-  static constexpr size_t minimum_size = 32;
-  static size_t const page_size = sysconf(_SC_PAGE_SIZE);   // It is assumed that this is a power of two.
   size_t required_heap_space = min_size + CW_MALLOC_OVERHEAD;
   size_t actual_used_heap_space;
-  if (required_heap_space <= minimum_size)
-    actual_used_heap_space = minimum_size;
+  if (required_heap_space <= minimum_heap_size)
+    actual_used_heap_space = minimum_heap_size;
   else if (required_heap_space < page_size)
     actual_used_heap_space = nearest_power_of_two(required_heap_space);
   else
     actual_used_heap_space = nearest_multiple_of_power_of_two(required_heap_space, page_size);
   return actual_used_heap_space - CW_MALLOC_OVERHEAD;
+}
+
+// Return the largest possible size less than or equal max_size
+// such that malloc(size) == size. If this is not possible because
+// max_size < minimum_heap_size - CW_MALLOC_OVERHEAD, then return 0.
+size_t max_malloc_size(size_t max_size)
+{
+  if (max_size < minimum_heap_size - CW_MALLOC_OVERHEAD)
+    return 0;
+  size_t heap_size = nearest_multiple_of_power_of_two(max_size + CW_MALLOC_OVERHEAD + 1, page_size) - page_size;
+  if (heap_size == 0)
+    heap_size = nearest_power_of_two(max_size + CW_MALLOC_OVERHEAD + 1) / 2;
+  return heap_size - CW_MALLOC_OVERHEAD;
 }
 
 } // namespace utils
