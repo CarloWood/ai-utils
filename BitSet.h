@@ -1,5 +1,10 @@
 #pragma once
 
+#include "ctz.h"
+#include "clz.h"
+#include <cstdint>
+#include <type_traits>
+
 namespace utils {
 
 // POD struct for BitSetIndex.
@@ -36,9 +41,9 @@ struct BitSetIndexPOD
 
 // Define a few handy constants.
 //
-BitSetIndexPOD const index_pre_begin = { -1 };
-BitSetIndexPOD const index_begin = { 0 };
-template<typename T> BitSetIndexPOD const index_end = { 8 * sizeof(T) };
+constexpr BitSetIndexPOD index_pre_begin = { -1 };
+constexpr BitSetIndexPOD index_begin = { 0 };
+template<typename T> constexpr BitSetIndexPOD index_end = { 8 * sizeof(T) };
 
 // Compare constants (this should never be needed, but why not add it).
 constexpr bool operator==(BitSetIndexPOD i1, BitSetIndexPOD i2) { return i1.m_index == i2.m_index; }
@@ -66,24 +71,24 @@ class BitSetIndex : protected BitSetIndexPOD
   // Comparision operators.
 
   friend bool operator==(BitSetIndex const& i1, BitSetIndex const& i2) { return i1.m_index == i2.m_index; }
-  friend bool operator==(BitSetIndex const& i1, BitSetBitSetIndexPOD i2) { return i1.m_index == i2.m_index; }
-  friend bool operator==(BitSetBitSetIndexPOD i1, BitSetIndex const& i2) { return i1.m_index == i2.m_index; }
+  friend bool operator==(BitSetIndex const& i1, BitSetIndexPOD i2) { return i1.m_index == i2.m_index; }
+  friend bool operator==(BitSetIndexPOD i1, BitSetIndex const& i2) { return i1.m_index == i2.m_index; }
   friend bool operator!=(BitSetIndex const& i1, BitSetIndex const& i2) { return i1.m_index != i2.m_index; }
-  friend bool operator!=(BitSetIndex const& i1, BitSetBitSetIndexPOD i2) { return i1.m_index != i2.m_index; }
-  friend bool operator!=(BitSetBitSetIndexPOD i1, BitSetIndex const& i2) { return i1.m_index != i2.m_index; }
+  friend bool operator!=(BitSetIndex const& i1, BitSetIndexPOD i2) { return i1.m_index != i2.m_index; }
+  friend bool operator!=(BitSetIndexPOD i1, BitSetIndex const& i2) { return i1.m_index != i2.m_index; }
 
   friend bool operator<(BitSetIndex const& i1, BitSetIndex const& i2) { return i1.m_index < i2.m_index; }
-  friend bool operator<(BitSetIndex const& i1, BitSetBitSetIndexPOD const& i2) { return i1.m_index < i2.m_index; }
-  friend bool operator<(BitSetBitSetIndexPOD const& i1, BitSetIndex const& i2) { return i1.m_index < i2.m_index; }
+  friend bool operator<(BitSetIndex const& i1, BitSetIndexPOD const& i2) { return i1.m_index < i2.m_index; }
+  friend bool operator<(BitSetIndexPOD const& i1, BitSetIndex const& i2) { return i1.m_index < i2.m_index; }
   friend bool operator<=(BitSetIndex const& i1, BitSetIndex const& i2) { return i1.m_index <= i2.m_index; }
-  friend bool operator<=(BitSetIndex const& i1, BitSetBitSetIndexPOD const& i2) { return i1.m_index <= i2.m_index; }
-  friend bool operator<=(BitSetBitSetIndexPOD const& i1, BitSetIndex const& i2) { return i1.m_index <= i2.m_index; }
+  friend bool operator<=(BitSetIndex const& i1, BitSetIndexPOD const& i2) { return i1.m_index <= i2.m_index; }
+  friend bool operator<=(BitSetIndexPOD const& i1, BitSetIndex const& i2) { return i1.m_index <= i2.m_index; }
   friend bool operator>(BitSetIndex const& i1, BitSetIndex const& i2) { return i1.m_index > i2.m_index; }
-  friend bool operator>(BitSetIndex const& i1, BitSetBitSetIndexPOD const& i2) { return i1.m_index > i2.m_index; }
-  friend bool operator>(BitSetBitSetIndexPOD const& i1, BitSetIndex const& i2) { return i1.m_index > i2.m_index; }
+  friend bool operator>(BitSetIndex const& i1, BitSetIndexPOD const& i2) { return i1.m_index > i2.m_index; }
+  friend bool operator>(BitSetIndexPOD const& i1, BitSetIndex const& i2) { return i1.m_index > i2.m_index; }
   friend bool operator>=(BitSetIndex const& i1, BitSetIndex const& i2) { return i1.m_index >= i2.m_index; }
-  friend bool operator>=(BitSetIndex const& i1, BitSetBitSetIndexPOD const& i2) { return i1.m_index >= i2.m_index; }
-  friend bool operator>=(BitSetBitSetIndexPOD const& i1, BitSetIndex const& i2) { return i1.m_index >= i2.m_index; }
+  friend bool operator>=(BitSetIndex const& i1, BitSetIndexPOD const& i2) { return i1.m_index >= i2.m_index; }
+  friend bool operator>=(BitSetIndexPOD const& i1, BitSetIndex const& i2) { return i1.m_index >= i2.m_index; }
 
   // Manipulators.
 
@@ -157,14 +162,13 @@ class BitSetIndex : protected BitSetIndexPOD
     //                                                _______________
     //                                               v               \.
     // The general case, assume N == 8 and mask is 01100010 and index 5.
-    //                                                ^^^^______________________
-    // In that case we require 1 to be returned.                                \.
-    m_index = N - m_index;                              // m_index becomes 3.   /
-    mask <<= m_index;                                   // mask becomes 00010000.
+    //                                                ^^^^________________
+    // In that case we require 1 to be returned.                          \.
+    mask <<= N - m_index;                               // mask becomes 00010000.
     if (mask == 0)
       m_index = index_pre_begin.m_index;
     else
-      m_index -= clz(mask) - 1;                         // m_index becomes 1.
+      m_index -= clz(mask) + 1;                         // m_index becomes 1.
   }
 
   // Return true iff BitSetIndex is not index_pre_begin and also not 0.
@@ -174,7 +178,7 @@ class BitSetIndex : protected BitSetIndexPOD
 template<typename T>
 class BitSet
 {
-  static_assert(std::is_unsigned<T>, "utils::BitSet<> template parameter must be an unsigned integral type.");
+  static_assert(std::is_unsigned<T>::value, "utils::BitSet<> template parameter must be an unsigned integral type.");
 
  private:
   T m_bitmask;
