@@ -76,7 +76,7 @@ class FuzzyBool : private FuzzyBoolPOD
   bool likely() const { return m_val <= 1; }
   bool unlikely() const { return m_val >= 2; }
   bool never() const { return m_val == fuzzy_false; }
-#if CWDEBUG
+#ifdef CWDEBUG
   bool has_same_value_as(FuzzyBool fb) { return m_val == fb.m_val; }
 #endif
   // Only use this when the value is certain.
