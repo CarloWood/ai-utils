@@ -6,8 +6,9 @@
 #include <type_traits>
 
 namespace utils {
+namespace bitset {
 
-// POD struct for BitSetIndex.
+// POD struct for Index.
 //
 // Let N = 8, 16, 32, 64 or 128 be the number of bits
 // in the underlaying integral type T of the BitSet<T>
@@ -27,82 +28,82 @@ namespace utils {
 // A value of precisely N is reserved for use in a bit
 // iterator and means "one past the end", or end().
 //
-// The use of BitSetIndexPOD is intended for constants.
+// The use of IndexPOD is intended for constants.
 // For example,
 //
-// constexpr BitSetIndexPOD ilsb = { 0 };
+// constexpr IndexPOD ilsb = { 0 };
 //
 // could be defined to have ilsb refer to bit 0.
 //
-struct BitSetIndexPOD
+struct IndexPOD
 {
   int8_t m_index;
 };
 
 // Define a few handy constants.
 //
-constexpr BitSetIndexPOD index_pre_begin = { -1 };
-constexpr BitSetIndexPOD index_begin = { 0 };
-template<typename T> constexpr BitSetIndexPOD index_end = { 8 * sizeof(T) };
+constexpr IndexPOD index_pre_begin = { -1 };
+constexpr IndexPOD index_begin = { 0 };
+template<typename T> constexpr IndexPOD index_end = { 8 * sizeof(T) };
 
 // Compare constants (this should never be needed, but why not add it).
-constexpr bool operator==(BitSetIndexPOD i1, BitSetIndexPOD i2) { return i1.m_index == i2.m_index; }
-constexpr bool operator!=(BitSetIndexPOD i1, BitSetIndexPOD i2) { return i1.m_index != i2.m_index; }
+constexpr bool operator==(IndexPOD i1, IndexPOD i2) { return i1.m_index == i2.m_index; }
+constexpr bool operator!=(IndexPOD i1, IndexPOD i2) { return i1.m_index != i2.m_index; }
 
-class BitSetIndex : protected BitSetIndexPOD
+class Index : protected IndexPOD
 {
  public:
   // Constructors.
 
-  // Construct an uninitialized BitSetIndex.
-  BitSetIndex() { }
+  // Construct an uninitialized Index.
+  Index() { }
   // Copy-constructor.
-  BitSetIndex(BitSetIndex const& i1) { m_index = i1.m_index; }
-  // Construct a BitSetIndex from a constant.
-  BitSetIndex(BitSetIndexPOD i1) { m_index = i1.m_index; }
+  Index(Index const& i1) { m_index = i1.m_index; }
+  // Construct a Index from a constant.
+  Index(IndexPOD i1) { m_index = i1.m_index; }
 
   // Assignment operators.
 
-  // Assign from another BitSetIndex.
-  BitSetIndex& operator=(BitSetIndex i1) { m_index = i1.m_index; return *this; }
+  // Assign from another Index.
+  Index& operator=(Index i1) { m_index = i1.m_index; return *this; }
   // Assign from a constant.
-  BitSetIndex& operator=(BitSetIndexPOD i1) { m_index = i1.m_index; return *this; }
+  Index& operator=(IndexPOD i1) { m_index = i1.m_index; return *this; }
 
   // Comparision operators.
 
-  friend bool operator==(BitSetIndex const& i1, BitSetIndex const& i2) { return i1.m_index == i2.m_index; }
-  friend bool operator==(BitSetIndex const& i1, BitSetIndexPOD i2) { return i1.m_index == i2.m_index; }
-  friend bool operator==(BitSetIndexPOD i1, BitSetIndex const& i2) { return i1.m_index == i2.m_index; }
-  friend bool operator!=(BitSetIndex const& i1, BitSetIndex const& i2) { return i1.m_index != i2.m_index; }
-  friend bool operator!=(BitSetIndex const& i1, BitSetIndexPOD i2) { return i1.m_index != i2.m_index; }
-  friend bool operator!=(BitSetIndexPOD i1, BitSetIndex const& i2) { return i1.m_index != i2.m_index; }
+  friend bool operator==(Index const& i1, Index const& i2) { return i1.m_index == i2.m_index; }
+  friend bool operator==(Index const& i1, IndexPOD i2) { return i1.m_index == i2.m_index; }
+  friend bool operator==(IndexPOD i1, Index const& i2) { return i1.m_index == i2.m_index; }
+  friend bool operator!=(Index const& i1, Index const& i2) { return i1.m_index != i2.m_index; }
+  friend bool operator!=(Index const& i1, IndexPOD i2) { return i1.m_index != i2.m_index; }
+  friend bool operator!=(IndexPOD i1, Index const& i2) { return i1.m_index != i2.m_index; }
 
-  friend bool operator<(BitSetIndex const& i1, BitSetIndex const& i2) { return i1.m_index < i2.m_index; }
-  friend bool operator<(BitSetIndex const& i1, BitSetIndexPOD const& i2) { return i1.m_index < i2.m_index; }
-  friend bool operator<(BitSetIndexPOD const& i1, BitSetIndex const& i2) { return i1.m_index < i2.m_index; }
-  friend bool operator<=(BitSetIndex const& i1, BitSetIndex const& i2) { return i1.m_index <= i2.m_index; }
-  friend bool operator<=(BitSetIndex const& i1, BitSetIndexPOD const& i2) { return i1.m_index <= i2.m_index; }
-  friend bool operator<=(BitSetIndexPOD const& i1, BitSetIndex const& i2) { return i1.m_index <= i2.m_index; }
-  friend bool operator>(BitSetIndex const& i1, BitSetIndex const& i2) { return i1.m_index > i2.m_index; }
-  friend bool operator>(BitSetIndex const& i1, BitSetIndexPOD const& i2) { return i1.m_index > i2.m_index; }
-  friend bool operator>(BitSetIndexPOD const& i1, BitSetIndex const& i2) { return i1.m_index > i2.m_index; }
-  friend bool operator>=(BitSetIndex const& i1, BitSetIndex const& i2) { return i1.m_index >= i2.m_index; }
-  friend bool operator>=(BitSetIndex const& i1, BitSetIndexPOD const& i2) { return i1.m_index >= i2.m_index; }
-  friend bool operator>=(BitSetIndexPOD const& i1, BitSetIndex const& i2) { return i1.m_index >= i2.m_index; }
+  friend bool operator<(Index const& i1, Index const& i2) { return i1.m_index < i2.m_index; }
+  friend bool operator<(Index const& i1, IndexPOD const& i2) { return i1.m_index < i2.m_index; }
+  friend bool operator<(IndexPOD const& i1, Index const& i2) { return i1.m_index < i2.m_index; }
+  friend bool operator<=(Index const& i1, Index const& i2) { return i1.m_index <= i2.m_index; }
+  friend bool operator<=(Index const& i1, IndexPOD const& i2) { return i1.m_index <= i2.m_index; }
+  friend bool operator<=(IndexPOD const& i1, Index const& i2) { return i1.m_index <= i2.m_index; }
+  friend bool operator>(Index const& i1, Index const& i2) { return i1.m_index > i2.m_index; }
+  friend bool operator>(Index const& i1, IndexPOD const& i2) { return i1.m_index > i2.m_index; }
+  friend bool operator>(IndexPOD const& i1, Index const& i2) { return i1.m_index > i2.m_index; }
+  friend bool operator>=(Index const& i1, Index const& i2) { return i1.m_index >= i2.m_index; }
+  friend bool operator>=(Index const& i1, IndexPOD const& i2) { return i1.m_index >= i2.m_index; }
+  friend bool operator>=(IndexPOD const& i1, Index const& i2) { return i1.m_index >= i2.m_index; }
 
   // Manipulators.
 
-  BitSetIndex& operator+=(int offset) { m_index += offset; return *this; }
-  friend BitSetIndex operator+(BitSetIndex index, int offset) { BitSetIndex result(index); return result += offset; }
-  friend BitSetIndex operator+(int offset, BitSetIndex index) { BitSetIndex result(index); return result += offset; }
-  BitSetIndex& operator-=(int offset) { m_index -= offset; return *this; }
-  friend BitSetIndex operator-(BitSetIndex index, int offset) { BitSetIndex result(index); return result -= offset; }
-  friend BitSetIndex operator-(int offset, BitSetIndex index) { BitSetIndex result(index); return result -= offset; }
+  Index& operator+=(int offset) { m_index += offset; return *this; }
+  friend Index operator+(Index index, int offset) { Index result(index); return result += offset; }
+  friend Index operator+(int offset, Index index) { Index result(index); return result += offset; }
+  Index& operator-=(int offset) { m_index -= offset; return *this; }
+  friend Index operator-(Index index, int offset) { Index result(index); return result -= offset; }
+  friend Index operator-(int offset, Index index) { Index result(index); return result -= offset; }
 
-  BitSetIndex& operator++() { ++m_index; return *this; }
-  BitSetIndex operator++(int) { BitSetIndex result(*this); operator++(); return result; }
-  BitSetIndex& operator--() { ++m_index; return *this; }
-  BitSetIndex operator--(int) { BitSetIndex result(*this); operator--(); return result; }
+  Index& operator++() { ++m_index; return *this; }
+  Index operator++(int) { Index result(*this); operator++(); return result; }
+  Index& operator--() { ++m_index; return *this; }
+  Index operator--(int) { Index result(*this); operator--(); return result; }
 
   // Accessor.
 
@@ -111,17 +112,17 @@ class BitSetIndex : protected BitSetIndexPOD
 
   // Special functions.
 
-  // Advance BitSetIndex to the next bit that is set in mask.
+  // Advance Index to the next bit that is set in mask.
   //
   // Index may be index_pre_begin, in which case it will be set
   // to the first bit that is set in the mask ([0, N>) if any,
   // or index_end if no bit is set.
   //
-  // Otherwise BitSetIndex must be in the range [0, N>, in which
+  // Otherwise Index must be in the range [0, N>, in which
   // case a value is returned larger than the current value.
   // If no more bits could be found, Index is set to index_end.
   //
-  // Don't call this function when BitSetIndex equals index_end.
+  // Don't call this function when Index equals index_end.
   template<typename T>
   void next_bit_in(T mask)
   {
@@ -141,20 +142,20 @@ class BitSetIndex : protected BitSetIndexPOD
     }
   }
 
-  // Decrease BitSetIndex to the previous bit that is set in mask.
+  // Decrease Index to the previous bit that is set in mask.
   //
   // Index may be index_end, in which case it will be set to the
   // last bit that is set in the mask ([0, N>) if any, or index_pre_begin
   // if no bit is set.
   //
-  // Otherwise BitSetIndex must be in the range <0, N>, in which
+  // Otherwise Index must be in the range <0, N>, in which
   // case a value is returned smaller than the current value.
-  // If no more bits could be found, BitSetIndex is set to index_pre_begin.
+  // If no more bits could be found, Index is set to index_pre_begin.
   //
   // Normally a value of 0 should always return index_pre_begin, but
   // that is not the case:
   //
-  // Don't call this function when BitSetIndex equals index_begin.
+  // Don't call this function when Index equals index_begin.
   template<typename T>
   void prev_bit_in(T mask)
   {
@@ -171,17 +172,251 @@ class BitSetIndex : protected BitSetIndexPOD
       m_index -= clz(mask) + 1;                         // m_index becomes 1.
   }
 
-  // Return true iff BitSetIndex is not index_pre_begin and also not 0.
+  // Return true iff Index is not index_pre_begin and also not index_begin.
   bool may_call_prev_bit_in() const { return m_index > 0; }
 };
 
+} //namespace bitset
+
+// The POD base type of class BitSet.
+//
+// This class contains a unsigned integer of type T.
+// It may not have constructors or destructors, because
+// it is needed that this struct is POD in order for
+// optimisation to work.
+//
+// The use of BitSetPOD is intended for constants.
+// For example,
+//
+// constexpr BitSetPOD<uint32_t> bszero = { 1 };
+//
+// could be defined to have bszero refer to a mask just the least significant bit set.
+//
 template<typename T>
-class BitSet
+struct BitSetPOD
+{
+  T m_bitmask;
+};
+
+// Compare constants (this should never be needed, but why not add it).
+template<typename T> constexpr bool operator==(BitSetPOD<T> m1, BitSetPOD<T> m2) { return m1.m_bitmask == m2.m_bitmask; }
+template<typename T> constexpr bool operator!=(BitSetPOD<T> m1, BitSetPOD<T> m2) { return m1.m_bitmask != m2.m_bitmask; }
+
+// Calculate the union of two bitsets constants.
+template<typename T>
+constexpr BitSetPOD<T> operator|(BitSetPOD<T> m1, BitSetPOD<T> m2)
+{
+  return {m1.m_bitmask | m2.m_bitmask};
+}
+
+// Calculate the intersection of two bitset constants.
+template<typename T>
+constexpr BitSetPOD<T> operator&(BitSetPOD<T> m1, BitSetPOD<T> m2)
+{
+  return {m1.m_bitmask & m2.m_bitmask};
+}
+
+// Calculate the union minus the intersection of two bitset constants.
+template<typename T>
+constexpr BitSetPOD<T> operator^(BitSetPOD<T> m1, BitSetPOD<T> m2)
+{
+  return {m1.m_bitmask ^ m2.m_bitmask};
+}
+
+// Calculate the inverse of a bitset constant.
+template<typename T>
+constexpr BitSetPOD<T> operator~(BitSetPOD<T> m1)
+{
+  return {~m1.m_bitmask};
+}
+
+namespace bitset {
+
+template<typename T>
+class const_iterator
+{
+  T m_mask;     // A copy of the bitset this iterator refers to, but with the lesser significant bits removed.
+                // The actual position of the iterator is the least significant set bit.
+                // A value of all zeros means 'end'.
+
+ public:
+  // Default constructor returns 'end'.
+  const_iterator() : m_mask(0) { }
+  // Construct a const_iterator from bitmask.
+  const_iterator(T bitmask) : m_mask(bitmask) { }
+  // Copy-constructor.
+  const_iterator(const_iterator const& iter) : m_mask(iter.m_mask) { }
+  // Assignment.
+  const_iterator& operator=(const_iterator const& iter) { m_mask = iter.m_mask; return *this; }
+
+  // Comparision operators.
+
+  bool operator==(const_iterator const& iter) const { return m_mask == iter.m_mask; }
+  bool operator!=(const_iterator const& iter) const { return m_mask != iter.m_mask; }
+
+  // Forward iterator.
+
+  const_iterator& operator++()
+  {
+    // Remove the least significant bit.
+    m_mask &= m_mask - 1;
+    return *this;
+  }
+
+  T operator*() const
+  {
+    // Return just the least significant bit.
+    T mask = m_mask & (m_mask - 1);
+    return m_mask ^ mask;
+  }
+};
+
+} // namespace bitset
+
+template<typename T>
+class BitSet : protected BitSetPOD<T>
 {
   static_assert(std::is_unsigned<T>::value, "utils::BitSet<> template parameter must be an unsigned integral type.");
+  using mask_t = T;
+  using Index = bitset::Index;
+  using BitSetPOD<T>::m_bitmask;
 
- private:
-  T m_bitmask;
+ public:
+  // Convert Index to a mask_t.
+  [[gnu::always_inline]] static T index2mask(Index i1) { return static_cast<T>(1) << i1(); }
+  [[gnu::always_inline]] static Index mask2index(T mask) { return ctz(mask); }
+
+  // Constructors.
+
+  // Construct an uninitialized BitSet.
+  BitSet() { }
+
+  // Copy-constructor.
+  BitSet(BitSet const& m1) : BitSetPOD<T>{m1.m_bitmask} { }
+
+  // Construct a BitSet with a single bit set at i1.
+  BitSet(Index const& i1) : BitSetPOD<T>{index2mask(i1)} { }
+
+  // Construct a BitSet from a constant.
+  BitSet(BitSetPOD<T> m1) : BitSetPOD<T>{m1.m_bitmask} { }
+
+  // Construct a BitSet from a constant or mask (for internal use only).
+  explicit BitSet(mask_t bitmask) : BitSetPOD<T>{bitmask} { }
+
+  // Assignment operators.
+
+  // Assignment from other BitSet.
+  BitSet& operator=(BitSet const& m1) { m_bitmask = m1.m_bitmask; return *this; }
+
+  // Assignment from a constant.
+  BitSet& operator=(BitSetPOD<T> m1) { m_bitmask = m1.m_bitmask; return *this; }
+
+  // Comparison operators.
+
+  friend bool operator==(BitSet const& m1, BitSet const& m2) { return m1.m_bitmask == m2.m_bitmask; }
+  friend bool operator==(BitSet const& m1, BitSetPOD<T> m2) { return m1.m_bitmask == m2.m_bitmask; }
+  friend bool operator==(BitSetPOD<T> m1, BitSet const& m2) { return m1.m_bitmask == m2.m_bitmask; }
+  friend bool operator!=(BitSet const& m1, BitSet const& m2) { return m1.m_bitmask != m2.m_bitmask; }
+  friend bool operator!=(BitSet const& m1, BitSetPOD<T> m2) { return m1.m_bitmask != m2.m_bitmask; }
+  friend bool operator!=(BitSetPOD<T> m1, BitSet const& m2) { return m1.m_bitmask != m2.m_bitmask; }
+
+  // Initialization.
+
+  // Set all bits to zero.
+  void reset() { m_bitmask = 0; }
+
+  // Set all bits to one.
+  void set() { m_bitmask = static_cast<T>(-1); }
+
+  // Bit manipulation.
+
+  // Reset the bit at index i1.
+  void reset(Index const& i1) { m_bitmask &= ~index2mask(i1); }
+
+  // Reset the bits from bitmask.
+  void reset(mask_t bitmask) { m_bitmask &= ~bitmask; }
+
+  // Reset the bits from m1.
+  void reset(BitSetPOD<T> m1) { m_bitmask &= ~m1.m_bitmask; }
+
+  // Reset the bits from m1.
+  void reset(BitSet const& m1) { m_bitmask &= ~m1.m_bitmask; }
+
+  // Set the bit at i1.
+  void set(Index const& i1) { m_bitmask |= index2mask(i1); }
+
+  // Set the bits from bitmask.
+  void set(mask_t bitmask) { m_bitmask |= bitmask; }
+
+  // Set the bits from m1.
+  void set(BitSetPOD<T> m1) { m_bitmask |= m1.m_bitmask; }
+
+  // Set the bits from m1.
+  void set(BitSet const& m1) { m_bitmask |= m1.m_bitmask; }
+
+  // Toggle the bit at i1.
+  void toggle(Index const& i1) { m_bitmask ^= index2mask(i1); }
+
+  // Toggle the bits from bitmask.
+  void toggle(mask_t bitmask) { m_bitmask ^= bitmask; }
+
+  // Toggle the bits from m1.
+  void toggle(BitSetPOD<T> m1) { m_bitmask ^= m1.m_bitmask; }
+
+  // Toggle the bits from m1.
+  void toggle(BitSet const& m1) { m_bitmask ^= m1.m_bitmask; }
+
+  // Accessors.
+
+  // Test if any bit is set at all.
+  bool test() const { return m_bitmask; }
+
+  // Test if the bit at i1 is set.
+  bool test(Index const& i1) const { return m_bitmask & index2mask(i1); }
+
+  // Test if any bit in bitmask is set.
+  bool test(mask_t bitmask) const { return m_bitmask & bitmask; }
+
+  // Test if any bit in m1 is set.
+  bool test(BitSetPOD<T> m1) const { return m_bitmask & m1.m_bitmask; }
+
+  // Test if any bit in m1 is set.
+  bool test(BitSet const& m1) const { return m_bitmask & m1.m_bitmask; }
+
+  // Return the inverse of the BitSet.
+  BitSet operator~() const { return BitSet(~m_bitmask); }
+
+  // Return the underlaying bitmask.
+  mask_t operator()() const { return m_bitmask; }
+
+  // Bit-wise OR operators with another BitSet.
+  BitSet& operator|=(BitSet const& m1) { m_bitmask |= m1.m_bitmask; return *this; }
+  BitSet& operator|=(BitSetPOD<T> m1) { m_bitmask |= m1.m_bitmask; return *this; }
+  BitSet& operator|=(mask_t bitmask) { m_bitmask |= bitmask; return *this; }
+  friend BitSet operator|(BitSet const& m1, BitSet const& m2) { return BitSet(m1.m_bitmask | m2.m_bitmask); }
+  friend BitSet operator|(BitSet const& m1, BitSetPOD<T> m2) { return BitSet(m1.m_bitmask | m2.m_bitmask); }
+  friend BitSet operator|(BitSetPOD<T> m1, BitSet const& m2) { return BitSet(m1.m_bitmask | m2.m_bitmask); }
+
+  // Bit-wise AND operators with another BitSet.
+  BitSet& operator&=(BitSet const& m1) { m_bitmask &= m1.m_bitmask; return *this; }
+  BitSet& operator&=(BitSetPOD<T> m1) { m_bitmask &= m1.m_bitmask; return *this; }
+  BitSet& operator&=(mask_t bitmask) { m_bitmask &= bitmask; return *this; }
+  friend BitSet operator&(BitSet m1, BitSet m2) { return BitSet(m1.m_bitmask & m2.m_bitmask); }
+  friend BitSet operator&(BitSet m1, BitSetPOD<T> m2) { return BitSet(m1.m_bitmask & m2.m_bitmask); }
+  friend BitSet operator&(BitSetPOD<T> m1, BitSet m2) { return BitSet(m1.m_bitmask & m2.m_bitmask); }
+
+  // Bit-wise XOR operators with another BitSet.
+  BitSet& operator^=(BitSet const& m1) { m_bitmask ^= m1.m_bitmask; return *this; }
+  BitSet& operator^=(BitSetPOD<T> m1) { m_bitmask ^= m1.m_bitmask; return *this; }
+  BitSet& operator^=(mask_t bitmask) { m_bitmask ^= bitmask; return *this; }
+  friend BitSet operator^(BitSet m1, BitSet m2) { return BitSet(m1.m_bitmask ^ m2.m_bitmask); }
+  friend BitSet operator^(BitSet m1, BitSetPOD<T> m2) { return BitSet(m1.m_bitmask ^ m2.m_bitmask); }
+  friend BitSet operator^(BitSetPOD<T> m1, BitSet m2) { return BitSet(m1.m_bitmask ^ m2.m_bitmask); }
+
+  // Iterator support.
+
+  bitset::const_iterator<T> begin() const { return {m_bitmask}; }
+  bitset::const_iterator<T> end() const { return {}; }
 };
 
 } // namespace utils
