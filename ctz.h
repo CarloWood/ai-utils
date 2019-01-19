@@ -46,25 +46,6 @@ constexpr int _ctz(unsigned long long n)
   return __builtin_ctzll(n);
 }
 
-template<typename T>
-struct Ctz
-{
-  static_assert(std::is_unsigned<T>::value && std::is_integral<T>::value, "The argument to ctz must be an unsigned integral type.");
-  using type = unsigned int;
-};
-
-template<>
-struct Ctz<unsigned long>
-{
-  using type = unsigned long;
-};
-
-template<>
-struct Ctz<unsigned long long>
-{
-  using type = unsigned long long;
-};
-
 } // namespace
 
 // Function utils::ctz(n)

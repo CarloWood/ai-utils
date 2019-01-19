@@ -26,6 +26,7 @@
 #pragma once
 
 #include "clz.h"
+#include "BuiltinArg.h"
 
 namespace utils {
 
@@ -39,7 +40,7 @@ namespace utils {
 template<typename T>
 constexpr int log2(T n)
 {
-  return n == 0 ? -1 : 8 * sizeof(typename Clz<T>::type) - 1 - clz(static_cast<typename Clz<T>::type>(n));
+  return n == 0 ? -1 : 8 * sizeof(typename BuiltinArg<T>::type) - 1 - clz(static_cast<typename BuiltinArg<T>::type>(n));
 }
 
 // Function utils::ceil_log2(n)

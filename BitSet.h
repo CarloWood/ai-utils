@@ -2,8 +2,11 @@
 
 #include "ctz.h"
 #include "clz.h"
+#include "mssb.h"
+#include "popcount.h"
 #include <cstdint>
 #include <type_traits>
+#include <iosfwd>
 
 namespace utils {
 namespace bitset {
@@ -102,7 +105,7 @@ class Index : protected IndexPOD
 
   Index& operator++() { ++m_index; return *this; }
   Index operator++(int) { Index result(*this); operator++(); return result; }
-  Index& operator--() { ++m_index; return *this; }
+  Index& operator--() { --m_index; return *this; }
   Index operator--(int) { Index result(*this); operator--(); return result; }
 
   // Accessor.
@@ -230,6 +233,9 @@ constexpr BitSetPOD<T> operator~(BitSetPOD<T> m1)
   return {~m1.m_bitmask};
 }
 
+template<typename T>
+class BitSet;
+
 namespace bitset {
 
 template<typename T>
@@ -263,12 +269,7 @@ class const_iterator
     return *this;
   }
 
-  T operator*() const
-  {
-    // Return just the least significant bit.
-    T mask = m_mask & (m_mask - 1);
-    return m_mask ^ mask;
-  }
+  inline BitSet<T> operator*() const;
 };
 
 } // namespace bitset
@@ -355,18 +356,35 @@ class BitSet : protected BitSetPOD<T>
   void set(BitSet const& m1) { m_bitmask |= m1.m_bitmask; }
 
   // Toggle the bit at i1.
-  void toggle(Index const& i1) { m_bitmask ^= index2mask(i1); }
+  void flip(Index const& i1) { m_bitmask ^= index2mask(i1); }
 
   // Toggle the bits from bitmask.
-  void toggle(mask_t bitmask) { m_bitmask ^= bitmask; }
+  void flip(mask_t bitmask) { m_bitmask ^= bitmask; }
 
   // Toggle the bits from m1.
-  void toggle(BitSetPOD<T> m1) { m_bitmask ^= m1.m_bitmask; }
+  void flip(BitSetPOD<T> m1) { m_bitmask ^= m1.m_bitmask; }
 
   // Toggle the bits from m1.
-  void toggle(BitSet const& m1) { m_bitmask ^= m1.m_bitmask; }
+  void flip(BitSet const& m1) { m_bitmask ^= m1.m_bitmask; }
 
   // Accessors.
+
+  // Test if all, any or none of the bits are set.
+  bool all() const { return !~m_bitmask; }
+  bool any() const { return m_bitmask; }
+  bool none() const { return !m_bitmask; }
+
+  // Returns the number of bits set to 1.
+  std::size_t count() const { return ::utils::_popcount(m_bitmask); }
+
+  // Return a mask with just the least significant set bit.
+  BitSet lssb() const { return {m_bitmask & -m_bitmask}; }
+
+  // Return a mask with just the most significant set bit.
+  BitSet mssb() const { return {::utils::mssb(m_bitmask)}; }
+
+  // Returns the number of bits that the bitset can hold.
+  constexpr std::size_t size() const { return sizeof(T) * 8; }
 
   // Test if any bit is set at all.
   bool test() const { return m_bitmask; }
@@ -388,6 +406,15 @@ class BitSet : protected BitSetPOD<T>
 
   // Return the underlaying bitmask.
   mask_t operator()() const { return m_bitmask; }
+
+  // Return the underlaying bitmask as unsigned long.
+  unsigned long to_ulong() const { return static_cast<unsigned long>(m_bitmask); }
+
+  // Return the underlaying bitmask as unsigned long long.
+  unsigned long long to_ullong() const { return static_cast<unsigned long long>(m_bitmask); }
+
+  // Converts the contents of the bitset to a string. Uses zero to represent bits with value of false and one to represent bits with value of true.
+  std::string to_string(char zero = '0', char one = '1') const;
 
   // Bit-wise OR operators with another BitSet.
   BitSet& operator|=(BitSet const& m1) { m_bitmask |= m1.m_bitmask; return *this; }
@@ -413,10 +440,41 @@ class BitSet : protected BitSetPOD<T>
   friend BitSet operator^(BitSet m1, BitSetPOD<T> m2) { return BitSet(m1.m_bitmask ^ m2.m_bitmask); }
   friend BitSet operator^(BitSetPOD<T> m1, BitSet m2) { return BitSet(m1.m_bitmask ^ m2.m_bitmask); }
 
+  // Writing to an ostream.
+
+  template<typename T1>
+  friend std::ostream& operator<<(std::ostream& os, BitSet<T1> m1)
+  {
+    return os << m1.to_string();
+  }
+
   // Iterator support.
 
   bitset::const_iterator<T> begin() const { return {m_bitmask}; }
   bitset::const_iterator<T> end() const { return {}; }
 };
+
+namespace bitset {
+
+template<typename T>
+BitSet<T> const_iterator<T>::operator*() const
+{
+  // Return just the least significant bit.
+  return BitSet<T>{m_mask & -m_mask};
+}
+
+} // namespace bitset
+
+template<typename T>
+std::string BitSet<T>::to_string(char zero, char one) const
+{
+  std::string result(size(), zero);
+  std::string::iterator p = result.begin();
+  bitset::Index bit = bitset::index_end<T>;
+  do
+    *p++ = (test(--bit) ? one : zero);
+  while (bit != bitset::index_begin);
+  return result;
+}
 
 } // namespace utils

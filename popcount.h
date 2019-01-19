@@ -1,9 +1,9 @@
 // ai-utils -- C++ Core utilities
 //
 //! @file
-//! @brief Definition of clz.
+//! @brief Definition of popcount.
 //
-// Copyright (C) 2018 Carlo Wood.
+// Copyright (C) 2019 Carlo Wood.
 //
 // RSA-1024 0x624ACAD5 1997-01-26                    Sign & Encrypt
 // Fingerprint16 = 32 EC A7 B6 AC DB 65 A6  F6 F6 55 DD 1C DC FF 61
@@ -31,34 +31,33 @@ namespace utils {
 
 namespace {
 
-constexpr int _clz(unsigned int n)
+constexpr int _popcount(unsigned int n)
 {
-  return __builtin_clz(n);
+  return __builtin_popcount(n);
 }
 
-constexpr int _clz(unsigned long n)
+constexpr int _popcount(unsigned long n)
 {
-  return __builtin_clzl(n);
+  return __builtin_popcountl(n);
 }
 
-constexpr int _clz(unsigned long long n)
+constexpr int _popcount(unsigned long long n)
 {
-  return __builtin_clzll(n);
+  return __builtin_popcountll(n);
 }
 
 } // namespace
 
-// Function utils::clz(n)
+// Function utils::popcount(n)
 //
-// Returns the Count of Leading Zeroes in n.
-// Undefined when n == 0.
+// Returns the Count of set bits in n.
 //
 template<typename T>
-constexpr int clz(T n)
+constexpr int popcount(T n)
 {
   static_assert(std::is_same<T, unsigned int>::value || std::is_same<T, unsigned long>::value || std::is_same<T, unsigned long long>::value,
-      "The type of the argument to clz can only be unsigned int, unsigned long or unsigned long long.");
-  return _clz(n);
+      "The type of the argument to popcount can only be unsigned int, unsigned long or unsigned long long.");
+  return _popcount(n);
 }
 
 } // namespace utils
