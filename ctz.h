@@ -50,7 +50,7 @@ constexpr int _ctz(unsigned long long n)
 
 // Function utils::ctz(n)
 //
-// Returns the Count of Trailing Zeroes in n.
+// Returns the Count of Trailing Zeroes in n (the index of the least significant set bit).
 // Undefined when n == 0.
 //
 template<typename T>
