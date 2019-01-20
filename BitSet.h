@@ -487,6 +487,13 @@ class BitSet : protected BitSetPOD<T>
   // Post increment.
   BitSet operator++(int) const { BitSet prev_value(m_bitmask); ++m_bitmask; return prev_value; }
 
+  // Add and subtract.
+  BitSet& operator+=(mask_type n) { m_bitmask += n; return *this; }
+  BitSet& operator-=(mask_type n) { m_bitmask -= n; return *this; }
+  BitSet operator+(mask_type n) const { return BitSet(m_bitmask + n); }
+  BitSet operator-(mask_type n) const { return BitSet(m_bitmask - n); }
+
+
   // Writing to an ostream.
 
   template<typename T1>
