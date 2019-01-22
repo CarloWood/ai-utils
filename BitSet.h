@@ -4,6 +4,7 @@
 #include "log2.h"
 #include "mssb.h"
 #include "popcount.h"
+#include "is_power_of_two.h"
 #include <cstdint>
 #include <type_traits>
 #include <iosfwd>
@@ -392,6 +393,7 @@ class BitSet : protected BitSetPOD<T>
   bool all() const { return !~m_bitmask; }
   bool any() const { return m_bitmask; }
   bool none() const { return !m_bitmask; }
+  bool is_single_bit() const { return is_power_of_two(m_bitmask); }
 
   // Returns the number of bits that the bitset can hold.
   constexpr std::size_t size() const { return sizeof(T) * 8; }
