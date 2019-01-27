@@ -34,16 +34,16 @@ void FuzzyBool::print_on(std::ostream& os)
   switch(m_val)
   {
     case fuzzy_true:
-      os << "true";
+      os << "fuzzy::True";
       break;
     case fuzzy_was_true:
-      os << "was_true";
+      os << "fuzzy::WasTrue";
       break;
     case fuzzy_was_false:
-      os << "was_false";
+      os << "fuzzy::WasFalse";
       break;
     case fuzzy_false:
-      os << "false";
+      os << "fuzzy::False";
       break;
   }
 }
