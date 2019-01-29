@@ -32,7 +32,7 @@
 // for (MultiLoop ml(23); !ml.finished(); ml.next_loop())
 // {
 //   // No code should go here!
-//   while (ml() < 3)	        // Each loops runs from 0 to 3 (in this case).
+//   while (ml() < 3)           // Each loops runs from 0 to 3 (in this case).
 //   {
 //     // Here we are at the top of loop *ml with value ml().
 //     // The values of (previous) loop counters are available through ml[0..*ml]
@@ -41,40 +41,40 @@
 //     // Beginning of loop code (all loops).
 //     if (*ml == 7 && ml[5] == 2 && ml() == 1)         // We're at the top of loop number 7 (the 8th loop),
 //                                                      // the value of loop #5 is 2 and the current loop (loop 7)
-//     							// has value 1.
+//                                                      // has value 1.
 //     {
 //       if (...)
 //       {
-//         ml.breaks(0);		// Normal continue (of current loop).
-//         break;			// Return control to MultiLoop.
+//         ml.breaks(0);                // Normal continue (of current loop).
+//         break;                       // Return control to MultiLoop.
 //       }
 //       else if (...)
 //       {
-//         ml.breaks(1);		// Normal break (of current loop).
-//         break;			// Return control to MultiLoop.
+//         ml.breaks(1);                // Normal break (of current loop).
+//         break;                       // Return control to MultiLoop.
 //       }
 //       if (...)
 //       {
-//         ml.breaks(5);		// Break out of 5 loops.
-//         break;			// Return control to MultiLoop.
+//         ml.breaks(5);                // Break out of 5 loops.
+//         break;                       // Return control to MultiLoop.
 //       }
 //     }
 //
-//     if (ml.inner_loop())		// Most inner loop.
+//     if (ml.inner_loop())             // Most inner loop.
 //     {
 //       // Inner loop body.
 //
 //       if (...)
-//         continue;			// Normal continue of inner loop;
-//         				// Calling ml.breaks(0); break; is allowed too.
+//         continue;                    // Normal continue of inner loop;
+//                                      // Calling ml.breaks(0); break; is allowed too.
 //       else if (...)
-//         //ml.breaks(1);		// Allowed, but doesn't have any effect.
-//         break;			// Normal break from inner loop.
+//         //ml.breaks(1);              // Allowed, but doesn't have any effect.
+//         break;                       // Normal break from inner loop.
 //
-//       if (ml() == 1)			// Value of loop *ml (inner loop here) equals 1.
+//       if (ml() == 1)                 // Value of loop *ml (inner loop here) equals 1.
 //       {
-//         ml.breaks(5);		// break out of 5 loops.
-//         break;			// Return control to MultiLoop.
+//         ml.breaks(5);                // break out of 5 loops.
+//         break;                       // Return control to MultiLoop.
 //       }
 //
 //       // End of inner loop.

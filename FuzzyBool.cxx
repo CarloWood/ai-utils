@@ -29,9 +29,9 @@
 
 namespace utils {
 
-void FuzzyBool::print_on(std::ostream& os)
+void print_FuzzyBoolPOD_on(std::ostream& os, FuzzyBoolEnum val)
 {
-  switch(m_val)
+  switch(val)
   {
     case fuzzy_true:
       os << "fuzzy::True";
