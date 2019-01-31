@@ -26,28 +26,28 @@
 #pragma once
 
 #include "debug.h"
-#include <atomic>
-
-class FuzzyLock;
 
 namespace utils {
 
+#define F 0
+#define U 4
+#define L 8
+#define T c
+
 enum FuzzyBoolEnum {
-  fuzzy_false = 0,
-  fuzzy_was_false = 1,
-  fuzzy_was_true = 2,
-  fuzzy_true = 3
+  fuzzy_false           = F,        // F: False
+  fuzzy_was_false       = U,        // U: Unlikely
+  fuzzy_was_true        = L,        // L: Likely
+  fuzzy_true            = 0xc       // T: True
 };
 
 struct FuzzyBoolPOD
 {
-  FuzzyBoolEnum const m_literal;
+  FuzzyBoolEnum m_val;
 };
 
-static_assert(std::is_pod<FuzzyBoolPOD>::value, "FuzzyBoolPOD should be POD :/");
-
 extern void print_FuzzyBoolPOD_on(std::ostream& os, FuzzyBoolEnum val);
-inline std::ostream& operator<<(std::ostream& os, FuzzyBoolPOD const& fb) { print_FuzzyBoolPOD_on(os, fb.m_literal); return os; }
+inline std::ostream& operator<<(std::ostream& os, FuzzyBoolPOD const& fb) { print_FuzzyBoolPOD_on(os, fb.m_val); return os; }
 
 } // namespace utils
 
@@ -62,117 +62,133 @@ static constexpr utils::FuzzyBoolPOD False = { utils::fuzzy_false };            
 
 namespace utils {
 
-class FuzzyBool
+class FuzzyBool : public FuzzyBoolPOD
 {
- private:
-  // Like FuzzyBoolPOD, but atomic.
-  //
-  // Because we want to be able to do certain operations as atomic RMW operation there is the following requirement:
-  // Let True have the bit-representation { tn, ...., t1, t0 }, False the bit-representation { fn, ..., f1, f0 },
-  // WasTrue the bit-representation { ln, ..., l1, l0 } and WasFalse the bit-representation { un, ..., u1, u0 },
-  // where n is the most significant bit and 0 the least significant bit.
-  //
-  // Ignoring the bits 2 and higher, we have
-  //
-  //              X       !X
-  // True       t1 t0    f1 f0
-  // WasTrue    l1 l0    u1 u0
-  // WasFalse   u1 u0    l1 l0
-  // False      f1 f0    t1 t0
-  //
-  // We only have the following RMW operations available: add, sub, and, or and xor.
-  //
-  std::atomic<FuzzyBoolEnum> m_val;
-
   // For internal usage (creating return values). Construct a FuzzyBool from an FuzzyBoolEnum.
-  FuzzyBool(FuzzyBoolEnum val) : m_val{val} { }
+  FuzzyBool(FuzzyBoolEnum val) : FuzzyBoolPOD{val} { }
 
  public:
   // Construct an uninitialized FuzzyBool.
   FuzzyBool() { }
 
-  // Construct from a literal FuzzyBool (True/WasTrue/WasFalse/False).
-  FuzzyBool(FuzzyBoolPOD val) : m_val{val.m_literal} { }
+  // Copy-constructor.
+  FuzzyBool(FuzzyBoolPOD const& val) : FuzzyBoolPOD{val.m_val} { }
 
-  // Cannot copy-construct from another atomic; however - using FuzzyLock *does* make this safe;
-  // so require one to be passed.
-  FuzzyBool(FuzzyBool const& val, FuzzyLock&)
-  {
-    // Assuming the FuzzyLock is correctly used (can we check that here?), we can make a copy by going through a temporary non-atomic.
-    FuzzyBoolEnum tmp = val.m_val;
-    m_val = tmp;
-  }
   // Assignment.
-  FuzzyBool& operator=(FuzzyBool const& val) = delete;  // Cannot assign one atomic to another.
-  // But we *can* assign from a literal, of course.
-  FuzzyBool& operator=(FuzzyBoolPOD val) { m_val = val.m_literal; return *this; }
+  FuzzyBool& operator=(FuzzyBoolPOD const& val) { m_val = val.m_val; return *this; }
+
   // Construct from a non-literal bool (use True / False for literals).
-  explicit constexpr FuzzyBool(bool val) : m_val{val ? fuzzy_true : fuzzy_false} { }
-  // Printing. Mostly using relaxed here because I don't want printing debug
-  // output to interfere with the normal memory synchronization methods.
-  // This is not really 100% thread-safe therefore, it's more a value of-the-moment.
-  void print_on(std::ostream& os) const { print_FuzzyBoolPOD_on(os, m_val.load(std::memory_order_relaxed)); }
-  friend std::ostream& operator<<(std::ostream& os, FuzzyBool const& fb) { fb.print_on(os); return os; }
+  explicit constexpr FuzzyBool(bool val) : FuzzyBoolPOD{val ? fuzzy_true : fuzzy_false} { }
+
+  // Printing.
+  void print_on(std::ostream& os) const { print_FuzzyBoolPOD_on(os, m_val); }
+
   // Accessors.
-  bool always() const { return m_val == fuzzy_true; }
-  bool likely() const { return m_val >= 2; }
-  bool unlikely() const { return m_val <= 1; }
-  bool never() const { return m_val == fuzzy_false; }
+  bool always() const { return m_val == fuzzy_true; }   // Returns true when True.
+  bool likely() const { return m_val & L; }             // Returns true when WasTrue or True.
+  bool unlikely() const { return !(m_val & L); }        // Returns true when WasFalse or False.
+  bool never() const { return m_val == fuzzy_false; }   // Returns true when False.
 #ifdef CWDEBUG
-  bool has_same_value_as(FuzzyBool fb) { return m_val == fb.m_val; }
+  bool has_same_value_as(FuzzyBool const& fb) { return m_val == fb.m_val; }
 #endif
   // Only use this when the value is certain.
-  operator bool() const { ASSERT(m_val == fuzzy_true || m_val == fuzzy_false); return m_val == fuzzy_true; }
+  explicit operator bool() const { ASSERT(m_val == fuzzy_true || m_val == fuzzy_false); return m_val == fuzzy_true; }
+
   // Logic.
-  //
-  // Operator NOT; !True = False, !!x = x, !x != x.
+
+  // Operator NOT; !T = F, !!x = x, !x != x.
   // fb1 | !fb1
-  //  0  |  3
-  //  1  |  2
-  //  2  |  1
-  //  3  |  0
+  //  F  |  T
+  //  U  |  L
+  //  L  |  U
+  //  T  |  F
   //
-  FuzzyBool operator!() { return static_cast<FuzzyBoolEnum>(3 - m_val); }
-  //
-  // Operator AND; True && x = x, False && x = False, x && x = x, x && y = y && x, wasTrue && wasFalse = wasFalse.
-  // fb1 | fb2: 0  1  2  3
-  // ---------------------
-  //  0  |      0  0  0  0
-  //  1  |      0  1  1  1
-  //  2  |      0  1  2  2
-  //  3  |      0  1  2  3
-  //
-  friend FuzzyBool operator&&(FuzzyBool fb1, FuzzyBool fb2) { return static_cast<FuzzyBoolEnum>(std::min(fb1.m_val, fb2.m_val)); }
-  //
-  // Operator OR, x || y = !(!x && !y)
-  // fb1 | fb2: 0  1  2  3
-  // ---------------------
-  //  0  |      0  1  2  3
-  //  1  |      1  1  2  3
-  //  2  |      2  2  2  3
-  //  3  |      3  3  3  3
-  //
-  friend FuzzyBool operator||(FuzzyBool fb1, FuzzyBool fb2) { return static_cast<FuzzyBoolEnum>(std::max(fb1.m_val, fb2.m_val)); }
-  //
-  // Operator XOR, x ^ y = (x && !y) || (!x && y)
-  // fb1 | fb2: 0  1  2  3
-  // ---------------------
-  //  0  |      0  1  2  3
-  //  1  |      1  1  2  2
-  //  2  |      2  2  1  1
-  //  3  |      3  2  1  0
-  //
-  friend FuzzyBool operator!=(FuzzyBool fb1, FuzzyBool fb2) { return static_cast<FuzzyBoolEnum>(std::max(std::min(3 - fb1.m_val, 0 + fb2.m_val), std::min(0 + fb1.m_val, 3 - fb2.m_val))); }
-  //
-  // Operator NOT XOR
-  // fb1 | fb2: 0  1  2  3
-  // --------------------------------------
-  //  0  |      3  2  1  0
-  //  1  |      2  2  1  1
-  //  2  |      1  1  2  2
-  //  3  |      0  1  2  3
-  //
-  friend FuzzyBool operator==(FuzzyBool fb1, FuzzyBool fb2) { return static_cast<FuzzyBoolEnum>(std::min(std::max(3 - fb1.m_val, 0 + fb2.m_val), std::max(0 + fb1.m_val, 3 - fb2.m_val))); }
+  FuzzyBool operator!() const noexcept { return static_cast<FuzzyBoolEnum>(m_val ^ 0xc); }
+
+  [[gnu::always_inline]] friend inline FuzzyBool operator&&(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept;
+  [[gnu::always_inline]] friend inline FuzzyBool operator||(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept;
+  [[gnu::always_inline]] friend inline FuzzyBool operator!=(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept;
+  [[gnu::always_inline]] friend inline FuzzyBool operator==(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept;
 };
+
+namespace {
+
+#define TABLE2(e00, e10, e20, e30, \
+               e01, e11, e21, e31, \
+               e02, e12, e22, e32, \
+               e03, e13, e23, e33) \
+  { 0x##e33##e32##e31##e30##e23##e22##e21##e20##e13##e12##e11##e10##e03##e02##e01##e00 }
+
+#define TABLE(e00, e10, e20, e30, e01, e11, e21, e31, e02, e12, e22, e32, e03, e13, e23, e33) \
+       TABLE2(e00, e10, e20, e30, e01, e11, e21, e31, e02, e12, e22, e32, e03, e13, e23, e33)
+
+static constexpr uint64_t AND_table = TABLE(
+// Operator AND; True && x = x, False && x = False, x && x = x, x && y = y && x, wasTrue && wasFalse = wasFalse.
+// fb1 | fb2: F  U  L  T
+//     ------------------
+  /* F | */   F, F, F, F,
+  /* U | */   F, U, U, U,
+  /* L | */   F, U, L, L,
+  /* T | */   F, U, L, T
+);
+
+static constexpr uint64_t OR_table = TABLE(
+// Operator OR, x || y = !(!x && !y)
+// fb1 | fb2: F  U  L  T
+//     ------------------
+  /* F | */   F, U, L, T,
+  /* U | */   U, U, L, T,
+  /* L | */   L, L, L, T,
+  /* T | */   T, T, T, T
+);
+
+static constexpr uint64_t XOR_table = TABLE(
+// Operator XOR, x ^ y = (x && !y) || (!x && y)
+// fb1 | fb2: F  U  L  T
+//     ------------------
+  /* F | */   F, U, L, T,
+  /* U | */   U, U, L, L,
+  /* L | */   L, L, U, U,
+  /* T | */   T, L, U, F
+);
+
+static constexpr uint64_t NOT_XOR_table = TABLE(
+// Operator NOT XOR
+// fb1 | fb2: F  U  L  T
+//     ------------------
+  /* F | */   T, L, U, F,
+  /* U | */   L, L, U, U,
+  /* L | */   U, U, L, L,
+  /* T | */   F, U, L, T
+);
+
+} // namespace
+
+FuzzyBool operator&&(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept
+{
+  return static_cast<FuzzyBoolEnum>((AND_table >> (4 * fb1.m_val + fb2.m_val)) & 0xc);
+}
+
+FuzzyBool operator||(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept
+{
+  return static_cast<FuzzyBoolEnum>((OR_table >> (4 * fb1.m_val + fb2.m_val)) & 0xc);
+}
+
+FuzzyBool operator!=(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept
+{
+  return static_cast<FuzzyBoolEnum>((XOR_table >> (4 * fb1.m_val + fb2.m_val)) & 0xc);
+}
+
+FuzzyBool operator==(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept
+{
+  return static_cast<FuzzyBoolEnum>((NOT_XOR_table >> (4 * fb1.m_val + fb2.m_val)) & 0xf);
+}
+
+#undef F
+#undef U
+#undef L
+#undef T
+#undef TABLE
+#undef TABLE2
 
 } // namespace utils
