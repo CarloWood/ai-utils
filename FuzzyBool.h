@@ -29,86 +29,17 @@
 
 namespace utils {
 
+// These values are and must be multiples of four (0, 1, 2 and 3 times 4).
 #define F 0
 #define U 4
 #define L 8
 #define T c
 
-enum FuzzyBoolEnum {
+enum FuzzyBoolEnum : int {
   fuzzy_false           = F,        // F: False
   fuzzy_was_false       = U,        // U: Unlikely
   fuzzy_was_true        = L,        // L: Likely
-  fuzzy_true            = 0xc       // T: True
-};
-
-struct FuzzyBoolPOD
-{
-  FuzzyBoolEnum m_val;
-};
-
-extern void print_FuzzyBoolPOD_on(std::ostream& os, FuzzyBoolEnum val);
-inline std::ostream& operator<<(std::ostream& os, FuzzyBoolPOD const& fb) { print_FuzzyBoolPOD_on(os, fb.m_val); return os; }
-
-} // namespace utils
-
-namespace fuzzy {
-
-static constexpr utils::FuzzyBoolPOD True = { utils::fuzzy_true };              // If you read the value True, it is really true.
-static constexpr utils::FuzzyBoolPOD WasTrue = { utils::fuzzy_was_true };       // If you read the value WasTrue, then very recently it was true, but maybe not anymore.
-static constexpr utils::FuzzyBoolPOD WasFalse = { utils::fuzzy_was_false };     // If you read the value WasFalse, then very recently it was false, but maybe not anymore.
-static constexpr utils::FuzzyBoolPOD False = { utils::fuzzy_false };            // If you read the value False, it is really false.
-
-} // namespace fuzzy
-
-namespace utils {
-
-class FuzzyBool : public FuzzyBoolPOD
-{
-  // For internal usage (creating return values). Construct a FuzzyBool from an FuzzyBoolEnum.
-  FuzzyBool(FuzzyBoolEnum val) : FuzzyBoolPOD{val} { }
-
- public:
-  // Construct an uninitialized FuzzyBool.
-  FuzzyBool() { }
-
-  // Copy-constructor.
-  FuzzyBool(FuzzyBoolPOD const& val) : FuzzyBoolPOD{val.m_val} { }
-
-  // Assignment.
-  FuzzyBool& operator=(FuzzyBoolPOD const& val) { m_val = val.m_val; return *this; }
-
-  // Construct from a non-literal bool (use True / False for literals).
-  explicit constexpr FuzzyBool(bool val) : FuzzyBoolPOD{val ? fuzzy_true : fuzzy_false} { }
-
-  // Printing.
-  void print_on(std::ostream& os) const { print_FuzzyBoolPOD_on(os, m_val); }
-
-  // Accessors.
-  bool always() const { return m_val == fuzzy_true; }   // Returns true when True.
-  bool likely() const { return m_val & L; }             // Returns true when WasTrue or True.
-  bool unlikely() const { return !(m_val & L); }        // Returns true when WasFalse or False.
-  bool never() const { return m_val == fuzzy_false; }   // Returns true when False.
-#ifdef CWDEBUG
-  bool has_same_value_as(FuzzyBool const& fb) { return m_val == fb.m_val; }
-#endif
-  // Only use this when the value is certain.
-  explicit operator bool() const { ASSERT(m_val == fuzzy_true || m_val == fuzzy_false); return m_val == fuzzy_true; }
-
-  // Logic.
-
-  // Operator NOT; !T = F, !!x = x, !x != x.
-  // fb1 | !fb1
-  //  F  |  T
-  //  U  |  L
-  //  L  |  U
-  //  T  |  F
-  //
-  FuzzyBool operator!() const noexcept { return static_cast<FuzzyBoolEnum>(m_val ^ 0xc); }
-
-  [[gnu::always_inline]] friend inline FuzzyBool operator&&(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept;
-  [[gnu::always_inline]] friend inline FuzzyBool operator||(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept;
-  [[gnu::always_inline]] friend inline FuzzyBool operator!=(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept;
-  [[gnu::always_inline]] friend inline FuzzyBool operator==(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept;
+  fuzzy_true            = L|U       // T: True          Note that the fact that fuzzy_true & fuzzy_was_true != 0 is used in the code.
 };
 
 namespace {
@@ -164,24 +95,94 @@ static constexpr uint64_t NOT_XOR_table = TABLE(
 
 } // namespace
 
+struct FuzzyBoolPOD
+{
+  FuzzyBoolEnum m_val;
+};
+
+extern void print_FuzzyBoolPOD_on(std::ostream& os, FuzzyBoolEnum val);
+inline std::ostream& operator<<(std::ostream& os, FuzzyBoolPOD const& fb) { print_FuzzyBoolPOD_on(os, fb.m_val); return os; }
+
+} // namespace utils
+
+namespace fuzzy {
+
+static constexpr utils::FuzzyBoolPOD True = { utils::fuzzy_true };              // If you read the value True, it is really true.
+static constexpr utils::FuzzyBoolPOD WasTrue = { utils::fuzzy_was_true };       // If you read the value WasTrue, then very recently it was true, but maybe not anymore.
+static constexpr utils::FuzzyBoolPOD WasFalse = { utils::fuzzy_was_false };     // If you read the value WasFalse, then very recently it was false, but maybe not anymore.
+static constexpr utils::FuzzyBoolPOD False = { utils::fuzzy_false };            // If you read the value False, it is really false.
+
+} // namespace fuzzy
+
+namespace utils {
+
+class FuzzyBool : public FuzzyBoolPOD
+{
+ public:
+  // Construct an uninitialized FuzzyBool.
+  FuzzyBool() { }
+
+  // Copy-constructor.
+  FuzzyBool(FuzzyBoolPOD const& val) : FuzzyBoolPOD{val.m_val} { }
+
+  // For internal usage (creating return values). Construct a FuzzyBool from an FuzzyBoolEnum.
+  explicit constexpr FuzzyBool(FuzzyBoolEnum val) : FuzzyBoolPOD{val} { }
+
+  // Construct from a non-literal bool (use True / False for literals).
+  explicit constexpr FuzzyBool(bool val) : FuzzyBoolPOD{val ? fuzzy_true : fuzzy_false} { }
+
+  // Assignment.
+  FuzzyBool& operator=(FuzzyBoolPOD const& val) { m_val = val.m_val; return *this; }
+
+  // Printing.
+  void print_on(std::ostream& os) const { print_FuzzyBoolPOD_on(os, m_val); }
+
+  // Accessors.
+  bool always() const { return m_val == fuzzy_true; }   // Returns true when True.
+  bool likely() const { return m_val & L; }             // Returns true when WasTrue or True.
+  bool unlikely() const { return !(m_val & L); }        // Returns true when WasFalse or False.
+  bool never() const { return m_val == fuzzy_false; }   // Returns true when False.
+#ifdef CWDEBUG
+  bool has_same_value_as(FuzzyBool const& fb) { return m_val == fb.m_val; }
+#endif
+  // Only use this when the value is certain.
+  explicit operator bool() const { ASSERT(m_val == fuzzy_true || m_val == fuzzy_false); return m_val == fuzzy_true; }
+
+  // Logic.
+
+  // Operator NOT; !T = F, !!x = x, !x != x.
+  // fb1 | !fb1
+  //  F  |  T
+  //  U  |  L
+  //  L  |  U
+  //  T  |  F
+  //
+  FuzzyBool operator!() const noexcept { return FuzzyBool{static_cast<FuzzyBoolEnum>(m_val ^ 0xc)}; }
+
+  [[gnu::always_inline]] friend inline FuzzyBool operator&&(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept;
+  [[gnu::always_inline]] friend inline FuzzyBool operator||(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept;
+  [[gnu::always_inline]] friend inline FuzzyBool operator!=(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept;
+  [[gnu::always_inline]] friend inline FuzzyBool operator==(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept;
+};
+
 FuzzyBool operator&&(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept
 {
-  return static_cast<FuzzyBoolEnum>((AND_table >> (4 * fb1.m_val + fb2.m_val)) & 0xc);
+  return FuzzyBool{static_cast<FuzzyBoolEnum>((AND_table >> (4 * fb1.m_val + fb2.m_val)) & 0xc)};
 }
 
 FuzzyBool operator||(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept
 {
-  return static_cast<FuzzyBoolEnum>((OR_table >> (4 * fb1.m_val + fb2.m_val)) & 0xc);
+  return FuzzyBool{static_cast<FuzzyBoolEnum>((OR_table >> (4 * fb1.m_val + fb2.m_val)) & 0xc)};
 }
 
 FuzzyBool operator!=(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept
 {
-  return static_cast<FuzzyBoolEnum>((XOR_table >> (4 * fb1.m_val + fb2.m_val)) & 0xc);
+  return FuzzyBool{static_cast<FuzzyBoolEnum>((XOR_table >> (4 * fb1.m_val + fb2.m_val)) & 0xc)};
 }
 
 FuzzyBool operator==(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept
 {
-  return static_cast<FuzzyBoolEnum>((NOT_XOR_table >> (4 * fb1.m_val + fb2.m_val)) & 0xf);
+  return FuzzyBool{static_cast<FuzzyBoolEnum>((NOT_XOR_table >> (4 * fb1.m_val + fb2.m_val)) & 0xf)};
 }
 
 #undef F
