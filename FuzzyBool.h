@@ -29,32 +29,80 @@
 
 namespace utils {
 
+namespace {
+
 // These values are and must be multiples of four (0, 1, 2 and 3 times 4).
-#define F 0
-#define U 4
-#define L 8
-#define T c
+static constexpr uint64_t F = 0;        // False
+static constexpr uint64_t U = 4;        // Unlikely (WasFalse)
+static constexpr uint64_t L = 8;        // Likely (WasTrue)
+static constexpr uint64_t T = 12;       // True
+static constexpr uint64_t bitmask = 12; // All bits used.
+
+} // namespace
 
 enum FuzzyBoolEnum : int {
-  fuzzy_false           = F,        // F: False
-  fuzzy_was_false       = U,        // U: Unlikely
-  fuzzy_was_true        = L,        // L: Likely
-  fuzzy_true            = L|U       // T: True          Note that the fact that fuzzy_true & fuzzy_was_true != 0 is used in the code.
+  fuzzy_false           = F,
+  fuzzy_was_false       = U,
+  fuzzy_was_true        = L,
+  fuzzy_true            = T
 };
 
 namespace {
 
-#define TABLE2(e00, e10, e20, e30, \
-               e01, e11, e21, e31, \
-               e02, e12, e22, e32, \
-               e03, e13, e23, e33) \
-  { 0x##e33##e32##e31##e30##e23##e22##e21##e20##e13##e12##e11##e10##e03##e02##e01##e00 }
+constexpr uint64_t table(uint64_t e00, uint64_t e10, uint64_t e20, uint64_t e30,
+                         uint64_t e01, uint64_t e11, uint64_t e21, uint64_t e31,
+                         uint64_t e02, uint64_t e12, uint64_t e22, uint64_t e32,
+                         uint64_t e03, uint64_t e13, uint64_t e23, uint64_t e33)
+{
+  return (e00      ) + (e10 << 16) + (e20 << 32) + (e30 << 48) +
+         (e01 << 4 ) + (e11 << 20) + (e21 << 36) + (e31 << 52) +
+         (e02 << 8 ) + (e12 << 24) + (e22 << 40) + (e32 << 56) +
+         (e03 << 12) + (e13 << 28) + (e23 << 44) + (e33 << 60);
+}
 
-#define TABLE(e00, e10, e20, e30, e01, e11, e21, e31, e02, e12, e22, e32, e03, e13, e23, e33) \
-       TABLE2(e00, e10, e20, e30, e01, e11, e21, e31, e02, e12, e22, e32, e03, e13, e23, e33)
+// Operator NOT
+//
+//    !T == F,
+//   !!x == x,
+//    !x != x.
+//
+// fb1 | !fb1
+//  F  |  T
+//  U  |  L
+//  L  |  U
+//  T  |  F
+//
 
-static constexpr uint64_t AND_table = TABLE(
-// Operator AND; True && x = x, False && x = False, x && x = x, x && y = y && x, wasTrue && wasFalse = wasFalse.
+// Operator AND
+//
+//      True && x == x,
+//     False && x == False,
+//         x && x == x,
+//         x && y == y && x,
+//   wasTrue && WasFalse == WasFalse.
+//
+// The latter can be argued as follows:
+// when a variable x has the value wasTrue then that means that it was
+// just read from an atomic_bool that had the value true but that might have
+// become false in the meantime, due to another thread writing false to it,
+// in which case the correct value of x would be false (since it is
+// supposed to be a copy of that atomic).
+// Likewise when a variable y has the value WasFalse then that means
+// that it was just read from an atomic_bool that had the value false but
+// that might have become true in the meantime, due to another thread writing
+// true to it, in which case the correct value of y would be true (since it
+// is supposed to be a copy of that atomic).
+//
+// Hence the value x == y *was* true == false (which is false), but it
+// might or might not have been changed (for example when x OR y changed
+// value). Therefore it should be interpreted as WasFalse. Most notably
+// it cannot be False, because means it is *certainly* false despite
+// what other threads have done in the meantime, nor can it be True,
+// nor can it be WasTrue -- because it wasn't.
+//
+// From the above rules the following table can be derived:
+//
+static constexpr uint64_t AND_table = table(
 // fb1 | fb2: F  U  L  T
 //     ------------------
   /* F | */   F, F, F, F,
@@ -63,8 +111,11 @@ static constexpr uint64_t AND_table = TABLE(
   /* T | */   F, U, L, T
 );
 
-static constexpr uint64_t OR_table = TABLE(
-// Operator OR, x || y = !(!x && !y)
+// Operator OR
+//
+//   x || y == !(!x && !y)
+//
+static constexpr uint64_t OR_table = table(
 // fb1 | fb2: F  U  L  T
 //     ------------------
   /* F | */   F, U, L, T,
@@ -73,8 +124,11 @@ static constexpr uint64_t OR_table = TABLE(
   /* T | */   T, T, T, T
 );
 
-static constexpr uint64_t XOR_table = TABLE(
-// Operator XOR, x ^ y = (x && !y) || (!x && y)
+// Operator XOR
+//
+//   x ^ y = (x && !y) || (!x && y)
+//
+static constexpr uint64_t XOR_table = table(
 // fb1 | fb2: F  U  L  T
 //     ------------------
   /* F | */   F, U, L, T,
@@ -83,8 +137,9 @@ static constexpr uint64_t XOR_table = TABLE(
   /* T | */   T, L, U, F
 );
 
-static constexpr uint64_t NOT_XOR_table = TABLE(
 // Operator NOT XOR
+//
+static constexpr uint64_t NOT_XOR_table = table(
 // fb1 | fb2: F  U  L  T
 //     ------------------
   /* F | */   T, L, U, F,
@@ -150,15 +205,7 @@ class FuzzyBool : public FuzzyBoolPOD
 
   // Logic.
 
-  // Operator NOT; !T = F, !!x = x, !x != x.
-  // fb1 | !fb1
-  //  F  |  T
-  //  U  |  L
-  //  L  |  U
-  //  T  |  F
-  //
-  FuzzyBool operator!() const noexcept { return FuzzyBool{static_cast<FuzzyBoolEnum>(m_val ^ 0xc)}; }
-
+  FuzzyBool operator!() const noexcept { return FuzzyBool{static_cast<FuzzyBoolEnum>(m_val ^ bitmask)}; }
   [[gnu::always_inline]] friend inline FuzzyBool operator&&(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept;
   [[gnu::always_inline]] friend inline FuzzyBool operator||(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept;
   [[gnu::always_inline]] friend inline FuzzyBool operator!=(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept;
@@ -167,29 +214,22 @@ class FuzzyBool : public FuzzyBoolPOD
 
 FuzzyBool operator&&(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept
 {
-  return FuzzyBool{static_cast<FuzzyBoolEnum>((AND_table >> (4 * fb1.m_val + fb2.m_val)) & 0xc)};
+  return FuzzyBool{static_cast<FuzzyBoolEnum>((AND_table >> (4 * fb1.m_val + fb2.m_val)) & bitmask)};
 }
 
 FuzzyBool operator||(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept
 {
-  return FuzzyBool{static_cast<FuzzyBoolEnum>((OR_table >> (4 * fb1.m_val + fb2.m_val)) & 0xc)};
+  return FuzzyBool{static_cast<FuzzyBoolEnum>((OR_table >> (4 * fb1.m_val + fb2.m_val)) & bitmask)};
 }
 
 FuzzyBool operator!=(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept
 {
-  return FuzzyBool{static_cast<FuzzyBoolEnum>((XOR_table >> (4 * fb1.m_val + fb2.m_val)) & 0xc)};
+  return FuzzyBool{static_cast<FuzzyBoolEnum>((XOR_table >> (4 * fb1.m_val + fb2.m_val)) & bitmask)};
 }
 
 FuzzyBool operator==(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept
 {
-  return FuzzyBool{static_cast<FuzzyBoolEnum>((NOT_XOR_table >> (4 * fb1.m_val + fb2.m_val)) & 0xf)};
+  return FuzzyBool{static_cast<FuzzyBoolEnum>((NOT_XOR_table >> (4 * fb1.m_val + fb2.m_val)) & bitmask)};
 }
-
-#undef F
-#undef U
-#undef L
-#undef T
-#undef TABLE
-#undef TABLE2
 
 } // namespace utils
