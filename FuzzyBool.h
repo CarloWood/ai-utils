@@ -193,13 +193,13 @@ class FuzzyBool : public FuzzyBoolPOD
   void print_on(std::ostream& os) const { print_FuzzyBoolPOD_on(os, m_val); }
 
   // Accessors.
-  bool always() const { return m_val == fuzzy_true; }   // Returns true when True.
-  bool likely() const { return m_val & L; }             // Returns true when WasTrue or True.
-  bool unlikely() const { return !(m_val & L); }        // Returns true when WasFalse or False.
-  bool never() const { return m_val == fuzzy_false; }   // Returns true when False.
-#ifdef CWDEBUG
-  bool has_same_value_as(FuzzyBool const& fb) { return m_val == fb.m_val; }
-#endif
+  bool is_true() const { return m_val == fuzzy_true; }                    // Returns true when True.
+  bool is_transitory_true() const { return m_val == fuzzy_was_true; }     // Returns true when WasTrue.
+  bool is_momentary_true() const { return m_val & L; }                    // Returns true when WasTrue or True.
+  bool is_momentary_false() const { return !(m_val & L); }                // Returns true when WasFalse or False.
+  bool is_transitory_false() const { return m_val == fuzzy_was_false; }   // Returns true when WasFalse.
+  bool is_false() const { return m_val == fuzzy_false; }                  // Returns true when False.
+
   // Only use this when the value is certain.
   explicit operator bool() const { ASSERT(m_val == fuzzy_true || m_val == fuzzy_false); return m_val == fuzzy_true; }
 
