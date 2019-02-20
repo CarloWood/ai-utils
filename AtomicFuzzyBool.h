@@ -58,7 +58,7 @@ class AtomicFuzzyBool
   bool is_transitory_true(std::memory_order order = std::memory_order_seq_cst) const { return m_aval.load(order) == fuzzy_was_true; }   // Returns true when WasTrue;
   bool is_momentary_true(std::memory_order order = std::memory_order_seq_cst) const { return m_aval.load(order) & fuzzy_was_true; }     // Returns true when WasTrue or True.
   bool is_momentary_false(std::memory_order order = std::memory_order_seq_cst) const { return !(m_aval.load(order) & fuzzy_was_true); } // Returns true when WasFalse or False.
-  bool is_transitory_false(std::memory_order order = std::memory_order_seq_cst) const { return m_aval.load(order) == fuzzy_was_false; } // Returns true when WasTrue;
+  bool is_transitory_false(std::memory_order order = std::memory_order_seq_cst) const { return m_aval.load(order) == fuzzy_was_false; } // Returns true when WasFalse;
   bool is_false(std::memory_order order = std::memory_order_seq_cst) const { return m_aval.load(order) == fuzzy_false; }                // Returns true when False.
 
   FuzzyBool fetch_invert(std::memory_order order = std::memory_order_seq_cst)
