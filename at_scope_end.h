@@ -25,7 +25,7 @@
 
 // Usage:
 //
-// auto&& f = at_scope_end(/* lambda expression to be executed when leaving scope */ });
+// auto&& f = at_scope_end(/* lambda expression to be executed when leaving scope */);
 //
 // Note: in most cases using just 'auto' instead of a universal reference
 // will generate the same code (and will always work), but some compilers

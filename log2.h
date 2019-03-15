@@ -1,7 +1,7 @@
 // ai-utils -- C++ Core utilities
 //
 //! @file
-//! @brief Definition of clz, log2 and ceil_log2.
+//! @brief Definition of log2 and ceil_log2.
 //
 // Copyright (C) 2018 Carlo Wood.
 //
