@@ -25,6 +25,7 @@
 
 #pragma once
 
+#include "utils/FuzzyBool.h"
 #include <atomic>
 #include <boost/intrusive_ptr.hpp>
 #include "debug.h"
@@ -44,6 +45,43 @@
 //   }                                                          // m_count = 1
 //   my_class->print();
 // }                                                            // m_count = 0 --> destruction of MyClass.
+//
+//
+// Note 1
+//
+// If one wishes to make sure that an object is (temporarily) not deleted,
+// but cannot use a boost::intrusive_ptr<MyClass> because there is no scope
+// where it can be created and destructed, then do NOT call
+// intrusive_ptr_add_ref(ptr) / intrusive_ptr_release(ptr)
+// as a pair to achieve that.
+//
+// Instead, use ptr->inhibit_deletion() / ptr->allow_deletion() as a pair.
+//
+//
+// Note 2
+//
+// An object that is derived from AIRefCount should only ever be created on the
+// heap, aka by a call to new. If the resulting pointer is not passed a
+// boost::intrusive_ptr<MyClass> then the reference counter m_count remains zero.
+// This means that most of the API cannot be used anymore.
+//
+// The only member function that is still guaranteed to work is the debug
+// function is_destructed().
+//
+// On the other hand; it is allowed to "fake" a boost::intrusive_ptr<MyClass>
+// by simply calling intrusive_ptr_add_ref() after creation. In that case
+// everything works as expected, except that the object can be 'released'
+// by doing a call to intrusive_ptr_release() (once!).
+//
+// In other words, the following is allowed:
+//
+//   MyClass* ptr = new MyClass;        // m_count = 0
+//   intrusive_ptr_add_ref(ptr);        // m_count = 1
+//
+// And then later, somewhere else, do:
+//
+//   intrusive_ptr_release(ptr);        // Cancel initial call to intrusive_ptr_add_ref.
+//                                      // This *might* cause ptr to be destructed immediately.
 
 class AIRefCount
 {
@@ -68,9 +106,10 @@ class AIRefCount
     }
   }
 
-  void inhibit_deletion(DEBUG_ONLY(bool can_cause_immediate_allow_deletion = true)) const
+  // Increment m_count; returns the previous value (mainly for debugging purposes).
+  int inhibit_deletion(DEBUG_ONLY(bool can_cause_immediate_allow_deletion = true)) const
   {
-    DEBUG_ONLY(int count =) m_count.fetch_add(1, std::memory_order_relaxed);
+    int count = m_count.fetch_add(1, std::memory_order_relaxed);
     // Because m_count is overwritten with s_deleted upon destruction when CWDEBUG is defined, a reference count of
     // zero means that this object is probably still being constructed and wasn't passed to a boost::intrusive_ptr _yet_.
     // If under those circumstances an intrusive_ptr_add_ref/intrusive_ptr_release pair,
@@ -105,15 +144,19 @@ class AIRefCount
     // boost::intrusive_ptr<A> p = new A;
     // p->f();
     ASSERT(!can_cause_immediate_allow_deletion || count > 0);
+    return count;
   }
 
-  void allow_deletion() const
+  // Balance a call to inhibit_deletion(). Decrements m_count; returns the previous value (mainly for debugging purposes).
+  int allow_deletion() const
   {
-    if (m_count.fetch_sub(1, std::memory_order_release) == 1)
+    int count = m_count.fetch_sub(1, std::memory_order_release);
+    if (count == 1)
     {
       std::atomic_thread_fence(std::memory_order_acquire);
       delete this;
     }
+    return count;
   }
 
  private:
@@ -129,8 +172,11 @@ class AIRefCount
   void swap(AIRefCount&) { }
 
  public:
-  bool unique() const { return std::atomic_load_explicit(&m_count, std::memory_order_relaxed) == 1; }
-  int ref_count() const { return m_count; }
+  // Returns true if this there is only one reference to this object left.
+  // If this function returns true it is therefore guaranteed to stay true,
+  // but if it returns false it might become true shortly afterwards.
+  utils::FuzzyBool unique() const { return std::atomic_load_explicit(&m_count, std::memory_order_relaxed) == 1 ? fuzzy::True : fuzzy::WasFalse; }
+
 #ifdef CWDEBUG
   // Pretty unreliable, but sometimes useful.
   bool is_destructed() const { return std::atomic_load_explicit(&m_count, std::memory_order_relaxed) == s_deleted; }
