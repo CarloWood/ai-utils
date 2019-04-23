@@ -69,3 +69,6 @@
 #define PRAGMA_DIAGNOSTIC_POP \
   _Pragma("GCC diagnostic pop")
 #endif
+
+// Signed sizeof.
+#define ssizeof (long)sizeof
