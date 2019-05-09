@@ -25,6 +25,15 @@
 
 #pragma once
 
+// Calculate the hash of a stream of characters.
+//
+// Example usage:
+//
+//   utils::StreamHasher hasher;
+//   utils::RandomStreamBuf random_streambuf(1000, 'A', 'Z');
+//   hasher << &random_streambuf;
+//   ASSERT(hasher.digest() == 0xf373022bdeab5158);
+
 #include <ostream>
 #include <array>
 #include <algorithm>
@@ -42,7 +51,8 @@ class HasherStreamBuf : public std::streambuf
 
   void add_and_reset_put_area()
   {
-    boost::hash_combine(m_hash, boost::hash_range(pbase(), pptr()));
+    if (pptr() > pbase())
+      boost::hash_combine(m_hash, boost::hash_range(pbase(), pptr()));
     setp(&m_buf[0], &m_buf[bufsize]);
   }
 
@@ -67,6 +77,24 @@ class HasherStreamBuf : public std::streambuf
     add_and_reset_put_area();
     return m_hash;
   }
+
+  struct size_hash_pair_t {
+    size_t size;
+    size_t hash;
+  };
+
+  // For streams with characters in the range ['A', 'Z'].
+  static constexpr std::array<size_hash_pair_t, 9> size_hash_pairs = {{
+    { 1, 0xaedc04cfa2e5b999 },
+    { 10, 0xa32fa7216c0d9b4b },
+    { 100, 0xd82a1e09aeb1383 },
+    { 1000, 0xf373022bdeab5158 },
+    { 10000, 0x345360b3a8fa2b73 },
+    { 100000, 0x4755f0873f1b649 },
+    { 1000000, 0x1e6fca364672c0d },
+    { 10000000, 0xd8ef85366ad39522 },
+    { 100000000, 0x737dddb5f390f1aa }
+  }};
 };
 
 class StreamHasher : public std::ostream
@@ -76,17 +104,9 @@ class StreamHasher : public std::ostream
 
  public:
   StreamHasher() { rdbuf(&m_streambuf); }
+  ~StreamHasher() { }
+
   size_t digest() { return m_streambuf.hash(); }
 };
 
 } // namespace utils
-
-#ifdef EXAMPLE_CODE
-int main()
-{
-  utils::RandomStreamBuf random(10000, 'a', 'z'); // Create a streambuf that produces 100 pseudo-random characters in the interval ['a', 'z'].
-  utils::StreamHasher hasher;
-  hasher << &random;
-  std::cout << std::hex << hasher.digest() << '\n';
-}
-#endif

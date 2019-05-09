@@ -65,6 +65,7 @@ class RandomStream : public std::istream
 
  public:
   RandomStream(size_t size, char b, char e) : m_random_streambuf(size, b, e) { rdbuf(&m_random_streambuf); }
+  ~RandomStream() { }
 };
 
 } // namespace utils
