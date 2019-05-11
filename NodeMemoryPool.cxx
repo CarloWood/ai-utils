@@ -68,7 +68,7 @@ struct Begin
 
 static_assert(offsetof(FreeList, m_next) == offsetof(Allocated, data), "Unexpected alignment.");
 
-#ifdef CWDEBUG
+#if defined(CWDEBUG) || defined(DEBUG)
 static_assert(alignof(Chunk) == alignof(size_t), "Unexpected alignment of Chunk.");     // Because we shift all Chunk`s by a size_t (technically, alignof(size_t)
                                                                                         // should be a multiple of alignof(Chunk)).
 static_assert(is_power_of_two(alignof(Chunk)), "Alignment of Chunk is expected to be a power of 2.");

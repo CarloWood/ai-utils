@@ -149,8 +149,8 @@
 #pragma once
 
 #include "debug.h"
-#if defined(DEBUGGLOBAL) && (!defined(CWDEBUG) || !CWDEBUG_ALLOC)
-#error "You cannot define DEBUGGLOBAL without defining CWDEBUG and CWDEBUG_ALLOC"
+#if defined(DEBUGGLOBAL) && (!defined(CWDEBUG) || !CWDEBUG_ALLOC || !CWDEBUG_LOCATION)
+#error "You cannot define DEBUGGLOBAL without defining CWDEBUG, CWDEBUG_ALLOC and CWDEBUG_LOCATION."
 #endif
 #ifdef DEBUGGLOBAL
 #include "utils/macros.h"

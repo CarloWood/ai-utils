@@ -31,6 +31,8 @@
 
 #include <ostream>
 
+namespace AIAlert {
+
 //! For debugging purposes. Write a AIAlert::Error to \a os.
 std::ostream& operator<<(std::ostream& os, AIAlert::Error const& error)
 {
@@ -60,3 +62,5 @@ std::ostream& operator<<(std::ostream& os, AIAlert::Error const& error)
   }
   return os;
 }
+
+} // namespace AIAlert

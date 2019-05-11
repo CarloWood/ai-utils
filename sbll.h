@@ -374,7 +374,7 @@ class SbllList: public LIST_IMPL
   SbllList(char const* listname) : LIST_IMPL(listname) { }
   SbllList() : LIST_IMPL("<unknown>") { }
 #else
-  SbllList(char const* DEBUG_ONLY(listname))
+  SbllList(char const* CWDEBUG_ONLY(listname))
   {
     Dout(dc::llists, "this = " << this << "; " << libcwd::type_info_of(*this).demangled_name() << "(\"" << listname << "\")" );
   }
@@ -481,7 +481,7 @@ class SbllNode : public NODE_IMPL
   {
     Dout(dc::llists, "this = " << this << "; Default done() (nothing to do)");
   }
-  virtual void deceased(SbllNodeImpl* DEBUG_ONLY(node), void* DEBUG_ONLY(label))
+  virtual void deceased(SbllNodeImpl* CWDEBUG_ONLY(node), void* CWDEBUG_ONLY(label))
   {
     Dout(dc::llists, "this = " << this << "; Default deceased(" << node << ", " << label << "), " << "deleting this too");
     del();

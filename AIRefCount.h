@@ -86,7 +86,7 @@
 class AIRefCount
 {
  private:
-#ifdef CWDEBUG
+#if CW_DEBUG
   static constexpr int s_deleted = -0x6de1e7ed;                 // A negative magic number.
 #endif
   mutable std::atomic<int> m_count;
@@ -167,7 +167,7 @@ class AIRefCount
  protected:
   AIRefCount() : m_count(0) { }
   AIRefCount(AIRefCount const&) : m_count(0) { }
-  virtual ~AIRefCount() { Debug(m_count = s_deleted); }
+  virtual ~AIRefCount() { DEBUG_ONLY(m_count = s_deleted); }
   AIRefCount& operator=(AIRefCount const&) { return *this; }
   void swap(AIRefCount&) { }
 
@@ -177,7 +177,7 @@ class AIRefCount
   // but if it returns false it might become true shortly afterwards.
   utils::FuzzyBool unique() const { return std::atomic_load_explicit(&m_count, std::memory_order_relaxed) == 1 ? fuzzy::True : fuzzy::WasFalse; }
 
-#ifdef CWDEBUG
+#if CW_DEBUG
   // Pretty unreliable, but sometimes useful.
   bool is_destructed() const { return std::atomic_load_explicit(&m_count, std::memory_order_relaxed) == s_deleted; }
 #endif

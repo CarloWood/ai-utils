@@ -28,7 +28,10 @@
 #include <iosfwd>                       // std::ostream&
 
 namespace AIAlert {
-  class Error;
-} // namespace AIAlert
 
-extern std::ostream& operator<<(std::ostream& os, AIAlert::Error const& error);
+class Error;
+
+// Seems that clang++ needs this to be defined here instead of global namespace for gtest to work.
+std::ostream& operator<<(std::ostream& os, Error const& error);
+
+} // namespace AIAlert

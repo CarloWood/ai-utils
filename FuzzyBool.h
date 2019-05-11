@@ -206,28 +206,28 @@ class FuzzyBool : public FuzzyBoolPOD
   // Logic.
 
   FuzzyBool operator!() const noexcept { return FuzzyBool{static_cast<FuzzyBoolEnum>(m_val ^ bitmask)}; }
-  [[gnu::always_inline]] friend inline FuzzyBool operator&&(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept;
-  [[gnu::always_inline]] friend inline FuzzyBool operator||(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept;
-  [[gnu::always_inline]] friend inline FuzzyBool operator!=(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept;
-  [[gnu::always_inline]] friend inline FuzzyBool operator==(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept;
+  friend inline FuzzyBool operator&&(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept;
+  friend inline FuzzyBool operator||(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept;
+  friend inline FuzzyBool operator!=(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept;
+  friend inline FuzzyBool operator==(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept;
 };
 
-FuzzyBool operator&&(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept
+[[gnu::always_inline]] FuzzyBool operator&&(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept
 {
   return FuzzyBool{static_cast<FuzzyBoolEnum>((AND_table >> (4 * fb1.m_val + fb2.m_val)) & bitmask)};
 }
 
-FuzzyBool operator||(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept
+[[gnu::always_inline]] FuzzyBool operator||(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept
 {
   return FuzzyBool{static_cast<FuzzyBoolEnum>((OR_table >> (4 * fb1.m_val + fb2.m_val)) & bitmask)};
 }
 
-FuzzyBool operator!=(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept
+[[gnu::always_inline]] FuzzyBool operator!=(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept
 {
   return FuzzyBool{static_cast<FuzzyBoolEnum>((XOR_table >> (4 * fb1.m_val + fb2.m_val)) & bitmask)};
 }
 
-FuzzyBool operator==(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept
+[[gnu::always_inline]] FuzzyBool operator==(FuzzyBoolPOD const& fb1, FuzzyBoolPOD const& fb2) noexcept
 {
   return FuzzyBool{static_cast<FuzzyBoolEnum>((NOT_XOR_table >> (4 * fb1.m_val + fb2.m_val)) & bitmask)};
 }

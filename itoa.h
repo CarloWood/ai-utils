@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cmath>
+#include "constexpr_ceil.h"
 
 namespace utils {
 
@@ -19,7 +20,7 @@ char const* itoa(std::array<char, sz>& buf, T n)
 {
   static constexpr int is_signed = std::is_signed<T>::value ? 1 : 0;
   // 2.40824 == ln(256) / ln(10), converting from byte length to digits.
-  static_assert(sz > std::ceil(2.40824 * (sizeof(T) - 0.125 * is_signed)) + is_signed,
+  static_assert(sz > constexpr_ceil(2.40824 * (sizeof(T) - 0.125 * is_signed)) + is_signed,
       "The size of the array is not large enough to hold the maximum value of T.");
   if (is_signed)
     return backwards_itoa_signed(&buf[sz], n, 10);

@@ -27,7 +27,7 @@
 
 #include "debug.h"
 #include <type_traits>
-#ifdef CWDEBUG
+#if defined(CWDEBUG) || defined(DEBUG)
 #include "is_power_of_two.h"
 #endif
 
