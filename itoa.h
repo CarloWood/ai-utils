@@ -13,7 +13,7 @@ char* backwards_itoa_signed(char* p, long n, int base);
 #pragma GCC diagnostic ignored "-Wattributes"
 
 template<typename T, size_t sz>
-__always_inline char const* itoa(std::array<char, sz>& buf, T n);
+[[gnu::always_inline]] char const* itoa(std::array<char, sz>& buf, T n);
 
 template<typename T, size_t sz>
 char const* itoa(std::array<char, sz>& buf, T n)
