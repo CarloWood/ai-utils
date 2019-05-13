@@ -25,7 +25,7 @@
 
 #pragma once
 
-[[gnu::always_inline]] static void cpu_relax()
+[[gnu::always_inline]] inline static void cpu_relax()
 {
 #if defined(__x86_64__) || defined(__i386__)
   asm volatile("pause" ::: "memory");
