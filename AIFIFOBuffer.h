@@ -49,8 +49,8 @@
 //
 // The pointers, m_head, m_tail and m_readptr, move from left to right; but cannot overtake eachother.
 // If they pass the end, they wrap around to the beginning again. m_tail can become equal to m_readptr,
-// which can become equal to m_head (buffer empty); but m_head advance beyond one place before m_tail
-// at which point the buffer is full.
+// which can become equal to m_head (buffer empty); but m_head can't advance beyond one place before
+// m_tail at which point the buffer is full.
 //
 // Next to be overwritten: CC ; Next returned to be read: GG ; Still waiting to be copied and popped: EE and FF.
 //
