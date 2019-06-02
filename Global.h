@@ -150,7 +150,11 @@
 
 #include "debug.h"
 #if defined(DEBUGGLOBAL) && (!defined(CWDEBUG) || !CWDEBUG_ALLOC || !CWDEBUG_LOCATION)
-#error "You cannot define DEBUGGLOBAL without defining CWDEBUG, CWDEBUG_ALLOC and CWDEBUG_LOCATION."
+#ifdef CWDEBUG
+#error "Please configure with --disable-debug-global or (re)configure libcwd with --enable-alloc --enable-location."
+#else
+#error "You cannot define DEBUGGLOBAL without having CWDEBUG, CWDEBUG_ALLOC and CWDEBUG_LOCATION defined."
+#endif
 #endif
 #ifdef DEBUGGLOBAL
 #include "utils/macros.h"
