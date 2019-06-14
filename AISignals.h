@@ -57,7 +57,7 @@ class Signals : public Singleton<Signals>
 #endif
 
  private:
-  int priv_reserve(int number_of_RT_signals);
+  void priv_reserve(int number_of_RT_signals);
   int priv_reserve_and_next_rt_signum();
   int priv_next_rt_signum();
 
@@ -67,8 +67,9 @@ class Signals : public Singleton<Signals>
   void register_callback(int signum, void (*cb)(int));
   static int reserve_and_next_rt_signum() { return instantiate().priv_reserve_and_next_rt_signum(); }
   static int next_rt_signum() { return instance().priv_next_rt_signum(); }
-  static void unblock(sigset_t const* sigmask);
-  static void unblock(int signum, void (*cb)(int) = SIG_IGN);
+  static void unblock(sigset_t* sigmask, int signum, void (*cb)(int));
+  static void unblock(sigset_t const* sigmask) { sigprocmask(SIG_UNBLOCK, sigmask, NULL); }
+  static void unblock(int signum, void (*cb)(int) = SIG_IGN) { sigset_t sigmask; unblock(&sigmask, signum, cb); }
   static void default_handler(int signum) { unblock(signum, SIG_DFL); }
 
   void print_on(std::ostream& os) const;

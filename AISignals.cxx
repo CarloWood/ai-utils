@@ -98,7 +98,7 @@ void Signals::print_on(std::ostream& os) const
   os << "; reserved number of RT signals: " << m_number_of_RT_signals << '.';
 }
 
-int Signals::priv_reserve(int number_of_RT_signals)
+void Signals::priv_reserve(int number_of_RT_signals)
 {
   int prev_number_of_RT_signals = m_number_of_RT_signals;
   m_number_of_RT_signals += number_of_RT_signals;
@@ -166,9 +166,14 @@ void Signals::reserve(std::vector<int> const& signums, unsigned int number_of_RT
     else
       Dout(dc::warning, signal_name_str(signum) << " was already registered.");
   }
-  // Block all signals before creating any threads.
+  // Block all reserved signals before creating any threads.
+  sigset_t rt_signals;
+  sigemptyset(&rt_signals);
+  for (unsigned int signum = SIGRTMIN; signum < SIGRTMIN + number_of_RT_signals; ++signum)
+    sigaddset(&rt_signals, signum);
   sigset_t all_signals;
-  sigfillset(&all_signals);
+  sigemptyset(&all_signals);
+  sigorset(&all_signals, &m_reserved_signals, &rt_signals);
   sigprocmask(SIG_BLOCK, &all_signals, nullptr);
 }
 
@@ -201,21 +206,14 @@ void Signals::register_callback(int signum, void (*cb)(int))
 }
 
 //static
-void Signals::unblock(sigset_t const* sigmask)
+void Signals::unblock(sigset_t* sigmask, int signum, void (*cb)(int))
 {
-  sigprocmask(SIG_UNBLOCK, sigmask, NULL);
-}
-
-//static
-void Signals::unblock(int signum, void (*cb)(int))
-{
-  DoutEntering(dc::notice, "Signals::unblock(" << signum << ", " << (void*)cb << ")");
-  sigset_t sigmask;
-  sigemptyset(&sigmask);
-  sigaddset(&sigmask, signum);
+  DoutEntering(dc::notice, "Signals::unblock(sigmask, " << signum << ", " << (void*)cb << ")");
+  sigemptyset(sigmask);
+  sigaddset(sigmask, signum);
   if (cb != SIG_IGN)
     instance().register_callback(signum, cb);
-  unblock(&sigmask);
+  unblock(sigmask);
 }
 
 } // namespace utils
