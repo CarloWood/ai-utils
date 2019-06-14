@@ -172,7 +172,7 @@ class AIRefCount
   void swap(AIRefCount&) { }
 
  public:
-  // Returns true if this there is only one reference to this object left.
+  // Returns true if there is only one reference to this object left.
   // If this function returns true it is therefore guaranteed to stay true,
   // but if it returns false it might become true shortly afterwards.
   utils::FuzzyBool unique() const { return std::atomic_load_explicit(&m_count, std::memory_order_relaxed) == 1 ? fuzzy::True : fuzzy::WasFalse; }
