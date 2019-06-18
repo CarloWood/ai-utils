@@ -47,7 +47,7 @@ class Signals : public Singleton<Signals>
   ~Signals();
   Signals(Signals const&) = delete;
 
-  sigset_t m_reserved_signals;          // The signals that this application is interested in. All other signals will be blocked.
+  sigset_t m_reserved_signals;          // The signals that this application is interested in. All other signals use their default handler.
   std::mutex m_next_rt_signum_mutex;
   int m_number_of_RT_signals;
   int m_next_rt_signum;
@@ -71,11 +71,50 @@ class Signals : public Singleton<Signals>
   static void unblock(sigset_t const* sigmask) { sigprocmask(SIG_UNBLOCK, sigmask, NULL); }
   static void unblock(int signum, void (*cb)(int) = SIG_IGN) { sigset_t sigmask; unblock(&sigmask, signum, cb); }
   static void default_handler(int signum) { unblock(signum, SIG_DFL); }
+  static void block_and_unregister(int signum);
 
   void print_on(std::ostream& os) const;
 };
 
 } // namespace utils
+
+// Usage, in main(), before creating any thread use:
+//
+//      AISignals signals({SIGINT, SIGABRT}, 3);     // Use signals SIGINT, SIGABRT and three RT signals.
+//
+// Obtain the three reserved RT signal numbers by three calls to utils::Signals::next_rt_signum().
+//
+// All these signals will be ignored by default (SIG_IGN). Signals that are not mentioned
+// or reserved will keep their default handler (for example, by passing SIGINT that signal won't
+// interrupt the program anymore (ie, pressing control-C will stop working), but if you don't
+// pass it then that still works as normal).
+//
+// Signal handlers can be added for the signals that are passed (preferably from main) with
+//
+//      signals.register_callback(signum, my_callback);
+//
+// Or to reinstall the default handler:
+//
+//      signals.default_handler(signum);
+//
+// In threads, optionally unblock signals again with:
+//
+//      utils::Signals::unblock(signum);
+//
+// It is also possible to combine this with setting a handler:
+//
+//      utils::Signals::unblock(signum, my_callback);
+//
+// instead of using signals.register_callback.
+//
+// Note that a thread that is created inherits the signal mask of the parent thread;
+// so when you unblock a signal and then create a thread, then that signal is also
+// unblocked in the new thread.
+//
+// Signals are handled by a random thread of the threads that have that signal unblocked.
+//
+// Also note that handlers are per process. You can not set a different handler in
+// different threads.
 
 class AISignals
 {
@@ -84,6 +123,7 @@ class AISignals
 
   AISignals(int signum, unsigned int number_of_RT_signals = 0);
   AISignals(std::vector<int> signums, unsigned int number_of_RT_signals = 0);
+  AISignals(std::initializer_list<int> signums, unsigned int number_of_RT_signals = 0) { AISignals(std::vector<int>(signums), number_of_RT_signals); }
 
   void register_callback(int signum, void (*cb)(int));
   void default_handler(int signum);

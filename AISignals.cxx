@@ -216,6 +216,25 @@ void Signals::unblock(sigset_t* sigmask, int signum, void (*cb)(int))
   unblock(sigmask);
 }
 
+//static
+void Signals::block_and_unregister(int signum)
+{
+  DoutEntering(dc::notice, "Signals::block_and_unregister(" << signum << ")");
+  sigset_t sigmask;
+  sigemptyset(&sigmask);
+  sigaddset(&sigmask, signum);
+  sigprocmask(SIG_BLOCK, &sigmask, NULL);
+  std::lock_guard<std::mutex> lock(instance().m_callback_mutex);
+  struct sigaction action;
+  std::memset(&action, 0, sizeof(struct sigaction));
+  action.sa_handler = SIG_IGN;
+  if (sigaction(signum, &action, NULL) == -1)
+    DoutFatal(dc::core|error_cf, "sigaction(" << signum << ", " << (void*)&action << ", NULL) = -1");
+#if CW_DEBUG
+  sigdelset(&instance().m_callback_set, signum);
+#endif
+}
+
 } // namespace utils
 
 AISignals::AISignals(std::vector<int> signums, unsigned int number_of_RT_signals)
