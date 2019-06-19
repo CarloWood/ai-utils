@@ -28,6 +28,7 @@
 #include "AISignals.h"
 #include "macros.h"
 #include <string>
+#include <cstring>
 
 namespace utils {
 
@@ -106,7 +107,9 @@ void Signals::priv_reserve(int number_of_RT_signals)
   // This is necessary because threads created before instantiating AISignals will receive all signals,
   // which is probably not what you want. Instead register the signals that your thread is interested
   // in afterwards, at the start of your thread.
+#ifdef CWDEBUG
   ASSERT(!NAMESPACE_DEBUG::threads_created);
+#endif
   // There are only 30 or so Real Time signals available.
   ASSERT(SIGRTMIN + m_number_of_RT_signals < SIGRTMAX);
   struct sigaction action;
