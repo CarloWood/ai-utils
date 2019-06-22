@@ -58,10 +58,9 @@ class B
     };
   };
 
+  // These two lines must be in THIS order (clone_VT first)!
+  virtual VT_type* clone_VT() { return VT_ptr.clone(this); }                         // Make a deep copy of VT_ptr.
   utils::VTPtr<B> VT_ptr;                                                            // Virtual table pointer of this instance.
-
-  // Make a deep copy of VT_ptr.
-  virtual VT_type* clone_VT() { return VT_ptr.clone(this); }
 
   B() : VT_ptr(this) { }                                                             // Initialize VT_ptr with `this'.
 
@@ -106,10 +105,9 @@ class D : public B
     };
   };
 
+  // These two lines must be in THIS order (clone_VT first)!
+  VT_type* clone_VT() override { return VT_ptr.clone(this); }                        // Make a deep copy of VT_ptr.
   utils::VTPtr<D, B> VT_ptr;                                                         // Virtual table pointer of this instance.
-
-  // Make a deep copy of VT_ptr.
-  VT_type* clone_VT() override { return VT_ptr.clone(this); }
 
   D() : VT_ptr(this) { }                                                             // Initialize VT_ptr with `this'.
 
@@ -141,12 +139,12 @@ struct VTPtrBase
 
   VTPtrBase(VT_type const* vt_ptr) : VT_ptr(vt_ptr) { }
 
-  // If the static_assert fails, add the following two lines to class Self, *above* its declaration of VT_ptr.
+  // If the static_assert fails, add the following two lines to class Self, *ABOVE* its declaration of VT_ptr.
 #if -0
-  // Make a deep copy of VT_ptr.
-  VT_type* clone_VT() override { return VT_ptr.clone(this); }
+  VT_type* clone_VT() override { return VT_ptr.clone(this); }   // <-- Add this line, before:
+  utils::VTPtr<Self, ...> VT_ptr;       // <-- you already have this line. Make sure 'Self' is the current class, followed by the class(es) it is derived from.
 #endif
-  static_assert(HasCloneMethod<Self>::value, "Class Self which has a VTPtr<Self, ...> member, must override void clone_VT()!");
+  static_assert(HasCloneMethod<Self>::value, "Class Self which has a member VTPtr<Self, ...> VT_ptr, must override void clone_VT() (*before* the declaration of VT_ptr!)");
 };
 
 template<class Self, class Base1 = void, class Base2 = void>
