@@ -233,6 +233,7 @@ void Signals::block_and_unregister(int signum)
   action.sa_handler = SIG_IGN;
   if (sigaction(signum, &action, NULL) == -1)
     DoutFatal(dc::core|error_cf, "sigaction(" << signum << ", " << (void*)&action << ", NULL) = -1");
+  sigdelset(&instance().m_reserved_signals, signum);
 #if CW_DEBUG
   sigdelset(&instance().m_callback_set, signum);
 #endif
