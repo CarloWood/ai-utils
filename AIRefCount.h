@@ -154,6 +154,7 @@ class AIRefCount
     if (count == 1)
     {
       std::atomic_thread_fence(std::memory_order_acquire);
+      DEBUG_ONLY(m_count = s_deleted);
       delete this;
     }
     return count;
@@ -167,7 +168,7 @@ class AIRefCount
  protected:
   AIRefCount() : m_count(0) { }
   AIRefCount(AIRefCount const&) : m_count(0) { }
-  virtual ~AIRefCount() { DEBUG_ONLY(m_count = s_deleted); }
+  virtual ~AIRefCount() noexcept { }
   AIRefCount& operator=(AIRefCount const&) { return *this; }
   void swap(AIRefCount&) { }
 
