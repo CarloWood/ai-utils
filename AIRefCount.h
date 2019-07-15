@@ -102,6 +102,7 @@ class AIRefCount
     if (ptr->m_count.fetch_sub(1, std::memory_order_release) == 1)
     {
       std::atomic_thread_fence(std::memory_order_acquire);
+      DEBUG_ONLY(ptr->m_count = s_deleted);
       delete ptr;
     }
   }
@@ -148,14 +149,18 @@ class AIRefCount
   }
 
   // Balance a call to inhibit_deletion(). Decrements m_count; returns the previous value (mainly for debugging purposes).
-  int allow_deletion() const
+  // If defer_delete is true however, then the object must be deleted by the caller iff the returned value is 1.
+  int allow_deletion(bool defer_delete = false) const
   {
     int count = m_count.fetch_sub(1, std::memory_order_release);
     if (count == 1)
     {
       std::atomic_thread_fence(std::memory_order_acquire);
-      DEBUG_ONLY(m_count = s_deleted);
-      delete this;
+      if (!defer_delete)
+      {
+        DEBUG_ONLY(m_count = s_deleted);
+        delete this;
+      }
     }
     return count;
   }
@@ -180,6 +185,8 @@ class AIRefCount
 
 #if CW_DEBUG
   // Pretty unreliable, but sometimes useful.
-  bool is_destructed() const { return std::atomic_load_explicit(&m_count, std::memory_order_relaxed) == s_deleted; }
+  bool is_destructed() const { int cnt = std::atomic_load_explicit(&m_count, std::memory_order_relaxed); return cnt < 0; }
+  // Used when deferred deleting an object.
+  void mark_deleted() const { m_count = s_deleted; }
 #endif
 };
