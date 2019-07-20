@@ -71,4 +71,7 @@ fi
 
 AC_LANG_RESTORE
 
+# Find the cacheline size.
+CW_SYS_CACHELINE_SIZE
+
 AH_BOTTOM([#include "utils/config.h"])

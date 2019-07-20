@@ -47,3 +47,8 @@
 
 //
 //
+// cacheline_size_c
+//
+// A typed constexpr for the cacheline size determined during configure.
+
+static constexpr int cacheline_size_c = CW_CACHELINE_SIZE;
