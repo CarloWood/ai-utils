@@ -150,10 +150,10 @@ class AIRefCount
 
   // Balance a call to inhibit_deletion(). Decrements m_count; returns the previous value (mainly for debugging purposes).
   // If defer_delete is true however, then the object must be deleted by the caller iff the returned value is 1.
-  int allow_deletion(bool defer_delete = false) const
+  int allow_deletion(bool defer_delete = false, int count = 1) const
   {
-    int count = m_count.fetch_sub(1, std::memory_order_release);
-    if (count == 1)
+    int new_count = m_count.fetch_sub(count, std::memory_order_release);
+    if (new_count == 1)
     {
       std::atomic_thread_fence(std::memory_order_acquire);
       if (!defer_delete)
@@ -162,7 +162,7 @@ class AIRefCount
         delete this;
       }
     }
-    return count;
+    return new_count;
   }
 
  private:
