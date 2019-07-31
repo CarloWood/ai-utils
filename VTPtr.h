@@ -40,6 +40,8 @@ class B
     void (*_x)(B*, int);
     void (*_of)(B*, int);
     void (*_y)(B*, int);
+
+    #define VT_B { x, of, y }
   };
 
   struct VT_impl
@@ -50,12 +52,7 @@ class B
     static void y(B* self, int a) { ... }
 
     // Virtual table of B.
-    static constexpr VT_type VT{
-      /*B*/
-      x,
-      of,
-      y
-    };
+    static constexpr VT_type VT VT_B;
   };
 
   // These two lines must be in THIS order (clone_VT first)!
@@ -86,6 +83,8 @@ class D : public B
   {
     void (*_pv)(D*, int);
     int  (*_vf)(D*, int);
+
+    #define VT_D { VT_B, pv, vf }
   };
 
   struct VT_impl : B::VT_impl
@@ -93,16 +92,11 @@ class D : public B
     static void of(B* _self, int a) { D* self = static_cast<D*>(_self); ... }        // Override a virtual function of B.
     static int  vf(D* self, int a) { return ... }                                    // Add a new virtual function of D.
 
+    // Pure virtual function.
+    static constexpr std::nullptr_t vf = nullptr;
+
     // Virtual table of D.
-    static constexpr VT_type VT{
-      /*D*/
-        /*B*/
-        x,       // Virtual function of B that we do not override.
-        of,                                                                          // Virtual function of B that we did override.
-        y,       // Virtual function of B that we do not override.
-      nullptr,                                                                       // Pure virtual function that we added.
-      vf                                                                             // Virtual function that we added.
-    };
+    static constexpr VT_type VT VT_D;
   };
 
   // These two lines must be in THIS order (clone_VT first)!
