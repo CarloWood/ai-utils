@@ -199,7 +199,7 @@ namespace _internal_
     // and to calculate the offset between Instance* and TYPE*.
     class InstanceDummy : public TYPE, public GlobalObject {
       friend class GlobalObject; // To suppress a warning
-      virtual ~InstanceDummy() noexcept = default;
+      virtual ~InstanceDummy() = default;
     };
   protected:
     static char instance_[/*sizeof(InstanceDummy)*/];
@@ -244,7 +244,7 @@ public:
   private:	// Make sure nobody instantiates Instance itself except for Global<TYPE, inst, CONVERTER>.
     friend class Global<TYPE, inst, CONVERTER>;
     Instance(int) : TYPE(parameter_converter(inst)) { }	// TYPE is private (compile error)? Look at NOTE2 at the bottom of this file.
-    virtual ~Instance() noexcept = default;
+    virtual ~Instance() = default;
 
 #ifdef DEBUGGLOBAL
     virtual bool instantiated_from_constructor() const;
@@ -258,10 +258,10 @@ public:
   private:	// Make sure nobody instantiates Instance itself except for Global<TYPE, inst, GlobalConverterVoid>.
     friend class Global<TYPE, inst, GlobalConverterVoid>;
     Instance(int) { }		// TYPE is private (compile error)? Look at NOTE1 at the bottom of this file.
-    virtual ~Instance() noexcept = default;      // "error: deleted function '~Instance' cannot override a non-deleted function" means:
-                                                // * you forgot to add friendInstance to class TYPE (the final class) (ERROR1), or
-                                                // * you are using Global instead of Singleton for singleton (ERROR2), or
-                                                // * you are trying to use Global instead of Singleton in order to pass a parameter (ERROR2a), or
+    virtual ~Instance() = default;      // "error: deleted function '~Instance' cannot override a non-deleted function" means:
+                                        // * you forgot to add friendInstance to class TYPE (the final class) (ERROR1), or
+                                        // * you are using Global instead of Singleton for singleton (ERROR2), or
+                                        // * you are trying to use Global instead of Singleton in order to pass a parameter (ERROR2a), or
 
 #ifdef DEBUGGLOBAL
     virtual bool instantiated_from_constructor() const;

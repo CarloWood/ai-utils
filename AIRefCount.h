@@ -173,7 +173,7 @@ class AIRefCount
  protected:
   AIRefCount() : m_count(0) { }
   AIRefCount(AIRefCount const&) : m_count(0) { }
-  virtual ~AIRefCount() noexcept { }
+  virtual ~AIRefCount() { }
   AIRefCount& operator=(AIRefCount const&) { return *this; }
   void swap(AIRefCount&) { }
 

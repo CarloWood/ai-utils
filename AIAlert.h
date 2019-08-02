@@ -169,8 +169,6 @@ class AIArgs
     template<typename T> AIArgs(char const* key, T const& replacement) { mArgs[key] = boost::lexical_cast<std::string>(replacement); }
     /// Add another replacement.
     template<typename T> AIArgs& operator()(char const* key, T const& replacement) { mArgs[key] = boost::lexical_cast<std::string>(replacement); return *this; }
-    /// The destructor may not throw.
-    ~AIArgs() noexcept { }
 
     /// Accessor, returns the underlaying map.
     translate::format_map_t const& operator*() const { return mArgs; }
@@ -263,8 +261,6 @@ class Line
     Line(std::string const& xml_desc, AIArgs const& args, bool newline = false) : mNewline(newline), mXmlDesc(xml_desc), mArgs(args), mType(normal) { }
     /// Construct a prefix line.
     Line(Prefix const& prefix, bool newline = false) : mNewline(newline), mXmlDesc(prefix.str()), mType(prefix.type()) { }
-    /// The destructor may not throw.
-    ~Line() noexcept { }
 
     /// Prepend a newline before this line.
     void set_newline() { mNewline = true; }
@@ -306,9 +302,6 @@ class Error : public std::exception
 {
   public:
     using lines_type = std::deque<Line>; ///< The type of mLines.
-
-    /// The destructor may not throw.
-    ~Error() noexcept { }
 
     // Accessors.
     /// Accessor for the lines deque.
@@ -379,9 +372,6 @@ class ErrorCode : public Error
     std::error_code mCode;		///< The underlaying error code.
 
   public:
-    /// The destructor may not throw.
-    ~ErrorCode() noexcept { }
-
     /// Accessor for the error code.
     std::error_code getCode() const { return mCode; }
 
