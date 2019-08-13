@@ -75,3 +75,5 @@ AC_LANG_RESTORE
 CW_SYS_CACHELINE_SIZE
 
 AH_BOTTOM([#include "utils/config.h"])
+
+dnl vim: filetype=config
