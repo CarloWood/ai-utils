@@ -110,7 +110,7 @@ class AIRefCount
   // Increment m_count; returns the previous value (mainly for debugging purposes).
   int inhibit_deletion(DEBUG_ONLY(bool can_cause_immediate_allow_deletion = true)) const
   {
-    int count = m_count.fetch_add(1, std::memory_order_relaxed);
+    int prev_count = m_count.fetch_add(1, std::memory_order_relaxed);
     // Because m_count is overwritten with s_deleted upon destruction when CWDEBUG is defined, a reference count of
     // zero means that this object is probably still being constructed and wasn't passed to a boost::intrusive_ptr _yet_.
     // If under those circumstances an intrusive_ptr_add_ref/intrusive_ptr_release pair,
@@ -144,16 +144,20 @@ class AIRefCount
     //
     // boost::intrusive_ptr<A> p = new A;
     // p->f();
-    ASSERT(!can_cause_immediate_allow_deletion || count > 0);
-    return count;
+    ASSERT(!can_cause_immediate_allow_deletion || prev_count > 0);
+    return prev_count;
   }
 
   // Balance a call to inhibit_deletion(). Decrements m_count; returns the previous value (mainly for debugging purposes).
   // If defer_delete is true however, then the object must be deleted by the caller iff the returned value is 1.
   int allow_deletion(bool defer_delete = false, int count = 1) const
   {
-    int new_count = m_count.fetch_sub(count, std::memory_order_release);
-    if (new_count == 1)
+    // Do not call this function with a count of 0.
+    ASSERT(count > 0);
+    int prev_count = m_count.fetch_sub(count, std::memory_order_release);
+    // Paranoia check. This should never fail.
+    ASSERT(count <= prev_count);
+    if (prev_count == count)
     {
       std::atomic_thread_fence(std::memory_order_acquire);
       if (!defer_delete)
@@ -162,7 +166,7 @@ class AIRefCount
         delete this;
       }
     }
-    return new_count;
+    return prev_count;
   }
 
  private:
