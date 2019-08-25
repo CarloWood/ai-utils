@@ -261,6 +261,8 @@ class Line
     Line(std::string const& xml_desc, AIArgs const& args, bool newline = false) : mNewline(newline), mXmlDesc(xml_desc), mArgs(args), mType(normal) { }
     /// Construct a prefix line.
     Line(Prefix const& prefix, bool newline = false) : mNewline(newline), mXmlDesc(prefix.str()), mType(prefix.type()) { }
+    /// Destructor.
+    ~Line() { }
 
     /// Prepend a newline before this line.
     void set_newline() { mNewline = true; }
