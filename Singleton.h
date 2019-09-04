@@ -67,10 +67,10 @@
 
 /// @cond Doxygen_Suppress
 namespace utils {
-  namespace _internal_ {
-    int const singleton = -1;
-  }	// namespace _internal_
-}	// namespace libcw
+namespace _internal_ {
+int const singleton = -1;
+} // namespace _internal_
+} // namespace utils
 /// @endcond
 
 #ifdef DEBUGGLOBAL

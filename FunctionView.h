@@ -87,7 +87,7 @@ class FunctionView<RetT(ArgT...)> final
   FunctionView(F&& f) : call_(nullptr) {}
   // Default constructor. Creates an empty FunctionView.
   FunctionView() : call_(nullptr) {}
-  RetT operator()(ArgT... args) const {
+  RetT operator()(ArgT&&... args) const {
     ASSERT(call_);
     return call_(f_, std::forward<ArgT>(args)...);
   }
@@ -99,11 +99,11 @@ class FunctionView<RetT(ArgT...)> final
     void (*fun_ptr)();
   };
   template <typename F>
-  static RetT CallVoidPtr(VoidUnion vu, ArgT... args) {
+  static RetT CallVoidPtr(VoidUnion vu, ArgT&&... args) {
     return (*static_cast<F*>(vu.void_ptr))(std::forward<ArgT>(args)...);
   }
   template <typename F>
-  static RetT CallFunPtr(VoidUnion vu, ArgT... args) {
+  static RetT CallFunPtr(VoidUnion vu, ArgT&&... args) {
     return (reinterpret_cast<typename std::add_pointer<F>::type>(vu.fun_ptr))(
         std::forward<ArgT>(args)...);
   }
