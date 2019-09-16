@@ -81,7 +81,7 @@ class MemoryPagePool : public details::MemoryPageSize
                  blocks_t maximum_chunk_size = 0);      // A value of 0 will use the value returned by default_maximum_chunk_size(minimum_chunk_size).
   ~MemoryPagePool() { release(); }
 
-  void* allocate() noexcept
+  void* allocate()
   {
     return m_sss.allocate([this](){
         // This run in the critical area of utils::SimpleSegregatedStorage::m_add_block_mutex.
@@ -97,12 +97,12 @@ class MemoryPagePool : public details::MemoryPageSize
     });
   }
 
-  void deallocate(void* ptr) noexcept
+  void deallocate(void* ptr)
   {
     m_sss.deallocate(ptr);
   }
 
-  void release() noexcept;
+  void release();
 
   static constexpr size_t block_size() { return BLOCK_SIZE; }
 };
@@ -129,7 +129,7 @@ MemoryPagePool<BLOCK_SIZE>::MemoryPagePool(blocks_t minimum_chunk_size, blocks_t
 }
 
 template<size_t BLOCK_SIZE>
-void MemoryPagePool<BLOCK_SIZE>::release() noexcept
+void MemoryPagePool<BLOCK_SIZE>::release()
 {
   // Wink out any remaining allocations.
   for (auto ptr : m_chunks)

@@ -80,7 +80,7 @@ class SimpleSegregatedStorage
   // Construct an empty free list.
   SimpleSegregatedStorage() : m_head(nullptr) { }
 
-  void* allocate(std::function<bool()> const& add_new_block) noexcept
+  void* allocate(std::function<bool()> const& add_new_block)
   {
     for (;;)
     {
@@ -99,7 +99,7 @@ class SimpleSegregatedStorage
   }
 
   // ptr must be a value previously returned by allocate().
-  void deallocate(void* ptr) noexcept
+  void deallocate(void* ptr)
   {
     FreeNode* node = static_cast<FreeNode*>(ptr);
     node->m_next = m_head.load(std::memory_order_relaxed);
@@ -107,14 +107,14 @@ class SimpleSegregatedStorage
       ;
   }
 
-  bool try_allocate_more(std::function<bool()> const& add_new_block) noexcept
+  bool try_allocate_more(std::function<bool()> const& add_new_block)
   {
     std::scoped_lock<std::mutex> lk(m_add_block_mutex);
     return m_head.load(std::memory_order_relaxed) != nullptr || add_new_block();
   }
 
   // Only call this from the lambda add_new_block that was passed to allocate.
-  void add_block(void* block, size_t block_size, size_t partition_size) noexcept
+  void add_block(void* block, size_t block_size, size_t partition_size)
   {
     // block_size must be a multiple of partition_size (at least 2 times).
     ASSERT(block_size % partition_size == 0 && block_size > partition_size);
