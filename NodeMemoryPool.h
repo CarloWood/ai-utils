@@ -84,7 +84,7 @@ struct FreeList;
 //
 // utils::NodeMemoryPool pool(128, sizeof(Foo));
 //
-// Foo* foo = new(pool) Foo(42);        // Allocate memory from memory pool and contruct object.
+// Foo* foo = new(pool) Foo(42);        // Allocate memory from memory pool and construct object.
 // delete foo;                          // Destruct object and return memory to the memory pool.
 //
 // NodeMemoryPool is thread-safe.

@@ -48,7 +48,7 @@ template<> int constexpr max_shift_or<4, 4>(int n) { return n | (n >> 4); }
 
 // Round the positive integer n up to the nearest power of 2.
 //
-// If n is zero than 0 is returned.
+// If n is zero then 0 is returned.
 //
 // If n is signed and less than zero, but larger than std::numeric_limits<T>::min(),
 // then also 0 is returned; however if n equals std::numeric_limits<T>::min() then
