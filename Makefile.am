@@ -26,6 +26,8 @@ SOURCES = \
 	Singleton.h \
 	NodeMemoryPool.cxx \
 	NodeMemoryPool.h \
+	SimpleSegregatedStorage.h \
+	MemoryPagePool.h \
 	itoa.cxx \
 	itoa.h \
 	sbll.cxx \
