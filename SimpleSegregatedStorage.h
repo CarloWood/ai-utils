@@ -116,11 +116,13 @@ class SimpleSegregatedStorage
   // Only call this from the lambda add_new_block that was passed to allocate.
   void add_block(void* block, size_t block_size, size_t partition_size)
   {
+    unsigned int const number_of_partitions = block_size / partition_size;
+
     // block_size must be a multiple of partition_size (at least 2 times).
-    ASSERT(block_size % partition_size == 0 && block_size > partition_size);
+    ASSERT(number_of_partitions > 1);
 
     char* const first_ptr = static_cast<char*>(block);
-    char* const last_ptr = first_ptr + block_size - partition_size;     // > first_ptr, see ASSERT.
+    char* const last_ptr = first_ptr + (number_of_partitions - 1) * partition_size;     // > first_ptr, see ASSERT.
     char* node = last_ptr;
     do
     {

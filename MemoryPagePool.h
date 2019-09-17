@@ -49,24 +49,16 @@ struct MemoryPageSize
 
 } // namespace details
 
-// A memory pool that returns fixed-size memory blocks of BLOCK_SIZE bytes
-// allocated with std::aligned_alloc and aligned to memory_page_size.
+// A memory pool that returns fixed-size memory blocks allocated with std::aligned_alloc and aligned to memory_page_size.
 //
-// BLOCK_SIZE must be a multiple the memory page size.
-//
-template<size_t BLOCK_SIZE>
 class MemoryPagePool : public details::MemoryPageSize
 {
-  // We can't know what the memory page size will be during compile time, but it is almost
-  // certainly not going to be smaller than 4 kB, so add this as a compile time sanity check.
-  // The constructor contains a precise, runtime check.
-  static_assert(BLOCK_SIZE % 0x1000 == 0 && BLOCK_SIZE > 0, "BLOCK_SIZE must be a multiple of memory_page_size, larger than 0.");
-
  public:
   using blocks_t = unsigned int;
 
   std::mutex m_mutex;                   // Protects the member variables below.
   utils::SimpleSegregatedStorage m_sss;
+  size_t m_block_size;                  // The size of a block as returned by allocate(), in bytes.
   blocks_t m_pool_size;                 // The total amount of allocated system memory, in blocks.
   blocks_t const m_minimum_chunk_size;  // The minimum size of internally allocated contiguous memory blocks, in blocks.
   blocks_t const m_maximum_chunk_size;  // The maximum size of internally allocated contiguous memory blocks, in blocks.
@@ -77,20 +69,21 @@ class MemoryPagePool : public details::MemoryPageSize
   virtual blocks_t default_maximum_chunk_size(blocks_t UNUSED_ARG(minimum_chunk_size)) { return 1024; }
 
  public:
-  MemoryPagePool(blocks_t minimum_chunk_size = 0,       // A value of 0 will use the value returned by default_minimum_chunk_size().
+  MemoryPagePool(size_t block_size,                     // The size of a block as returned by allocate(), in bytes; must be a multiple the memory page size.
+                 blocks_t minimum_chunk_size = 0,       // A value of 0 will use the value returned by default_minimum_chunk_size().
                  blocks_t maximum_chunk_size = 0);      // A value of 0 will use the value returned by default_maximum_chunk_size(minimum_chunk_size).
-  ~MemoryPagePool() { release(); }
+  ~MemoryPagePool() { DoutEntering(dc::notice, "MemoryPagePool::~MemoryPagePool() [" << this << "]"); release(); }
 
   void* allocate()
   {
     return m_sss.allocate([this](){
         // This run in the critical area of utils::SimpleSegregatedStorage::m_add_block_mutex.
         blocks_t extra_blocks = std::clamp(m_pool_size, m_minimum_chunk_size, m_maximum_chunk_size);
-        size_t extra_size = extra_blocks * BLOCK_SIZE;
+        size_t extra_size = extra_blocks * m_block_size;
         void* chunk = std::aligned_alloc(memory_page_size(), extra_size);
         if (AI_UNLIKELY(chunk == nullptr))
           return false;
-        m_sss.add_block(chunk, extra_size, BLOCK_SIZE);
+        m_sss.add_block(chunk, extra_size, m_block_size);
         m_pool_size += extra_blocks;
         m_chunks.push_back(chunk);
         return true;
@@ -104,32 +97,30 @@ class MemoryPagePool : public details::MemoryPageSize
 
   void release();
 
-  static constexpr size_t block_size() { return BLOCK_SIZE; }
+  size_t block_size() const { return m_block_size; }
 };
 
-template<size_t BLOCK_SIZE>
-MemoryPagePool<BLOCK_SIZE>::MemoryPagePool(blocks_t minimum_chunk_size, blocks_t maximum_chunk_size) :
-  m_pool_size(0),
+MemoryPagePool::MemoryPagePool(size_t block_size, blocks_t minimum_chunk_size, blocks_t maximum_chunk_size) :
+  m_block_size(block_size), m_pool_size(0),
   m_minimum_chunk_size(minimum_chunk_size ? minimum_chunk_size : default_minimum_chunk_size()),
   m_maximum_chunk_size(maximum_chunk_size ? maximum_chunk_size : default_maximum_chunk_size(m_minimum_chunk_size))
 {
-  // BLOCK_SIZE must be a multiple of memory_page_size (and larger than 0).
-  ASSERT(BLOCK_SIZE % memory_page_size() == 0);
+  // block_size must be a multiple of memory_page_size (and larger than 0).
+  ASSERT(block_size % memory_page_size() == 0);
   // minimum_chunk_size must be larger or equal than 1.
   ASSERT(m_minimum_chunk_size >= 1);
   // maximum_chunk_size must be larger or equal than minimum_chunk_size.
   ASSERT(m_maximum_chunk_size >= m_minimum_chunk_size);
 
-  DoutEntering(dc::notice, "MemoryPagePool<" << BLOCK_SIZE << ">::MemoryPagePool(" << minimum_chunk_size << ", " << maximum_chunk_size << ")");
+  DoutEntering(dc::notice, "MemoryPagePool::MemoryPagePool(" << block_size << ", " << minimum_chunk_size << ", " << maximum_chunk_size << ") [" << this << "]");
 
   // This capacity is enough for allocating twice the maximum_chunk_size of memory (and then rounded up to the nearest power of two).
   m_chunks.reserve(nearest_power_of_two(1 + log2(m_maximum_chunk_size)));
-  Dout(dc::notice, "The block size (" << BLOCK_SIZE << " bytes) is " << (BLOCK_SIZE / memory_page_size()) << " times the memory page size on this machine.");
+  Dout(dc::notice, "The block size (" << block_size << " bytes) is " << (block_size / memory_page_size()) << " times the memory page size on this machine.");
   Dout(dc::notice, "The capacity of m_chunks is " << m_chunks.capacity() << '.');
 }
 
-template<size_t BLOCK_SIZE>
-void MemoryPagePool<BLOCK_SIZE>::release()
+void MemoryPagePool::release()
 {
   // Wink out any remaining allocations.
   for (auto ptr : m_chunks)
