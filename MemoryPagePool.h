@@ -27,8 +27,6 @@
 
 #include "macros.h"
 #include "SimpleSegregatedStorage.h"
-#include "log2.h"
-#include "nearest_power_of_two.h"
 #include "debug.h"
 #include <mutex>
 #include <unistd.h>
@@ -99,32 +97,5 @@ class MemoryPagePool : public details::MemoryPageSize
 
   size_t block_size() const { return m_block_size; }
 };
-
-MemoryPagePool::MemoryPagePool(size_t block_size, blocks_t minimum_chunk_size, blocks_t maximum_chunk_size) :
-  m_block_size(block_size), m_pool_size(0),
-  m_minimum_chunk_size(minimum_chunk_size ? minimum_chunk_size : default_minimum_chunk_size()),
-  m_maximum_chunk_size(maximum_chunk_size ? maximum_chunk_size : default_maximum_chunk_size(m_minimum_chunk_size))
-{
-  // block_size must be a multiple of memory_page_size (and larger than 0).
-  ASSERT(block_size % memory_page_size() == 0);
-  // minimum_chunk_size must be larger or equal than 1.
-  ASSERT(m_minimum_chunk_size >= 1);
-  // maximum_chunk_size must be larger or equal than minimum_chunk_size.
-  ASSERT(m_maximum_chunk_size >= m_minimum_chunk_size);
-
-  DoutEntering(dc::notice, "MemoryPagePool::MemoryPagePool(" << block_size << ", " << minimum_chunk_size << ", " << maximum_chunk_size << ") [" << this << "]");
-
-  // This capacity is enough for allocating twice the maximum_chunk_size of memory (and then rounded up to the nearest power of two).
-  m_chunks.reserve(nearest_power_of_two(1 + log2(m_maximum_chunk_size)));
-  Dout(dc::notice, "The block size (" << block_size << " bytes) is " << (block_size / memory_page_size()) << " times the memory page size on this machine.");
-  Dout(dc::notice, "The capacity of m_chunks is " << m_chunks.capacity() << '.');
-}
-
-void MemoryPagePool::release()
-{
-  // Wink out any remaining allocations.
-  for (auto ptr : m_chunks)
-    std::free(ptr);
-}
 
 } // namespace utils

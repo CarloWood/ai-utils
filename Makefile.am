@@ -27,6 +27,7 @@ SOURCES = \
 	NodeMemoryPool.cxx \
 	NodeMemoryPool.h \
 	SimpleSegregatedStorage.h \
+	MemoryPagePool.cxx \
 	MemoryPagePool.h \
 	NodeMemoryResource.h \
 	itoa.cxx \
