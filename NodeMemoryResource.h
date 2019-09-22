@@ -44,12 +44,15 @@ namespace utils {
 //   DequePoolAllocator<AIStatefulTask*> alloc(nmr);    // Wrapper around a pointer to utils::NodeMemoryResource, providing an allocator interface.
 //   std::deque<AIStatefulTask*, decltype(alloc)> test_deque(alloc);
 //
+// Note: it is possible to specify a block size upon construction (which obviously must be
+// larger or equal to the actual (largest) block size that will be allocated).
+//
 class NodeMemoryResource
 {
  public:
-  NodeMemoryResource(MemoryPagePool& mpp) : m_mpp(&mpp), m_block_size(0)
+  NodeMemoryResource(MemoryPagePool& mpp, size_t block_size = 0) : m_mpp(&mpp), m_block_size(block_size)
   {
-    DoutEntering(dc::notice, "NodeMemoryResource::NodeMemoryResource({" << (void*)m_mpp << "}) [" << this << "]");
+    DoutEntering(dc::notice, "NodeMemoryResource::NodeMemoryResource({" << (void*)m_mpp << "}, " << block_size << ") [" << this << "]");
   }
 
   ~NodeMemoryResource()

@@ -54,10 +54,10 @@ class MemoryPagePool : public details::MemoryPageSize
  public:
   using blocks_t = unsigned int;
 
-  std::mutex m_mutex;                   // Protects the member variables below.
+ private:
   utils::SimpleSegregatedStorage m_sss;
-  size_t m_block_size;                  // The size of a block as returned by allocate(), in bytes.
-  blocks_t m_pool_size;                 // The total amount of allocated system memory, in blocks.
+  size_t const m_block_size;            // The size of a block as returned by allocate(), in bytes.
+  blocks_t m_pool_blocks;                 // The total amount of allocated system memory, in blocks.
   blocks_t const m_minimum_chunk_size;  // The minimum size of internally allocated contiguous memory blocks, in blocks.
   blocks_t const m_maximum_chunk_size;  // The maximum size of internally allocated contiguous memory blocks, in blocks.
   std::vector<void*> m_chunks;          // All allocated chunks that were allocated with std::aligned_alloc.
@@ -70,19 +70,23 @@ class MemoryPagePool : public details::MemoryPageSize
   MemoryPagePool(size_t block_size,                     // The size of a block as returned by allocate(), in bytes; must be a multiple the memory page size.
                  blocks_t minimum_chunk_size = 0,       // A value of 0 will use the value returned by default_minimum_chunk_size().
                  blocks_t maximum_chunk_size = 0);      // A value of 0 will use the value returned by default_maximum_chunk_size(minimum_chunk_size).
-  ~MemoryPagePool() { DoutEntering(dc::notice, "MemoryPagePool::~MemoryPagePool() [" << this << "]"); release(); }
+  ~MemoryPagePool()
+  {
+    DoutEntering(dc::notice, "MemoryPagePool::~MemoryPagePool() [" << this << "]");
+    release();
+  }
 
   void* allocate()
   {
     return m_sss.allocate([this](){
-        // This run in the critical area of utils::SimpleSegregatedStorage::m_add_block_mutex.
-        blocks_t extra_blocks = std::clamp(m_pool_size, m_minimum_chunk_size, m_maximum_chunk_size);
+        // This runs in the critical area of utils::SimpleSegregatedStorage::m_add_block_mutex.
+        blocks_t extra_blocks = std::clamp(m_pool_blocks, m_minimum_chunk_size, m_maximum_chunk_size);
         size_t extra_size = extra_blocks * m_block_size;
         void* chunk = std::aligned_alloc(memory_page_size(), extra_size);
         if (AI_UNLIKELY(chunk == nullptr))
           return false;
         m_sss.add_block(chunk, extra_size, m_block_size);
-        m_pool_size += extra_blocks;
+        m_pool_blocks += extra_blocks;
         m_chunks.push_back(chunk);
         return true;
     });
@@ -96,6 +100,7 @@ class MemoryPagePool : public details::MemoryPageSize
   void release();
 
   size_t block_size() const { return m_block_size; }
+  blocks_t pool_blocks() { std::scoped_lock<std::mutex> lock(m_sss.m_add_block_mutex); return m_pool_blocks; }
 };
 
 } // namespace utils

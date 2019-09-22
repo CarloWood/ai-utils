@@ -31,7 +31,7 @@
 namespace utils {
 
 MemoryPagePool::MemoryPagePool(size_t block_size, blocks_t minimum_chunk_size, blocks_t maximum_chunk_size) :
-  m_block_size(block_size), m_pool_size(0),
+  m_block_size(block_size), m_pool_blocks(0),
   m_minimum_chunk_size(minimum_chunk_size ? minimum_chunk_size : default_minimum_chunk_size()),
   m_maximum_chunk_size(maximum_chunk_size ? maximum_chunk_size : default_maximum_chunk_size(m_minimum_chunk_size))
 {
@@ -52,9 +52,12 @@ MemoryPagePool::MemoryPagePool(size_t block_size, blocks_t minimum_chunk_size, b
 
 void MemoryPagePool::release()
 {
+  DoutEntering(dc::notice, "MemoryPagePool::release()");
+  std::scoped_lock<std::mutex> lock(m_sss.m_add_block_mutex);
   // Wink out any remaining allocations.
   for (auto ptr : m_chunks)
     std::free(ptr);
+  Dout(dc::notice, "current size is " << (m_pool_blocks * m_block_size) << " bytes.");
 }
 
 } // namespace utils

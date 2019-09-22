@@ -74,6 +74,7 @@ class SimpleSegregatedStorage
 
  private:
   std::atomic<FreeNode*> m_head;        // Points to the first free memory block in the free list, or nullptr if the free list is empty.
+ public:                                // To be used with std::scoped_lock<std::mutex> from calling classes.
   std::mutex m_add_block_mutex;         // Protect against calling add_block concurrently.
 
  public:
