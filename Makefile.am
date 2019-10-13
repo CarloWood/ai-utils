@@ -40,6 +40,8 @@ SOURCES = \
 	FuzzyBool.h \
 	AISignals.cxx \
 	AISignals.h \
+	DelayLoopCalibration.h \
+	DelayLoopCalibration.cxx \
 	AIFIFOBuffer.h \
 	AIRefCount.h \
 	FunctionView.h \
