@@ -31,6 +31,8 @@
 #include <set>
 #include <map>
 #include <random>
+#include <thread>
+#include <pthread.h>
 
 #include "cwds/gnuplot_tools.h"
 
@@ -252,256 +254,388 @@ unsigned int DelayLoopCalibrationBase::search_lowest_of(unsigned nm, double goal
   return s;
 }
 
+// Abbreviations used:
+//
+// s  : size of the delay loop.
+// a  : slope of the fitted line (alpha).
+// d  : delay (in ms).
+// s2 : s^2.
+// sd : s * d.
+// ols: Ordinary Least Squares.
+//
+// We fit a line d = a * s (through the origin) by minimizing the sum of the squares of the vertical distances of each data point to that line.
+//
+// Aka (see https://en.wikipedia.org/wiki/Ordinary_least_squares) assuming that for each measurement i
+//
+//   d_i = a * s_i + e_i
+//
+// the value of a that minimizes \sum _{i=0}^N { e_i^{2} } is
+//
+//   a = \sum _{i=0}^N { d_i * s_i } / \sum _{i=0}^N { s_i * s_i }.
+
 struct Point
 {
+ private:
   unsigned int m_s;
   double m_a;
-  double m_error;
 
-  Point(unsigned int s, double a) : m_s(s), m_a(a), m_error(0) { }
+ public:
+  double m_s2;
+  double m_sd;
+
+  static constexpr int max_number_of_points_per_fit = 8;
+  std::array<double, max_number_of_points_per_fit> m_sum_s2;    // The index is the number of point in this fit minus one.
+  std::array<double, max_number_of_points_per_fit> m_sum_sd;
+  std::array<double, max_number_of_points_per_fit> m_ols_a;
+  std::array<double, max_number_of_points_per_fit> m_ols_e2;
+
+  unsigned int loop_size() const { return m_s; }
+  double delay() const { return m_s * m_a; }
+  double slope() const { return m_a; }
+
+  Point(unsigned int s, double a) : m_s(s), m_a(a), m_s2(1.0 * s * s), m_sd(a * s * s), m_sum_s2{}, m_sum_sd{}, m_ols_a{} { }
   Point() = default;
-
-  friend bool operator<(Point const& p1, Point const& p2)
-  {
-    return p1.m_error < p2.m_error;
-  }
 };
 
 #ifdef CWDEBUG
-#define GNUPLOT
-//#define INPUT_FILE "interesting3.dat"
+std::ostream& operator<<(std::ostream& os, Point const& p)
+{
+  os << "{s:" << p.loop_size() << ", a:" << p.slope() << ", 1/a:" << (1 / p.slope()) << ", d:" << p.delay() << ", s2:" << p.m_s2 << ", sd:" << p.m_sd << "}";
+  return os;
+}
+
+//#define GNUPLOT
+//#define INPUT_FILE "beauty.out"
+//#define OUTPUT_FILE "measure.out"
+
 #endif
 
-unsigned int DelayLoopCalibrationBase::ransac(double goal, bool final COMMA_CWDEBUG_ONLY(std::string title))
+unsigned int DelayLoopCalibrationBase::peak_detect(double goal, bool
+#ifndef INPUT_FILE
+    final                               // Not used when reading from an INPUT_FILE.
+#endif
+    COMMA_CWDEBUG_ONLY(std::string)     // Parameter only exists when compiling with CWDEBUG.
+#ifdef GNUPLOT
+    title                               // Not used unless GNUPLOT is defined.
+#endif
+    )
 {
 #ifdef GNUPLOT
+  // For debug purposes; plot graphs.
   bool draw_graph = !title.empty();
   eda::Plot plot1(title, "Loop size", "Slope");
   eda::Plot plot2(title, "Loop size", "Delay");
 #endif
 #ifdef INPUT_FILE
+  // Do not do actual measurements but use pre-recorded data.
   std::ifstream infile;
   infile.open(INPUT_FILE);
+#elif defined(OUTPUT_FILE)
+  // Wrtie measurements to a file for later use with INPUT_FILE.
+  std::ofstream outfile;
+  outfile.open(OUTPUT_FILE);
 #endif
-  std::vector<Point> data;
 
-  // Using https://en.wikipedia.org/wiki/Simple_linear_regression#Simple_linear_regression_without_the_intercept_term_(single_regressor)
-  // we need to keep track of the sum of x*y and the sum of x*x.
-  double slope;
-  double sum_sd = 0, sum_s2 = 0;
-
-  // Approach a loop size that results in goal milliseconds of delay.
-  unsigned int s = 1000;
-  do
+  //===========================================================================
+  // STEP 1
+  //
+  // Estimate a rough value for the needed loop size, where we assume that
+  //
+  //     delay(loop_size) = slope * loop_size.
+  //
+  double loop_size_estimate;
   {
-#ifndef INPUT_FILE
-    double delay = final ? avg_of(s) : measure(s);
-#else
-    double a;
-    int z;
-    infile >> s >> a >> z;
-    double delay = s * a;
-#endif
-    data.emplace_back(s, delay / s);
-    sum_sd += s * delay;
-    sum_s2 += 1.0 * s * s;
-    slope = sum_sd / sum_s2;
-    s *= 2;
-  }
-  while (s * slope < goal);
+    // Using https://en.wikipedia.org/wiki/Simple_linear_regression#Simple_linear_regression_without_the_intercept_term_(single_regressor)
+    // we need to keep track of the sum of sd = loop_size * delay and the sum of s2 = loop_size * loop_size.
+    double sum_sd = 0, sum_s2 = 0;
+    double slope_estimate;                // The fitted slope of all measurements so far.
 
-#ifdef GNUPLOT
-  std::ofstream file;
-  if (draw_graph)
-  {
-    file.open("data.dat");
-    std::stringstream ss;
-    ss << std::setprecision(2) << slope;
-    for (auto& p : data)
+    // Approach a loop size (s) that results in goal milliseconds of delay.
+    unsigned int s = 1000;                // Start very small since we don't know how slow the current hardware is and we don't want this calibration to take long.
+    do
     {
-      plot1.add_data_point(p.m_s, p.m_a, 0, ss.str().c_str());
-      plot2.add_data_point(p.m_s, p.m_a * p.m_s, 0, ss.str().c_str());
-      file << p.m_s << ' ' << p.m_a << ' ' << p.m_error << '\n';
+#ifdef INPUT_FILE
+      double a;                           // The 'slope' of this single measurement.
+      int z;
+      infile >> s >> a >> z;
+      double delay = a * s;
+#else
+      double delay = final ? avg_of(s) : measure(s);
+#ifdef OUTPUT_FILE
+      double a = delay / s;
+      outfile << s << ' ' << a << " 0\n";
+#endif
+#endif
+      sum_sd += s * delay;
+      sum_s2 += 1.0 * s * s;
+      slope_estimate = sum_sd / sum_s2;
+      s *= 2;                                   // Double the loop size every iteration.
+    }
+    while (s * slope_estimate < 1.41 * goal);   // Stop once goal has been more or less reached.
+    // Calculate estimated loop size.
+    loop_size_estimate = goal / slope_estimate;
+  }
+
+  //===========================================================================
+  // STEP 2
+  //
+  // Collect number_of_measurements measurements using loop sizes ranging from
+  // half loop_size_estimate till loop_size_estimate.
+  //
+  constexpr int number_of_measurements = 128;
+  std::vector<Point> data;
+  {
+    double const sg64 = loop_size_estimate / number_of_measurements;
+
+    // Do the measurements in batches of 32 linearly increasing loop size (in an attempt to decorrelate measurement with the same loop size).
+    constexpr int number_of_iterations = number_of_measurements / 32;
+    for (int iteration = 0; iteration < number_of_iterations; ++iteration) // Note: this might not be needed.
+    {
+      // Note: spreading the loop size over this range might not be needed (but does lower the total time needed to do the calibration).
+      for (int step = number_of_measurements / 2; step <= number_of_measurements; ++step)
+      {
+        unsigned int s = std::round(step * sg64);       // The loop size to test.
+
+        // Force a context switch in an attempt to decorrelate anomalies in the measured delay between measurements.
+        pthread_yield();        // Note: this might not be needed.
+        // Do the actual measurement (or reading from input file / writing to output file).
+#ifdef INPUT_FILE
+        double a;
+        int z;
+        infile >> s >> a >> z;
+        data.emplace_back(s, a);
+#else
+        double delay = final ? avg_of(s) : measure(s);
+        // Completely disregard measurements with absurd delays (note: this might not be needed).
+        if (delay > 2 * goal)
+        {
+          --step;
+          continue;
+        }
+        double a = delay / s;
+        data.emplace_back(s, a);
+#ifdef OUTPUT_FILE
+        outfile << s << ' ' << a << " 0\n";
+#endif
+#endif
+      }
     }
   }
-#endif
 
 #ifdef INPUT_FILE
-  size_t data_points = data.size() + 64;
-  data.clear();
-  sum_sd = sum_s2 = 0;
-  for (int i = 0; i < data_points; ++i)
-  {
-    double a;
-    double err;
-    infile >> s >> a >> err;
-    double delay = s * a;
-    data.emplace_back(s, delay / s);
-    sum_sd += s * delay;
-    sum_s2 += 1.0 * s * s;
-  }
-#else
-  // From the least square fit guess the loop size needed for goal milliseconds
-  // and take 1/64th of that.
-  double const sg64 = goal / (64 * slope);
-  // Do another 64 measurements over the range [1/64 goal ... goal].
-  for (int step = 1; step <= 64; ++step)
-  {
-    s = std::round(step * sg64);
-    double delay = final ? avg_of(s) : measure(s);
-    data.emplace_back(s, delay / s);
-    sum_sd += s * delay;
-    sum_s2 += 1.0 * s * s;
-  }
+  infile.close();
+#elif defined(OUTPUT_FILE)
+  outfile.close();
 #endif
 
-  Dout(dc::notice, "data.size() = " << data.size());
-
-  bool done = false;
-  int iteration;
-  for (iteration = 0; !done; ++iteration)
+  //===========================================================================
+  // STEP 3
+  //
+  // Estimate a loop size window in which 'fraction' of the measurements can be found.
+  // We assume that the peak that we look for is the first peak in the "probability
+  // density function" and that fraction is large enough to contain it. Hence,
+  // the first window_end is past the start of this peak. We might find the same
+  // fraction in a smaller window in the noise behond the peak, but that window
+  // should then no longer include the peak itself anymore (because the density
+  // goes down at first, after the peak):
+  //
+  // For example,
+  // in the graph below the measurement with the lowest value of the slope is 'a'.
+  // The first (and highest) peak is at b.
+  //
+  // [ Note: we can't use the fact that in THIS histogram the peak is the highest,
+  // because we don't know what bucket size to use. A bucket size that is too small
+  // would lead to a count of 1 in each bucket, so there isn't a 'peak' at all.
+  // And a bucket size that is too wide gives not enough precision where the peak
+  // starts. Therefore the method below doesn't use a bucket size at all, but one
+  // is used for this histogram to get something that roughly looks like the
+  // expected probability density function (pdf). ]
+  //
+  // If we'd look for a window size that contains (at least) 7 measurements,
+  // the first window would span [a, b], it includes the peak. The window
+  // will get more narrow until we reach [b, d]. Because after that the peak
+  // at b goes rapidly down, the window MUST grow in length to keep containing
+  // the same number of measurements until find a window entirely in the second,
+  // lower but wider "peak": [d, f]. The latter is then rejected because d is
+  // larger than the end of the first window and hence can not contain the first
+  // peak anymore.
+  //
+  //    ^
+  // pdf|
+  //    |       |
+  //    |       |   |
+  //    |       || |||
+  //    | |  || || ||||
+  //    -------------------> slope
+  //      a     bc def
+  //
+  double window;
+  unsigned int min_window_start = 0;
+  constexpr double fraction = 0.1;
   {
-    // Iteratively improve the best approximation of a line with with slope slope.
-    slope = sum_sd / sum_s2;
+    // The fraction is determined as follows. It should lead to a narrow window (the density around
+    // the first peak is high, so that would result in a good detection). But not so narrow that
+    // the number of measurements in the window drops so low that we run the risk of not having
+    // the peak in the first window. At 64 measurements it is like never going to happen that
+    // there are 3 measurements below the peak, so using a fraction of 4/64 = 0.0625 should do
+    // the trick. However, the window should also not be so narrow that not a substatious portion
+    // of the first peak fits into because in the case of noise it might start to look like the
+    // second peak (rizing in height at first, before going down), in that case we need to include
+    // the highest point so that we're sure that the density will go down.
+    // I think that a fraction of 10% is a good value to use.
+    unsigned int const measurements_in_window = std::round(fraction * data.size());
+    size_t const first_window_end = measurements_in_window - 1;
 
-    // Calculate the error of each (remaining) point.
+    // Sort all data points by loop size.
+    std::sort(data.begin(), data.end(), [](Point const& p1, Point const& p2){ return p1.slope() < p2.slope(); });
+#if 0
+    Dout(dc::notice, "Data points:");
+    int i = 0;
     for (auto& p : data)
-    {
-      double da = p.m_a - slope;
-      p.m_error = da * da;
-    }
-    // Sort the data by error.
-    std::sort(data.begin(), data.end());
-
-#ifdef GNUPLOT
-    std::stringstream label;
-    if (draw_graph)
-      label << "err" << iteration;
+      Dout(dc::notice, "  " << i++ << ": " << p);
 #endif
 
-    done = true;
-    double error_sum = 0;
-    sum_sd = sum_s2 = 0;
-    for (size_t i = 0; i < data.size(); ++i)
+    window = 1.0;       // Something very large.
+    for (size_t window_start = 0; window_start <= first_window_end && window_start + measurements_in_window - 1 < data.size(); ++window_start)
     {
-      error_sum += data[i].m_error;
-      double avg_error = error_sum / (i + 1);
-      int limit = (i == data.size() - 1) ? 4 : 16;
-      // Throw away all points with an error that is larger than a certain threshold (but at least 2%).
-      if (data[i].m_error > std::max(limit * avg_error, slope * slope * 0.0004))
+      size_t const window_end = window_start + measurements_in_window - 1;
+      double window_size = data[window_end].slope() - data[window_start].slope();
+      if (window_size < window)
       {
+        window = window_size;
+        min_window_start = window_start;
+        Dout(dc::notice, "Window start: " << min_window_start << " (" <<
+            (1e8 * data[window_start].slope()) << " - " << (1e8 * data[window_end].slope()) << ") with width " << (1e8 * window_size));
+      }
+    }
+  }
+
+  loop_size_estimate = goal / data[min_window_start].slope();
+  unsigned int slope_e8 = 1e8 * data[min_window_start].slope();
+  Dout(dc::notice, "Peak detection: slope estimate: " << slope_e8 << ", loop size estimate: " << loop_size_estimate);
+  Dout(dc::notice, "Window size: " << window);
+
 #ifdef GNUPLOT
-        if (draw_graph)
-        {
-          file << '\n';
-          Dout(dc::notice, "Error exceeded for i = " << i << "; throwing away " << (data.size() - i) << " data points.");
-          for (size_t j = i; j < data.size(); ++j)
-          {
-            plot1.add_data_point(data[j].m_s, data[j].m_a, 0, label.str().c_str());
-            plot2.add_data_point(data[j].m_s, data[j].m_s * data[j].m_a, 0, label.str().c_str());
-            file << data[j].m_s << ' ' << data[j].m_a << ' ' << data[j].m_error << '\n';
-          }
-        }
+  // For debugging purposes, make a plot with the frequency count per bucket.
+  eda::PlotHistogram plot3("slope distribution", "slope * 1e8", "count", 1e8 * window);
 #endif
-        Dout(dc::notice, "data resize from " << data.size() << " to " << i);
-        data.resize(i);
-        ASSERT(data.size() == i);
-        done = false;
+#if defined (GNUPLOT) || (defined(OUTPUT_FILE) && !defined(INPUT_FILE))
+  {
+#ifdef GNUPLOT
+    plot3.set_xrange(1044, 1800);
+    plot3.add_data_point(slope_e8, 1, "cal");
+#endif
+    double const bucket_width = window;
+    std::map<int, int> fca;             // Frequency Count of Slopes per bucket.
+    for (auto&& p : data)
+      fca[p.slope() / bucket_width]++;
+#ifdef GNUPLOT
+    for (auto&& dp : fca)
+      plot3.add_data_point(dp.first * 1e8 * window, dp.second, "pdf");
+#endif
+#if defined(OUTPUT_FILE) && !defined(INPUT_FILE)
+    std::ofstream pdf;
+    pdf.open("pdf.txt");
+    for (auto&& dp : fca)
+      pdf << dp.first << ' ' << dp.second << '\n';
+    pdf.close();
+#endif
+  }
+#endif // defined (GNUPLOT) || (defined(OUTPUT_FILE) && !defined(INPUT_FILE))
+
+  //===========================================================================
+  // STEP 4
+  //
+  // We now have a bucket size that contains fraction of the total number of
+  // measurements in (at least) one point. In the case of noise this might
+  // not be the lowest value of loop_size that isn't noise, but rather the
+  // left side of the distribution tail of this peak.
+  //
+  // In order to take that into account, now do a frequency count of the
+  // number of measurements in each such bucket and then return the bucket
+  // that has at least a count of 1 and together with a 'neighbors' right
+  // neighbor buckets a count of at least 2/3 of the fraction. The latter is
+  // necessary because there is small peak about 0.929 of the slope that
+  // we want (which is usually MUCH higher) that MIGHT still contain a
+  // count of 1/4 of the fraction or so in exceptional cases.
+  //
+  unsigned int loop_size = loop_size_estimate;
+  {
+    constexpr int measurements_in_window = number_of_measurements * fraction * 0.666667;  // 2/3 of the fraction.
+    constexpr int neighbors = 8;
+    double max_window_size = neighbors * window;
+    for (size_t window_start = 0; window_start + measurements_in_window - 1 < data.size(); ++window_start)
+    {
+      size_t const window_end = window_start + measurements_in_window - 1;
+      double window_size = data[window_end].slope() - data[window_start].slope();
+      Dout(dc::notice, "Window with start at " << window_start << " (" << (1e8 * data[window_start].slope()) <<
+          " containing " << measurements_in_window << " measurements is " << (window_size / window) << " bucket widths wide.");
+      if (window_size <= max_window_size)
+      {
+        loop_size = goal / data[window_start].slope();
+        slope_e8 = 1e8 * data[window_start].slope();
         break;
       }
-      //Dout(dc::notice, i << ": err^2 = " << data[i].m_error << "; avg err^2 = " << avg_error);
-      // Recalculate sum_sd and sum_s2 of the remaining data point in order to calculate the next slope.
-      double s2 = 1.0 * data[i].m_s * data[i].m_s;
-      sum_sd += s2 * data[i].m_a;
-      sum_s2 += s2;
-    }
-    if (done)
-    {
-      // Count the number of data points that are more than 2% below the estimated average.
-      int low = 0;
-      for (size_t i = 0; i < data.size(); ++i)
-      {
-        if (data[i].m_a < 0.98 * slope)
-          ++low;
-      }
-      if (low >= 8)
-      {
-#ifdef GNUPLOT
-        if (draw_graph)
-          file << '\n';
-#endif
-        done = false;
-        sum_sd = sum_s2 = 0;
-        int cut_count = 0;
-        for (size_t i = 0; i < data.size(); ++i)
-        {
-          // Throw away all points larger than the current estimate.
-          if (data[i].m_a > slope)
-          {
-#ifdef GNUPLOT
-            if (draw_graph)
-            {
-              plot1.add_data_point(data[i].m_s, data[i].m_a, 0, "cut");
-              plot2.add_data_point(data[i].m_s, data[i].m_a * data[i].m_s, 0, "cut");
-              file << data[i].m_s << ' ' << data[i].m_a << ' ' << data[i].m_error << '\n';
-            }
-#endif
-            std::swap(data[i], data.back());
-            ++cut_count;
-            continue;
-          }
-          // Recalculate sum_sd and sum_s2 of the remaining data point in order to calculate the next slope.
-          double s2 = 1.0 * data[i].m_s * data[i].m_s;
-          sum_sd += s2 * data[i].m_a;
-          sum_s2 += s2;
-        }
-        data.resize(data.size() - cut_count);
-      }
     }
   }
 
-  slope = sum_sd / sum_s2;
-  s = std::round(goal / slope);
-  Dout(dc::notice, "slope = " << slope << "; loop size = " << s);
+  Dout(dc::notice, "Final slope: " << slope_e8 << ", final loop size: " << loop_size);
 
 #ifdef GNUPLOT
+  constexpr double bottom_slope = 1.044e-5; //1.091e-5;
+  constexpr double peak_slope = 1.124e-5; //1.175e-5;
+
   if (draw_graph)
   {
-    file << '\n';
-    Dout(dc::notice, "Adding final " << data.size() << " points at the end of the file.");
     for (size_t i = 0; i < data.size(); ++i)
     {
-      plot1.add_data_point(data[i].m_s, data[i].m_a, 0, "step");
-      plot2.add_data_point(data[i].m_s, data[i].m_s * data[i].m_a, 0, "step");
-      file << data[i].m_s << ' ' << data[i].m_a << ' ' << data[i].m_error << '\n';
+      plot1.add_data_point(data[i].loop_size(), data[i].slope(), 0, "data");
+      plot2.add_data_point(data[i].loop_size(), data[i].delay(), 0, "data");
     }
-    file.close();
 
     plot2.add("set key top left");
     plot1.add("set key font \",6\"");
     plot2.add("set key font \",6\"");
+
     std::stringstream ss2;
-    ss2 << "f(x) = " << slope;
+    ss2 << "bottom(x) = " << bottom_slope;
     plot1.add(ss2.str().c_str());
-    ss2.str(std::string());
-    ss2 << "g(x) = " << (0.95 * slope);
-    plot1.add(ss2.str().c_str());
-    ss2.str(std::string());
-    ss2 << "h(x) = " << (1.05 * slope);
-    plot1.add(ss2.str().c_str());
-    plot1.function("f(x)");
-    plot1.function("g(x)");
-    plot1.function("h(x)");
-    ss2.str(std::string());
-    ss2 << "f(x) = " << slope << "*x";
+    ss2 << "*x";
     plot2.add(ss2.str().c_str());
-    plot2.function("f(x)");
-    plot1.show();
-    plot2.show();
+
+    ss2.str(std::string());
+    ss2 << "peak(x) = " << peak_slope;
+    plot1.add(ss2.str().c_str());
+    ss2 << "*x";
+    plot2.add(ss2.str().c_str());
+
+    ss2.str(std::string());
+    ss2 << "fit(x) = " << (1e-8 * slope_e8);
+    plot1.add(ss2.str().c_str());
+    ss2 << "*x";
+    plot2.add(ss2.str().c_str());
+
+    plot1.function("bottom(x)");
+    plot2.function("bottom(x)");
+    plot1.function("peak(x)");
+    plot2.function("peak(x)");
+    plot1.function("fit(x)");
+    plot2.function("fit(x)");
+
+    ss2.str(std::string());
+    ss2 << "set arrow from " << slope_e8 << ",graph(0,0) to " << slope_e8 << ",graph(1,1) nohead lc rgb \'red\'";
+    plot3.add(ss2.str().c_str());
+
+    if (static_cast<int>(slope_e8) != 1125 && static_cast<int>(slope_e8) != 1175 && loop_size != data[0].loop_size())
+    {
+      plot3.show();
+      plot2.show();
+      plot1.show();
+    }
   }
 #endif
 
-  return s;
+  return loop_size;
 }
 
 } // namespace utils

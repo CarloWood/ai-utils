@@ -47,7 +47,7 @@ class DelayLoopCalibrationBase
   double avg_of(unsigned int s);
 
   // Fit M with required accuracy around goal.
-  unsigned int ransac(double goal, bool final = false COMMA_CWDEBUG_ONLY(std::string title = std::string()));
+  unsigned int peak_detect(double goal, bool final = false COMMA_CWDEBUG_ONLY(std::string title = std::string()));
 
   // Do a sort of binary search to zone in on goal, start with hint.
   unsigned int search_lowest_of(unsigned int nm, double goal, unsigned int hint = 1);
