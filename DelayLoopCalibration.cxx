@@ -36,6 +36,12 @@
 
 #include "cwds/gnuplot_tools.h"
 
+#if defined(CWDEBUG) && !defined(DOXYGEN)
+NAMESPACE_DEBUG_CHANNELS_START
+channel_ct delayloop("DELAYLOOP");
+NAMESPACE_DEBUG_CHANNELS_END
+#endif
+
 namespace utils {
 
 //static
@@ -125,7 +131,7 @@ unsigned int DelayLoopCalibrationBase::total_required_measurements()
 
 double DelayLoopCalibrationBase::avg_of(unsigned int s)
 {
-  DoutEntering(dc::notice|flush_cf|continued_cf, "avg_of(" << s << ") = ");
+  DoutEntering(dc::delayloop|flush_cf|continued_cf, "avg_of(" << s << ") = ");
   ASSERT(m <= n);
   std::vector<double> v;
   for (unsigned int i = 0; i <= n; ++i)
@@ -160,7 +166,7 @@ class LowestAverage
 
   void add(double v)
   {
-    DoutEntering(dc::notice, "LowestAverage::add(" << v << ")");
+    DoutEntering(dc::delayloop, "LowestAverage::add(" << v << ")");
     // Ignore measurements that are more than twice as large as the average value calculated so far.
     if (v * m_smallest_values.size() > 2 * m_smallest_values_sum)
       return;
@@ -174,13 +180,13 @@ class LowestAverage
       m_smallest_values_sum -= m_smallest_values.back() - v;
       m_smallest_values.pop_back();
     }
-    Dout(dc::notice, "Average now " << val() << " (" << m_total << " measurements)");
+    Dout(dc::delayloop, "Average now " << val() << " (" << m_total << " measurements)");
   }
 };
 
 unsigned int DelayLoopCalibrationBase::search_lowest_of(unsigned nm, double goal, unsigned int hint)
 {
-  DoutEntering(dc::notice, "DelayLoopCalibrationBase::search_lowest_of(" << nm << ", " << goal << ", " << hint << ")");
+  DoutEntering(dc::delayloop, "DelayLoopCalibrationBase::search_lowest_of(" << nm << ", " << goal << ", " << hint << ")");
   constexpr int number_to_average_over = 10;
   std::map<unsigned int, LowestAverage> m_measurements;
   auto low = m_measurements.begin();
@@ -221,7 +227,7 @@ unsigned int DelayLoopCalibrationBase::search_lowest_of(unsigned nm, double goal
     ASSERT(low_s() <= s && s <= high_s());
 
     double delay_s = measure(s);
-    Dout(dc::notice, "measure(" << s << ") = " << delay_s);
+    Dout(dc::delayloop, "measure(" << s << ") = " << delay_s);
     auto si = m_measurements.find(s);
     if (si == m_measurements.end())
       si = m_measurements.emplace(s, LowestAverage(number_to_average_over, nm)).first;
@@ -232,7 +238,7 @@ unsigned int DelayLoopCalibrationBase::search_lowest_of(unsigned nm, double goal
     if (delay_s < goal)
     {
       ASSERT(s >= low_s());
-      Dout(dc::notice(low_s() != s), "low_s " << low_s() << " --> " << s);
+      Dout(dc::delayloop(low_s() != s), "low_s " << low_s() << " --> " << s);
       low = si;
     }
     else
@@ -250,7 +256,7 @@ unsigned int DelayLoopCalibrationBase::search_lowest_of(unsigned nm, double goal
     else
       s = std::round(low_s() + (high_s() - low_s()) * (goal - low_delay()) / (high_delay() - low_delay()));
   }
-  Dout(dc::notice, "Returning " << s);
+  Dout(dc::delayloop, "Returning " << s);
   return s;
 }
 
@@ -310,16 +316,14 @@ std::ostream& operator<<(std::ostream& os, Point const& p)
 
 #endif
 
-unsigned int DelayLoopCalibrationBase::peak_detect(double goal, bool
-#ifndef INPUT_FILE
-    final                               // Not used when reading from an INPUT_FILE.
-#endif
-    COMMA_CWDEBUG_ONLY(std::string)     // Parameter only exists when compiling with CWDEBUG.
+unsigned int DelayLoopCalibrationBase::peak_detect(double goal
+    COMMA_CWDEBUG_ONLY(std::string)     // Parameter only exists when compiling with CWDEBUG,
 #ifdef GNUPLOT
-    title                               // Not used unless GNUPLOT is defined.
+                           title        // but not used unless GNUPLOT is defined.
 #endif
     )
 {
+  DoutEntering(dc::delayloop, "DelayLoopCalibrationBase::peak_detect(" << goal << ")");
 #ifdef GNUPLOT
   // For debug purposes; plot graphs.
   bool draw_graph = !title.empty();
@@ -351,7 +355,8 @@ unsigned int DelayLoopCalibrationBase::peak_detect(double goal, bool
     double slope_estimate;                // The fitted slope of all measurements so far.
 
     // Approach a loop size (s) that results in goal milliseconds of delay.
-    unsigned int s = 1000;                // Start very small since we don't know how slow the current hardware is and we don't want this calibration to take long.
+    unsigned int s = 1000 * goal;         // Start very small since we don't know how slow the current hardware is and we don't want this calibration to take long.
+    ASSERT(s > 0);
     do
     {
 #ifdef INPUT_FILE
@@ -360,7 +365,7 @@ unsigned int DelayLoopCalibrationBase::peak_detect(double goal, bool
       infile >> s >> a >> z;
       double delay = a * s;
 #else
-      double delay = final ? avg_of(s) : measure(s);
+      double delay = measure(s);
 #ifdef OUTPUT_FILE
       double a = delay / s;
       outfile << s << ' ' << a << " 0\n";
@@ -405,7 +410,7 @@ unsigned int DelayLoopCalibrationBase::peak_detect(double goal, bool
         infile >> s >> a >> z;
         data.emplace_back(s, a);
 #else
-        double delay = final ? avg_of(s) : measure(s);
+        double delay = measure(s);
         // Completely disregard measurements with absurd delays (note: this might not be needed).
         if (delay > 2 * goal)
         {
@@ -488,13 +493,6 @@ unsigned int DelayLoopCalibrationBase::peak_detect(double goal, bool
 
     // Sort all data points by loop size.
     std::sort(data.begin(), data.end(), [](Point const& p1, Point const& p2){ return p1.slope() < p2.slope(); });
-#if 0
-    Dout(dc::notice, "Data points:");
-    int i = 0;
-    for (auto& p : data)
-      Dout(dc::notice, "  " << i++ << ": " << p);
-#endif
-
     window = 1.0;       // Something very large.
     for (size_t window_start = 0; window_start <= first_window_end && window_start + measurements_in_window - 1 < data.size(); ++window_start)
     {
@@ -504,16 +502,18 @@ unsigned int DelayLoopCalibrationBase::peak_detect(double goal, bool
       {
         window = window_size;
         min_window_start = window_start;
-        Dout(dc::notice, "Window start: " << min_window_start << " (" <<
+        Dout(dc::delayloop, "Window start: " << min_window_start << " (" <<
             (1e8 * data[window_start].slope()) << " - " << (1e8 * data[window_end].slope()) << ") with width " << (1e8 * window_size));
       }
     }
   }
 
   loop_size_estimate = goal / data[min_window_start].slope();
+#ifdef CWDEBUG
   unsigned int slope_e8 = 1e8 * data[min_window_start].slope();
-  Dout(dc::notice, "Peak detection: slope estimate: " << slope_e8 << ", loop size estimate: " << loop_size_estimate);
-  Dout(dc::notice, "Window size: " << window);
+#endif
+  Dout(dc::delayloop, "Peak detection: slope estimate: " << slope_e8 << ", loop size estimate: " << loop_size_estimate);
+  Dout(dc::delayloop, "Window size: " << window);
 
 #ifdef GNUPLOT
   // For debugging purposes, make a plot with the frequency count per bucket.
@@ -568,18 +568,18 @@ unsigned int DelayLoopCalibrationBase::peak_detect(double goal, bool
     {
       size_t const window_end = window_start + measurements_in_window - 1;
       double window_size = data[window_end].slope() - data[window_start].slope();
-      Dout(dc::notice, "Window with start at " << window_start << " (" << (1e8 * data[window_start].slope()) <<
+      Dout(dc::delayloop, "Window with start at " << window_start << " (" << (1e8 * data[window_start].slope()) <<
           " containing " << measurements_in_window << " measurements is " << (window_size / window) << " bucket widths wide.");
       if (window_size <= max_window_size)
       {
         loop_size = goal / data[window_start].slope();
-        slope_e8 = 1e8 * data[window_start].slope();
+        Debug(slope_e8 = 1e8 * data[window_start].slope());
         break;
       }
     }
   }
 
-  Dout(dc::notice, "Final slope: " << slope_e8 << ", final loop size: " << loop_size);
+  Dout(dc::delayloop, "Final slope: " << slope_e8 << ", final loop size: " << loop_size);
 
 #ifdef GNUPLOT
   constexpr double bottom_slope = 1.044e-5; //1.091e-5;
