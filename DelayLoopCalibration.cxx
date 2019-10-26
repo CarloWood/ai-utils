@@ -34,7 +34,15 @@
 #include <thread>
 #include <pthread.h>
 
+#ifdef CWDEBUG
+//#define GNUPLOT
+//#define INPUT_FILE "beauty.out"
+//#define OUTPUT_FILE "measure.out"
+#endif
+
+#ifdef GNUPLOT
 #include "cwds/gnuplot_tools.h"
+#endif
 
 #if defined(CWDEBUG) && !defined(DOXYGEN)
 NAMESPACE_DEBUG_CHANNELS_START
@@ -309,11 +317,6 @@ std::ostream& operator<<(std::ostream& os, Point const& p)
   os << "{s:" << p.loop_size() << ", a:" << p.slope() << ", 1/a:" << (1 / p.slope()) << ", d:" << p.delay() << ", s2:" << p.m_s2 << ", sd:" << p.m_sd << "}";
   return os;
 }
-
-//#define GNUPLOT
-//#define INPUT_FILE "beauty.out"
-//#define OUTPUT_FILE "measure.out"
-
 #endif
 
 unsigned int DelayLoopCalibrationBase::peak_detect(double goal
