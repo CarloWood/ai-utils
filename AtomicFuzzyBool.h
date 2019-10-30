@@ -37,7 +37,7 @@ class AtomicFuzzyBool
    static_assert(std::atomic<FuzzyBoolEnum>::is_always_lock_free, "Get a real OS.");
 
  public:
-  AtomicFuzzyBool() { }
+  AtomicFuzzyBool() : m_aval(0) { }
   AtomicFuzzyBool(FuzzyBoolPOD const& val) : m_aval(val.m_val) { }
 
   void store(FuzzyBoolPOD const& desired, std::memory_order order = std::memory_order_seq_cst) noexcept { m_aval.store(desired.m_val, order); }
