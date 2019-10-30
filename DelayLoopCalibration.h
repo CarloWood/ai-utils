@@ -24,6 +24,7 @@
 // along with ai-utils.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "debug.h"
+#include "utils/Global.h"
 #include <chrono>
 
 #if defined(CWDEBUG) && !defined(DOXYGEN)
@@ -38,13 +39,20 @@ namespace utils {
 class DelayLoopCalibrationBase
 {
  public:
+  enum N_Instance { total_required_measurements };
+  class TotalRequiredMeasurements
+  {
+    unsigned int const m_n;
+    unsigned int total_required_measurements() const;
+   public:
+    TotalRequiredMeasurements() : m_n(total_required_measurements()) { }
+    operator unsigned int() const { return m_n; }
+  };
+  using GlobalTotalRequiredMeasurements = Global<TotalRequiredMeasurements, total_required_measurements, GlobalConverterVoid>;
   using clock_type = std::chrono::steady_clock;
   static constexpr double p = 0.99;             // Assumed (independent) chance to measure a non-outlier (as a result of an interrupt).
   static constexpr unsigned int m = 20;         // The number of (lowest) non-outliers to average over.
   static constexpr double epsilon = 1e-12;      // The maximum acceptable chance that we include an outlier in such average.
-  static unsigned int const n;                  // The total number of required measurements.
-
-  static unsigned int total_required_measurements();
 
   // Do a single measurement.
   virtual double measure(unsigned int s) = 0;

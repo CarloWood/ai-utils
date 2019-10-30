@@ -36,9 +36,7 @@
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 //      int main(int argc, void* argv[])
 //      {
-//      #ifdef DEBUGGLOBAL
-//        GlobalObjectManager::main_entered();
-//      #endif
+//        Debug(NAMESPACE_DEBUG::init());       // Takes care of calling  GlobalObjectManager::main_entered() when DEBUGGLOBAL is defined.
 //        //...
 //      }
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -49,7 +47,7 @@
 //
 //    For example:
 //
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.h}
 //      enum FooInstance {
 //        red,
 //        green,
@@ -59,7 +57,7 @@
 //
 // 3) If you want to call the default constructor of `Foo`, use:
 //
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.h}
 //      using GlobalRedFoo = Global<Foo, red, GlobalConverterVoid>;
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
@@ -67,7 +65,7 @@
 //    where `instance` is the integer constant of that instance
 //    (`red` in the last example), then use:
 //
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.n}
 //      using GlobalRedFoo = Global<Foo, red>;
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
@@ -75,7 +73,7 @@
 //    `Foo`, then you should define a `GlobalConverter' class yourself.
 //    For example:
 //
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.h}
 //      class GlobalConverterString {
 //      public:
 //        string operator()(int instance);
@@ -85,7 +83,7 @@
 //    Where `operator()` should convert the `instance` variable into
 //    a string.
 //
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.n}
 //      using GlobalRedFoo = Global<Foo, red, GlobalConverterString>;
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //

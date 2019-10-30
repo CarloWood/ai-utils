@@ -52,10 +52,11 @@ NAMESPACE_DEBUG_CHANNELS_END
 
 namespace utils {
 
-//static
-unsigned int const DelayLoopCalibrationBase::n = DelayLoopCalibrationBase::total_required_measurements();
+namespace {
+DelayLoopCalibrationBase::GlobalTotalRequiredMeasurements n_dummy;
+} // namespace
 
-unsigned int DelayLoopCalibrationBase::total_required_measurements()
+unsigned int DelayLoopCalibrationBase::TotalRequiredMeasurements::total_required_measurements() const
 {
   // If we do n measurements then the chance to get exactly i values that are non-outliers
   // is given by the probability mass function of the binomial distribution
@@ -140,6 +141,7 @@ unsigned int DelayLoopCalibrationBase::total_required_measurements()
 double DelayLoopCalibrationBase::avg_of(unsigned int s)
 {
   DoutEntering(dc::delayloop|flush_cf|continued_cf, "avg_of(" << s << ") = ");
+  unsigned int const n = GlobalTotalRequiredMeasurements::instantiate();
   ASSERT(m <= n);
   std::vector<double> v;
   for (unsigned int i = 0; i <= n; ++i)
