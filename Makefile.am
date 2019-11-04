@@ -42,6 +42,8 @@ SOURCES = \
 	AISignals.h \
 	DelayLoopCalibration.h \
 	DelayLoopCalibration.cxx \
+	print_using.h \
+	print_using.cxx \
 	AIFIFOBuffer.h \
 	AIRefCount.h \
 	FunctionView.h \

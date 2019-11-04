@@ -26,7 +26,7 @@
 #pragma once
 
 #include <iosfwd>
-#include <functional>
+#include <type_traits>
 
 namespace utils {
 
@@ -42,7 +42,7 @@ class PrintUsing2
 
   friend std::ostream& operator<<(std::ostream& os, PrintUsing2 print_using)
   {
-    Dout(dc::notice, "Using " << libcwd::type_info_of<PrintUsing2>().demangled_name());
+    //Dout(dc::notice, "Using " << libcwd::type_info_of<PrintUsing2>().demangled_name());
     if constexpr (std::is_member_function_pointer_v<print_on_type>)
       (print_using.m_obj.*print_using.m_print_on)(os);
     else
@@ -88,9 +88,6 @@ PrintUsing2_by_const_member_function<T> print_using(T obj, void (T::*print_on)(s
   return { obj, print_on };
 }
 
-PrintUsing1 print_using(void (*print_on)(std::ostream&))
-{
-  return { print_on };
-}
+PrintUsing1 print_using(void (*print_on)(std::ostream&));
 
 } // namespace utils
