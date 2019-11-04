@@ -52,6 +52,7 @@ SOURCES = \
 	at_scope_end.h \
 	for_each_until.h \
 	is_power_of_two.h \
+	is_pointer_like.h \
 	macros.h \
 	ulong_to_base.h \
 	cpu_relax.h \

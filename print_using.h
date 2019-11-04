@@ -25,35 +25,12 @@
 
 #pragma once
 
-#include <iosfwd>
-#include <type_traits>
+//#include "debug.h"
+#include "is_pointer_like.h"
+#include <iostream>
+#include <memory>
 
 namespace utils {
-
-template<typename T, typename print_on_type>
-class PrintUsing2
-{
- private:
-  T m_obj;
-  print_on_type m_print_on;
-
- public:
-  PrintUsing2(T obj, print_on_type print_on) : m_obj(obj), m_print_on(print_on) { }
-
-  friend std::ostream& operator<<(std::ostream& os, PrintUsing2 print_using)
-  {
-    //Dout(dc::notice, "Using " << libcwd::type_info_of<PrintUsing2>().demangled_name());
-    if constexpr (std::is_member_function_pointer_v<print_on_type>)
-      (print_using.m_obj.*print_using.m_print_on)(os);
-    else
-      print_using.m_print_on(os, print_using.m_obj);
-    return os;
-  }
-};
-
-template<typename T> using PrintUsing2_by_value = PrintUsing2<T, void(*)(std::ostream&, T)>;
-template<typename T> using PrintUsing2_by_const_reference = PrintUsing2<T, void(*)(std::ostream&, T const&)>;
-template<typename T> using PrintUsing2_by_const_member_function = PrintUsing2<T, void(T::*)(std::ostream&) const>;
 
 class PrintUsing1
 {
@@ -69,6 +46,41 @@ class PrintUsing1
     return os;
   }
 };
+
+PrintUsing1 print_using(void (*print_on)(std::ostream&));
+
+template<typename T, typename print_on_type>
+class PrintUsing2
+{
+ private:
+  T m_obj;
+  print_on_type m_print_on;
+
+ public:
+  PrintUsing2(T obj, print_on_type print_on) : m_obj(obj), m_print_on(print_on) { }
+
+  friend std::ostream& operator<<(std::ostream& os, PrintUsing2 print_using)
+  {
+    //Dout(dc::notice, "Using " << libcwd::type_info_of<PrintUsing2>().demangled_name());
+    if constexpr (utils::is_pointer_like_dereferencable_v<T>)
+    {
+      os << '*';
+      if constexpr (std::is_member_function_pointer_v<print_on_type>)
+        ((*print_using.m_obj).*print_using.m_print_on)(os);
+      else
+        print_using.m_print_on(os, *print_using.m_obj);
+    }
+    else if constexpr (std::is_member_function_pointer_v<print_on_type>)
+      (print_using.m_obj.*print_using.m_print_on)(os);
+    else
+      print_using.m_print_on(os, print_using.m_obj);
+    return os;
+  }
+};
+
+template<typename T> using PrintUsing2_by_value = PrintUsing2<T, void(*)(std::ostream&, T)>;
+template<typename T> using PrintUsing2_by_const_reference = PrintUsing2<T, void(*)(std::ostream&, T const&)>;
+template<typename T> using PrintUsing2_by_const_member_function = PrintUsing2<T, void(T::*)(std::ostream&) const>;
 
 template<typename T>
 PrintUsing2_by_value<T> print_using(T obj, void (*print_on)(std::ostream&, T))
@@ -88,6 +100,27 @@ PrintUsing2_by_const_member_function<T> print_using(T obj, void (T::*print_on)(s
   return { obj, print_on };
 }
 
-PrintUsing1 print_using(void (*print_on)(std::ostream&));
+template<typename T> using DereferencedType_t = std::remove_reference_t<decltype(*std::declval<T>())>;
+template<typename T, std::enable_if_t<utils::is_pointer_like_dereferencable_v<T>, int> = 0> using PrintUsingPtr_by_value = PrintUsing2<T, void(*)(std::ostream&, DereferencedType_t<T>)>;
+template<typename T, std::enable_if_t<utils::is_pointer_like_dereferencable_v<T>, int> = 0> using PrintUsingPtr_by_const_reference = PrintUsing2<T, void(*)(std::ostream&, DereferencedType_t<T> const&)>;
+template<typename T, std::enable_if_t<utils::is_pointer_like_dereferencable_v<T>, int> = 0> using PrintUsingPtr_by_const_member_function = PrintUsing2<T, void(DereferencedType_t<T>::*)(std::ostream&) const>;
+
+template<typename T>
+PrintUsingPtr_by_value<T> print_using(T const& obj, void (*print_on)(std::ostream&, DereferencedType_t<T>))
+{
+  return { obj, print_on };
+}
+
+template<typename T>
+PrintUsingPtr_by_const_reference<T> print_using(T const& obj, void (*print_on)(std::ostream&, DereferencedType_t<T> const&))
+{
+  return { obj, print_on };
+}
+
+template<typename T>
+PrintUsingPtr_by_const_member_function<T> print_using(T const& obj, void (DereferencedType_t<T>::*print_on)(std::ostream&) const)
+{
+  return { obj, print_on };
+}
 
 } // namespace utils
