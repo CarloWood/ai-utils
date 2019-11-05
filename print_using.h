@@ -29,6 +29,7 @@
 #include "is_pointer_like.h"
 #include <iostream>
 #include <memory>
+#include <functional>
 
 namespace utils {
 
@@ -81,6 +82,7 @@ class PrintUsing2
 template<typename T> using PrintUsing2_by_value = PrintUsing2<T, void(*)(std::ostream&, T)>;
 template<typename T> using PrintUsing2_by_const_reference = PrintUsing2<T const&, void(*)(std::ostream&, T const&)>;
 template<typename T> using PrintUsing2_by_const_member_function = PrintUsing2<T const&, void(T::*)(std::ostream&) const>;
+template<typename T> using PrintUsing2_by_std_function = PrintUsing2<T const&, std::function<void(std::ostream&, T const&)>>;
 
 template<typename T>
 PrintUsing2_by_value<T> print_using(T obj, void (*print_on)(std::ostream&, T))
@@ -96,6 +98,17 @@ PrintUsing2_by_const_reference<T> print_using(T const& obj, void (*print_on)(std
 
 template<typename T>
 PrintUsing2_by_const_member_function<T> print_using(T const& obj, void (T::*print_on)(std::ostream&) const)
+{
+  return { obj, print_on };
+}
+
+template<typename T>
+struct PrintUsingIdentity {
+  using type = T;
+};
+
+template<typename T>
+PrintUsing2_by_std_function<T> print_using(T const& obj, std::function<void(std::ostream&, typename PrintUsingIdentity<T>::type const&)> print_on)
 {
   return { obj, print_on };
 }
