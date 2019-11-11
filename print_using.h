@@ -115,12 +115,12 @@ PrintUsing2_by_std_function<T> print_using(T const& obj, std::function<void(std:
 
 template<typename T> using DereferencedType_t = std::remove_reference_t<decltype(*std::declval<T>())>;
 template<typename T, std::enable_if_t<utils::is_pointer_like_dereferencable_v<T>, int> = 0> using PrintUsingPtr_by_value = PrintUsing2<T, void(*)(std::ostream&, DereferencedType_t<T>)>;
-template<typename T, std::enable_if_t<utils::is_pointer_like_dereferencable_v<T>, int> = 0> using PrintUsingPtr_by_const_reference = PrintUsing2<T, void(*)(std::ostream&, DereferencedType_t<T> const&)>;
-template<typename T, std::enable_if_t<utils::is_pointer_like_dereferencable_v<T>, int> = 0> using PrintUsingPtr_by_const_member_function = PrintUsing2<T, void(DereferencedType_t<T>::*)(std::ostream&) const>;
-template<typename T, std::enable_if_t<utils::is_pointer_like_dereferencable_v<T>, int> = 0> using PrintUsingPtr_by_std_function = PrintUsing2<T, std::function<void(std::ostream&, DereferencedType_t<T> const&)>>;
+template<typename T, std::enable_if_t<utils::is_pointer_like_dereferencable_v<T>, int> = 0> using PrintUsingPtr_by_const_reference = PrintUsing2<T const&, void(*)(std::ostream&, DereferencedType_t<T> const&)>;
+template<typename T, std::enable_if_t<utils::is_pointer_like_dereferencable_v<T>, int> = 0> using PrintUsingPtr_by_const_member_function = PrintUsing2<T const&, void(DereferencedType_t<T>::*)(std::ostream&) const>;
+template<typename T, std::enable_if_t<utils::is_pointer_like_dereferencable_v<T>, int> = 0> using PrintUsingPtr_by_std_function = PrintUsing2<T const&, std::function<void(std::ostream&, DereferencedType_t<T> const&)>>;
 
 template<typename T>
-PrintUsingPtr_by_value<T> print_using(T const& obj, void (*print_on)(std::ostream&, DereferencedType_t<T>))
+PrintUsingPtr_by_value<T> print_using(T obj, void (*print_on)(std::ostream&, DereferencedType_t<T>))
 {
   return { obj, print_on };
 }
