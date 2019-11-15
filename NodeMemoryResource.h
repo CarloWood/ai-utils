@@ -50,21 +50,46 @@ namespace utils {
 class NodeMemoryResource
 {
  public:
+  // Create an uninitialized NodeMemoryResource. Call init() to initialize it.
+  NodeMemoryResource() : m_mpp(nullptr), m_block_size(0) { }
+
+  // Create an initialized NodeMemoryResource.
   NodeMemoryResource(MemoryPagePool& mpp, size_t block_size = 0) : m_mpp(&mpp), m_block_size(block_size)
   {
     DoutEntering(dc::notice, "NodeMemoryResource::NodeMemoryResource({" << (void*)m_mpp << "}, " << block_size << ") [" << this << "]");
   }
 
+  // Destructor.
   ~NodeMemoryResource()
   {
     DoutEntering(dc::notice, "NodeMemoryResource::~NodeMemoryResource() [" << this << "]");
+  }
+
+  // Late initialization.
+  void init(MemoryPagePool* mpp_ptr, size_t block_size = 0)
+  {
+    // A NodeMemoryResource object may only be initialized once.
+    ASSERT(m_mpp == nullptr);
+    m_mpp = mpp_ptr;
+    m_block_size = block_size;
+    Dout(dc::notice(block_size > 0), "NodeMemoryResource::m_block_size using [" << m_mpp << "] set to " << block_size << " [" << this << "]");
   }
 
   void* allocate(size_t block_size)
   {
     //DoutEntering(dc::notice|continued_cf, "NodeMemoryResource::allocate(" << block_size << ") = ");
     if (AI_UNLIKELY(m_block_size == 0))
+    {
+      static std::mutex m;
+      std::lock_guard<std::mutex> guard(m);
+      // Call NodeMemoryResource::init before using a default constructed NodeMemoryResource.
+      // If this is inside a call to AIStatefulTaskMutex::lock then you probably forgot to create
+      // a statefultask::DefaultMemoryPagePool object at the top of main. Go read the documentation
+      // at the top of statefultask/DefaultMemoryPagePool.h.
+      ASSERT(m_mpp != nullptr);
       m_block_size = block_size;
+      Dout(dc::notice, "NodeMemoryResource::m_block_size using [" << m_mpp << "] set to " << block_size << " [" << this << "]");
+    }
 #ifdef CWDEBUG
     else
       ASSERT(block_size <= m_block_size);

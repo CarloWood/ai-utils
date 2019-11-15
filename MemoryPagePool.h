@@ -57,7 +57,7 @@ class MemoryPagePool : public details::MemoryPageSize
  private:
   utils::SimpleSegregatedStorage m_sss;
   size_t const m_block_size;            // The size of a block as returned by allocate(), in bytes.
-  blocks_t m_pool_blocks;                 // The total amount of allocated system memory, in blocks.
+  blocks_t m_pool_blocks;               // The total amount of allocated system memory, in blocks.
   blocks_t const m_minimum_chunk_size;  // The minimum size of internally allocated contiguous memory blocks, in blocks.
   blocks_t const m_maximum_chunk_size;  // The maximum size of internally allocated contiguous memory blocks, in blocks.
   std::vector<void*> m_chunks;          // All allocated chunks that were allocated with std::aligned_alloc.
@@ -70,7 +70,7 @@ class MemoryPagePool : public details::MemoryPageSize
   MemoryPagePool(size_t block_size,                     // The size of a block as returned by allocate(), in bytes; must be a multiple the memory page size.
                  blocks_t minimum_chunk_size = 0,       // A value of 0 will use the value returned by default_minimum_chunk_size().
                  blocks_t maximum_chunk_size = 0);      // A value of 0 will use the value returned by default_maximum_chunk_size(minimum_chunk_size).
-  ~MemoryPagePool()
+  virtual ~MemoryPagePool()
   {
     DoutEntering(dc::notice, "MemoryPagePool::~MemoryPagePool() [" << this << "]");
     release();
