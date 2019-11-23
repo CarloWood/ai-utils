@@ -144,6 +144,14 @@ class AIRefCount
     //
     // boost::intrusive_ptr<A> p = new A;
     // p->f();
+    //
+    // If you are using the evio submodule and this object is derived from evio::FileDescriptor
+    // then you probably created a device without assigning it to a boost::intrusive_ptr at all
+    // (e.g: MyDevice my_device;) Don't do that. Devices should be created like:
+    //
+    // auto my_device = evio::create<MyDevice>(/* device constructor arguments */);
+    //
+    // where MyDevice is something like (derived from) File, Socket etc (InputDevice and/or OutputDevice).
     ASSERT(!can_cause_immediate_allow_deletion || prev_count > 0);
     return prev_count;
   }
