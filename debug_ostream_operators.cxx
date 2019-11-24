@@ -33,7 +33,7 @@
 
 namespace AIAlert {
 
-//! For debugging purposes. Write a AIAlert::Error to \a os.
+//! For debugging purposes. Write a AIAlert::Error to @a os.
 std::ostream& operator<<(std::ostream& os, AIAlert::Error const& error)
 {
   os << "AIAlert: ";

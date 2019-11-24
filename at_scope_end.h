@@ -1,7 +1,7 @@
 // ai-utils -- C++ Core utilities
 //
 //! @file
-//! @brief Definition of \c at_scope_end.
+//! @brief Definition of @c at_scope_end.
 //
 // Copyright (C) 2015 - 2017  Carlo Wood.
 //

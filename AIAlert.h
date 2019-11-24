@@ -59,14 +59,14 @@
 // Facility to throw errors that can easily be converted to an informative pop-up floater for the user.
 
 // Throw arbitrary class.
-/// Throw arbitrary class \a Alert - not modal, no function prefix.
+/// Throw arbitrary class @a Alert - not modal, no function prefix.
 #define   THROW_ALERT_CLASS(Alert, ...) throw Alert(AIAlert::Prefix(),                                                     AIAlert::not_modal, __VA_ARGS__)
-/// Throw arbitrary class \a Alert - modal, no function prefix.
+/// Throw arbitrary class @a Alert - modal, no function prefix.
 #define  THROW_MALERT_CLASS(Alert, ...) throw Alert(AIAlert::Prefix(),                                                         AIAlert::modal, __VA_ARGS__)
 #ifdef __GNUC__
-/// Throw arbitrary class \a Alert - modal, no function prefix.
+/// Throw arbitrary class @a Alert - modal, no function prefix.
 #define  THROW_FALERT_CLASS(Alert, ...) throw Alert(AIAlert::Prefix(__PRETTY_FUNCTION__, AIAlert::pretty_function_prefix), AIAlert::not_modal, __VA_ARGS__)
-/// Throw arbitrary class \a Alert - modal, with function prefix.
+/// Throw arbitrary class @a Alert - modal, with function prefix.
 #define THROW_FMALERT_CLASS(Alert, ...) throw Alert(AIAlert::Prefix(__PRETTY_FUNCTION__, AIAlert::pretty_function_prefix),     AIAlert::modal, __VA_ARGS__)
 #else
 /// @cond Doxygen_Suppress
@@ -149,8 +149,8 @@
 //===================================================================================================================================
 
 /**
- * \class AIArgs
- * \brief Arguments for AIAlert::Error.
+ * @class AIArgs
+ * @brief Arguments for AIAlert::Error.
  *
  * A wrapper around a `std::map` (translate::format_map_t) to allow constructing a dictionary on one line by doing:
  *
@@ -175,13 +175,13 @@ class AIArgs
 };
 
 // No need to call boost::lexical_cast when it already is a std::string or a char const*.
-/// Map \a replacement to \a key. Specialization for `std::string`.
+/// Map @a replacement to @a key. Specialization for `std::string`.
 template<> inline AIArgs::AIArgs(char const* key, std::string const& replacement) { mArgs[key] = replacement; }
-/// Map \a replacement to \a key. Specialization for `char const*`.
+/// Map @a replacement to @a key. Specialization for `char const*`.
 template<> inline AIArgs::AIArgs(char const* key, char const* const& replacement) { mArgs[key] = replacement; }
-/// Map \a replacement to \a key. Specialization for `std::string`.
+/// Map @a replacement to @a key. Specialization for `std::string`.
 template<> inline AIArgs& AIArgs::operator()(char const* key, std::string const& replacement) { mArgs[key] = replacement; return *this; }
-/// Map \a replacement to \a key. Specialization for `char const*`.
+/// Map @a replacement to @a key. Specialization for `char const*`.
 template<> inline AIArgs& AIArgs::operator()(char const* key, char const* const& replacement) { mArgs[key] = replacement; return *this; }
 
 namespace AIAlert {
@@ -204,8 +204,8 @@ enum alert_line_type_nt
 };
 
 /**
- * \class Prefix
- * \brief The prefix of an alert message.
+ * @class Prefix
+ * @brief The prefix of an alert message.
  *
  * An Prefix currently comes only in two flavors:
  *
@@ -218,9 +218,9 @@ class Prefix
   public:
     /// Construct an empty Prefix.
     Prefix() : mType(empty_prefix) { }
-    /// Construct a prefix \a str of type \a type.
+    /// Construct a prefix @a str of type @a type.
     Prefix(char const* str, alert_line_type_nt type) : mStr(str), mType(type) { }
-    /// Construct a prefix \a str of type \a type.
+    /// Construct a prefix @a str of type @a type.
     Prefix(std::string str, alert_line_type_nt type) : mStr(str), mType(type) { }
 
     /// Return true if the prefix is not empty.
@@ -236,8 +236,8 @@ class Prefix
 };
 
 /**
- * \class Line
- * \brief A single line of an alert message.
+ * @class Line
+ * @brief A single line of an alert message.
  *
  * This class represents one line with its replacements.
  * The string mXmlDesc shall be looked up in strings.xml.
@@ -257,7 +257,7 @@ class Line
   public:
     /// Construct a line with no replacements.
     Line(std::string const& xml_desc, bool newline = false) : mNewline(newline), mXmlDesc(xml_desc), mType(normal) { }
-    /// Construct a line with replacements \a args.
+    /// Construct a line with replacements @a args.
     Line(std::string const& xml_desc, AIArgs const& args, bool newline = false) : mNewline(newline), mXmlDesc(xml_desc), mArgs(args), mType(normal) { }
     /// Construct a prefix line.
     Line(Prefix const& prefix, bool newline = false) : mNewline(newline), mXmlDesc(prefix.str()), mType(prefix.type()) { }
@@ -285,8 +285,8 @@ class Line
 };
 
 /**
- * \class Error
- * \brief Exception class used to throw an error with an informative user message.
+ * @class Error
+ * @brief Exception class used to throw an error with an informative user message.
  *
  * This class is used to throw an error that will cause
  * an alert box to pop up for the user.
@@ -311,7 +311,7 @@ class Error : public std::exception
     /// Return true if the alert should be modal.
     bool is_modal() const { return mModal == modal; }
 
-    /// Existing \a alert, just add a prefix and turn alert into modal if appropriate.
+    /// Existing @a alert, just add a prefix and turn alert into modal if appropriate.
     Error(Prefix const& prefix, modal_nt type, Error const& alert);
 
     /// A string with zero or more replacements (with args).
@@ -362,8 +362,8 @@ inline std::error_code convert_to_error_code(std::errc code)
 }
 
 /**
- * \class ErrorCode
- * \brief Exception class used to throw an error with an informative user message.
+ * @class ErrorCode
+ * @brief Exception class used to throw an error with an informative user message.
  *
  * Same as Error but allows to pass an additional error code.
  */

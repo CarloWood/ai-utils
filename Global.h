@@ -285,7 +285,7 @@ public:
 
 /**---------------------------------------------------------------------------------------------------------
  *
- * \class GlobalConverterVoid
+ * @class GlobalConverterVoid
  *
  * To be used as third template parameter of Global<class TYPE, int inst, class CONVERTER> when
  * the default constructor of TYPE must be called on instantiation.
@@ -300,7 +300,7 @@ public:
 
 /**---------------------------------------------------------------------------------------------------------
  *
- * \class GlobalConverterInt
+ * @class GlobalConverterInt
  *
  * The default third template parameter of Global<class TYPE, int inst, class CONVERTER>.
  * Using this class causes TYPE to be created by calling TYPE(int inst).
