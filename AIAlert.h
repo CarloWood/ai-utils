@@ -149,14 +149,12 @@
 //===================================================================================================================================
 
 /**
- * @class AIArgs
- * @brief Arguments for AIAlert::Error.
+ * Arguments for AIAlert::Error.
  *
  * A wrapper around a `std::map` (translate::format_map_t) to allow constructing a dictionary on one line by doing:
  *
- * <code>AIArgs("[ARG1]", arg1)("[ARG2]", arg2)("[ARG3]", arg3)...</code>
+ * @{AIArgs("[ARG1]", arg1)("[ARG2]", arg2)("[ARG3]", arg3)...}
  */
-
 class AIArgs
 {
   private:
@@ -204,15 +202,13 @@ enum alert_line_type_nt
 };
 
 /**
- * @class Prefix
- * @brief The prefix of an alert message.
+ * The prefix of an alert message.
  *
- * An Prefix currently comes only in two flavors:
+ * A Prefix currently comes only in two flavors:
  *
- * empty_prefix           : An empty prefix.
- * pretty_function_prefix : A function name prefix, this is the function from which the alert was thrown.
+ *     empty_prefix           : An empty prefix.
+ *     pretty_function_prefix : A function name prefix, this is the function from which the alert was thrown.
  */
-
 class Prefix
 {
   public:
@@ -236,8 +232,7 @@ class Prefix
 };
 
 /**
- * @class Line
- * @brief A single line of an alert message.
+ * A single line of an alert message.
  *
  * This class represents one line with its replacements.
  * The string mXmlDesc shall be looked up in strings.xml.
@@ -245,7 +240,6 @@ class Prefix
  * actual translation code can be defined elsewhere and
  * used more generally.
  */
-
 class Line
 {
   private:
@@ -285,8 +279,7 @@ class Line
 };
 
 /**
- * @class Error
- * @brief Exception class used to throw an error with an informative user message.
+ * Exception class used to throw an error with an informative user message.
  *
  * This class is used to throw an error that will cause
  * an alert box to pop up for the user.
@@ -299,7 +292,6 @@ class Line
  * of this class so that the code that shows messages that have to be translated
  * can be defined elsewhere and used more general.
  */
-
 class Error : public std::exception
 {
   public:
@@ -362,12 +354,10 @@ inline std::error_code convert_to_error_code(std::errc code)
 }
 
 /**
- * @class ErrorCode
- * @brief Exception class used to throw an error with an informative user message.
+ * Exception class used to throw an error with an informative user message.
  *
  * Same as Error but allows to pass an additional error code.
  */
-
 class ErrorCode : public Error
 {
   private:
