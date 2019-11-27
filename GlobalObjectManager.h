@@ -37,6 +37,11 @@
 #include <libcwd/private_internal_stringbuf.h>
 #endif
 
+/// Global objects manager singleton class.
+///
+/// This singleton is used by Global<> to keep track of the number
+/// of global instances and their destruction.
+///
 class GlobalObjectManager : public Singleton<GlobalObjectManager>
 {
   friend_Instance;

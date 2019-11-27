@@ -23,12 +23,6 @@
 // You should have received a copy of the GNU General Public License
 // along with ai-utils.  If not, see <http://www.gnu.org/licenses/>.
 
-//! @class GlobalObjectManager
-//! @brief Global objects manager singleton class.
-//
-// This singleton is used by Global<> to keep track of the number
-// of global instances and their destruction.
-
 #include "sys.h"
 #include "GlobalObjectManager.h"
 #include "debug.h"

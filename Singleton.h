@@ -23,8 +23,8 @@
 // You should have received a copy of the GNU General Public License
 // along with ai-utils.  If not, see <http://www.gnu.org/licenses/>.
 
-//! @class Singleton
-//! @brief Template wrapper to turn custom classes into a true singleton.
+/// @class Singleton
+/// @brief Template wrapper to turn custom classes into a true singleton.
 //
 // Usage:
 //

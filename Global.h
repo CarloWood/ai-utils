@@ -23,8 +23,8 @@
 // You should have received a copy of the GNU General Public License
 // along with ai-utils.  If not, see <http://www.gnu.org/licenses/>.
 
-//! @class Global
-//! @brief Initialization order fiasco free global instances.
+/// @class Global
+/// @brief Initialization order fiasco free global instances.
 //
 // Usage:
 //
