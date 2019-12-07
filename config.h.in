@@ -13,6 +13,8 @@ namespace config {
 
 #cmakedefine DEBUGGLOBAL 1
 
+//
+//
 // HAVE_BUILTIN_EXPECT
 //
 // Set to 1 if __builtin_expect is available. Otherwise set to 0.
@@ -25,7 +27,7 @@ namespace config {
 //
 // The number of bytes extra allocated by a call to malloc.
 
-static constexpr size_t malloc_overhead_c = @cw_cv_sys_malloc_overhead@;
+static constexpr size_t malloc_overhead_c = @CW_MALLOC_OVERHEAD@;
 
 //
 //
@@ -33,6 +35,6 @@ static constexpr size_t malloc_overhead_c = @cw_cv_sys_malloc_overhead@;
 //
 // A typed constexpr for the cacheline size determined during configure.
 
-static constexpr int cacheline_size_c = @cw_cv_sys_cacheline_size@;
+static constexpr int cacheline_size_c = @CW_CACHELINE_SIZE@;
 
 } // namespace config
