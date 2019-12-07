@@ -51,7 +51,7 @@ static constexpr size_t minimum_heap_size = 32;
 // 4096 bytes.
 size_t malloc_size(size_t min_size)
 {
-  size_t required_heap_space = min_size + CW_MALLOC_OVERHEAD;
+  size_t required_heap_space = min_size + config::malloc_overhead_c;
   size_t actual_used_heap_space;
   if (required_heap_space <= minimum_heap_size)
     actual_used_heap_space = minimum_heap_size;
@@ -59,20 +59,20 @@ size_t malloc_size(size_t min_size)
     actual_used_heap_space = nearest_power_of_two(required_heap_space);
   else
     actual_used_heap_space = nearest_multiple_of_power_of_two(required_heap_space, page_size);
-  return actual_used_heap_space - CW_MALLOC_OVERHEAD;
+  return actual_used_heap_space - config::malloc_overhead_c;
 }
 
 // Return the largest possible size less than or equal max_size
 // such that malloc(size) == size. If this is not possible because
-// max_size < minimum_heap_size - CW_MALLOC_OVERHEAD, then return 0.
+// max_size < minimum_heap_size - config::malloc_overhead_c, then return 0.
 size_t max_malloc_size(size_t max_size)
 {
-  if (max_size < minimum_heap_size - CW_MALLOC_OVERHEAD)
+  if (max_size < minimum_heap_size - config::malloc_overhead_c)
     return 0;
-  size_t heap_size = nearest_multiple_of_power_of_two(max_size + CW_MALLOC_OVERHEAD + 1, page_size) - page_size;
+  size_t heap_size = nearest_multiple_of_power_of_two(max_size + config::malloc_overhead_c + 1, page_size) - page_size;
   if (heap_size == 0)
-    heap_size = nearest_power_of_two(max_size + CW_MALLOC_OVERHEAD + 1) / 2;
-  return heap_size - CW_MALLOC_OVERHEAD;
+    heap_size = nearest_power_of_two(max_size + config::malloc_overhead_c + 1) / 2;
+  return heap_size - config::malloc_overhead_c;
 }
 
 } // namespace utils

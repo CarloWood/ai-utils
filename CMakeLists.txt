@@ -1,0 +1,138 @@
+cmake_minimum_required( VERSION 3.16 )
+cmake_policy( VERSION 3.16 )
+
+project( utils
+         VERSION 1.0.0
+         LANGUAGES C CXX
+         DESCRIPTION "C++ Core utilities" )
+
+# Default message log level. Use cmake --log-level=debug to get DEBUG output.
+set( CMAKE_MESSAGE_LOG_LEVEL "STATUS" )
+
+# Add the local cmake directory to CMAKE_MODULE_PATH.
+list( APPEND CMAKE_MODULE_PATH
+      "${CMAKE_CURRENT_SOURCE_DIR}/../cwm4/cmake" )
+
+#==============================================================================
+# OPTIONS
+
+include(CW_OPTIONS)
+
+# Option 'EnableDebug' compiles in debug mode.
+option( EnableDebug
+        "Build for debugging" ${CW_BUILD_TYPE_IS_DEBUG}
+        "CW_BUILD_TYPE_IS_DEBUG" OFF )
+
+# Option 'EnableDebugGlobal' is available when OptionEnableDebug is ON (otherwise OFF).
+option( EnableDebugGlobal
+        "Enable debug code that checks the correct usage of Global<> and Singleton<>" ON
+        "OptionEnableDebug" OFF )
+
+message( DEBUG "OptionEnableDebug is ${OptionEnableDebug}" )
+if ( OptionEnableDebug )
+  add_compile_definitions(DEBUG)
+  message( DEBUG "OptionEnableDebugGlobal is ${OptionEnableDebugGlobal}" )
+endif ()
+if ( OptionEnableDebugGlobal )
+  set( DEBUGGLOBAL 1 )
+endif ()
+
+#==============================================================================
+# PLATFORM SPECIFIC CHECKS
+#
+
+include( CW_CHECK_REQUIRED_INCLUDE_FILE_CXX )
+CW_CHECK_REQUIRED_INCLUDE_FILE_CXX( "sparsehash/dense_hash_map" "Please install the libsparsehash-dev package." )
+
+if ( OptionEnableDebugGlobal )
+  CW_CHECK_REQUIRED_INCLUDE_FILE_CXX( "execinfo.h"
+    "Sorry, Option EnableDebugGlobal requires execinfo.h for the backtrace(3) function.\nPlease specify -DEnableDebugGlobal:BOOL=OFF as configure option or fix this problem." )
+endif ()
+
+include( CheckCXXSourceCompiles )
+check_cxx_source_compiles( "int main(void) { return __builtin_expect(0, 1); }" HAVE_BUILTIN_EXPECT )
+
+include( CW_SYS_MALLOC_OVERHEAD )
+CW_SYS_MALLOC_OVERHEAD()                # Determine the overhead in bytes of an allocation with malloc(2).
+
+include( CW_SYS_CACHELINE_SIZE )
+CW_SYS_CACHELINE_SIZE()                 # Find the cacheline size.
+
+# Specify utils specific configure file.
+CONFIGURE_FILE( ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
+                ${CMAKE_CURRENT_BINARY_DIR}/config.h
+                @ONLY )
+
+# Tell cwds/sys.h that we have a config.h.
+add_compile_definitions(HAVE_CONFIG_H)
+
+#==============================================================================
+# BUILD PROJECT
+#
+
+# This project is an OBJECT-library, used by other git submodules and the main project.
+add_library( utils_ObjLib OBJECT )
+
+# Set SOURCE_DIR to the current directory.
+set_property(
+    TARGET     utils_ObjLib
+    PROPERTY   SOURCE_DIR       "${CMAKE_CURRENT_SOURCE_DIR}" )
+
+# The list of source files.
+target_sources( utils_ObjLib
+    PRIVATE    "AIAlert.cxx"
+               "AISignals.cxx"
+               "debug_ostream_operators.cxx"
+               "DelayLoopCalibration.cxx"
+               "double_to_str_precision.cxx"
+               "FuzzyBool.cxx"
+               "GlobalObjectManager.cxx"
+               "itoa.cxx"
+               "NodeMemoryPool.cxx"
+               "malloc_size.cxx"
+               "MemoryPagePool.cxx"
+               "print_using.cxx"
+               "translate.cxx"
+    PUBLIC     "AIAlert.h"
+               "AIFIFOBuffer.h"
+               "AIRefCount.h"
+               "AISignals.h"
+               "apply_function.h"
+               "at_scope_end.h"
+               "cpu_relax.h"
+               "debug_ostream_operators.h"
+               "DelayLoopCalibration.h"
+               "double_to_str_precision.h"
+               "for_each_until.h"
+               "FunctionView.h"
+               "FuzzyBool.h"
+               "Global.h"
+               "GlobalObjectManager.h"
+               "is_power_of_two.h"
+               "is_pointer_like.h"
+               "itoa.h"
+               "log2.h"
+               "macros.h"
+               "malloc_size.h"
+               "MultiLoop.h"
+               "MemoryPagePool.h"
+               "NodeMemoryPool.h"
+               "NodeMemoryResource.h"
+               "print_using.h"
+               "SimpleSegregatedStorage.h"
+               "Singleton.h"
+               "translate.h"
+               "ulong_to_base.h" )
+
+# Required include search-paths.
+target_include_directories( utils_ObjLib
+  PUBLIC     "${CMAKE_CURRENT_BINARY_DIR}"              # For generated files like config.h.
+             "${CMAKE_CURRENT_SOURCE_DIR}/.."           # For project specific debug.h and sys.h.
+             "${CMAKE_CURRENT_SOURCE_DIR}/../cwds" )    # Fallback for generic debug.h and sys.h.
+
+# Require support for C++17.
+target_compile_features( utils_ObjLib
+    PUBLIC cxx_std_17 )
+
+# Create an ALIAS target.
+add_library( AICxx::utils ALIAS utils_ObjLib )
