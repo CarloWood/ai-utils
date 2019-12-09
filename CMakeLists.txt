@@ -1,36 +1,36 @@
-cmake_minimum_required( VERSION 3.16 )
-cmake_policy( VERSION 3.16 )
+cmake_minimum_required( VERSION 3.12...3.16 )
 
 project( utils
-         VERSION 1.0.0
          LANGUAGES C CXX
          DESCRIPTION "C++ Core utilities" )
-
-# Default message log level. Use cmake --log-level=debug to get DEBUG output.
-set( CMAKE_MESSAGE_LOG_LEVEL "STATUS" )
 
 # Add the local cmake directory to CMAKE_MODULE_PATH.
 list( APPEND CMAKE_MODULE_PATH
       "${CMAKE_CURRENT_SOURCE_DIR}/../cwm4/cmake" )
 
+include(AICxxProject)
+
+#==============================================================================
+# DEPENDENCIES
+#
+
+# This project uses header-only boost libraries:
+# AIAlert.h:      #include <boost/lexical_cast.hpp>
+# AIRefCount.h:   #include <boost/intrusive_ptr.hpp>
+# macros.h:       #include <boost/preprocessor/stringize.hpp>
+#                 #include <boost/preprocessor/expand.hpp>
+# StreamHasher.h: #include <boost/functional/hash.hpp>
+find_package( Boost REQUIRED )
+
 #==============================================================================
 # OPTIONS
-
-include(CW_OPTIONS)
-
-# Option 'EnableDebug' compiles in debug mode.
-option( EnableDebug
-        "Build for debugging" ${CW_BUILD_TYPE_IS_DEBUG}
-        "CW_BUILD_TYPE_IS_DEBUG" OFF )
 
 # Option 'EnableDebugGlobal' is available when OptionEnableDebug is ON (otherwise OFF).
 option( EnableDebugGlobal
         "Enable debug code that checks the correct usage of Global<> and Singleton<>" ON
         "OptionEnableDebug" OFF )
 
-message( DEBUG "OptionEnableDebug is ${OptionEnableDebug}" )
 if ( OptionEnableDebug )
-  add_compile_definitions(DEBUG)
   message( DEBUG "OptionEnableDebugGlobal is ${OptionEnableDebugGlobal}" )
 endif ()
 if ( OptionEnableDebugGlobal )
@@ -76,63 +76,80 @@ add_library( utils_ObjLib OBJECT )
 # Set SOURCE_DIR to the current directory.
 set_property(
     TARGET     utils_ObjLib
-    PROPERTY   SOURCE_DIR       "${CMAKE_CURRENT_SOURCE_DIR}" )
+    PROPERTY   SOURCE_DIR       "${CMAKE_CURRENT_SOURCE_DIR}"
+)
 
 # The list of source files.
 target_sources( utils_ObjLib
-    PRIVATE    "AIAlert.cxx"
-               "AISignals.cxx"
-               "debug_ostream_operators.cxx"
-               "DelayLoopCalibration.cxx"
-               "double_to_str_precision.cxx"
-               "FuzzyBool.cxx"
-               "GlobalObjectManager.cxx"
-               "itoa.cxx"
-               "NodeMemoryPool.cxx"
-               "malloc_size.cxx"
-               "MemoryPagePool.cxx"
-               "print_using.cxx"
-               "translate.cxx"
-    PUBLIC     "AIAlert.h"
-               "AIFIFOBuffer.h"
-               "AIRefCount.h"
-               "AISignals.h"
-               "apply_function.h"
-               "at_scope_end.h"
-               "cpu_relax.h"
-               "debug_ostream_operators.h"
-               "DelayLoopCalibration.h"
-               "double_to_str_precision.h"
-               "for_each_until.h"
-               "FunctionView.h"
-               "FuzzyBool.h"
-               "Global.h"
-               "GlobalObjectManager.h"
-               "is_power_of_two.h"
-               "is_pointer_like.h"
-               "itoa.h"
-               "log2.h"
-               "macros.h"
-               "malloc_size.h"
-               "MultiLoop.h"
-               "MemoryPagePool.h"
-               "NodeMemoryPool.h"
-               "NodeMemoryResource.h"
-               "print_using.h"
-               "SimpleSegregatedStorage.h"
-               "Singleton.h"
-               "translate.h"
-               "ulong_to_base.h" )
+    PRIVATE
+        "AIAlert.cxx"
+        "AISignals.cxx"
+        "debug_ostream_operators.cxx"
+        "DelayLoopCalibration.cxx"
+        "double_to_str_precision.cxx"
+        "FuzzyBool.cxx"
+        "GlobalObjectManager.cxx"
+        "itoa.cxx"
+        "NodeMemoryPool.cxx"
+        "malloc_size.cxx"
+        "MemoryPagePool.cxx"
+        "print_using.cxx"
+        "translate.cxx"
+
+        "AIAlert.h"
+        "AIFIFOBuffer.h"
+        "AIRefCount.h"
+        "AISignals.h"
+        "apply_function.h"
+        "at_scope_end.h"
+        "cpu_relax.h"
+        "debug_ostream_operators.h"
+        "DelayLoopCalibration.h"
+        "double_to_str_precision.h"
+        "for_each_until.h"
+        "FunctionView.h"
+        "FuzzyBool.h"
+        "Global.h"
+        "GlobalObjectManager.h"
+        "is_power_of_two.h"
+        "is_pointer_like.h"
+        "itoa.h"
+        "log2.h"
+        "macros.h"
+        "malloc_size.h"
+        "MultiLoop.h"
+        "MemoryPagePool.h"
+        "NodeMemoryPool.h"
+        "NodeMemoryResource.h"
+        "print_using.h"
+        "SimpleSegregatedStorage.h"
+        "Singleton.h"
+        "translate.h"
+        "ulong_to_base.h"
+)
 
 # Required include search-paths.
+get_target_property(CWDS_INTERFACE_INCLUDE_DIRECTORIES AICxx::cwds INTERFACE_INCLUDE_DIRECTORIES)
 target_include_directories( utils_ObjLib
-  PUBLIC     "${CMAKE_CURRENT_BINARY_DIR}"              # For generated files like config.h.
-             "${CMAKE_CURRENT_SOURCE_DIR}/.."           # For project specific debug.h and sys.h.
-             "${CMAKE_CURRENT_SOURCE_DIR}/../cwds" )    # Fallback for generic debug.h and sys.h.
+    PUBLIC
+        "${CWDS_INTERFACE_INCLUDE_DIRECTORIES}" # For sys.h and debug.h.
+        "${CMAKE_CURRENT_BINARY_DIR}"           # For generated files like config.h.
+)
 
 # Require support for C++17.
 target_compile_features( utils_ObjLib
-    PUBLIC cxx_std_17 )
+    PUBLIC cxx_std_17
+)
+
+# Set link dependencies.
+target_link_libraries( utils_ObjLib
+    PUBLIC
+        Boost::boost
+        Threads::Threads
+)
 
 # Create an ALIAS target.
 add_library( AICxx::utils ALIAS utils_ObjLib )
+
+# Prepend this object library to list.
+set( AICXX_OBJECTS_LIST AICxx::utils ${AICXX_OBJECTS_LIST} CACHE INTERNAL "List of OBJECT libaries that this project uses." )
