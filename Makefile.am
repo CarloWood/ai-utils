@@ -73,7 +73,7 @@ libutils_r_la_LIBADD = @LIBCWD_R_LIBS@
 
 if MAINTAINER_MODE
 distclean-local:
-	-rm -f *.s *.ii
+	-rm -f *.s *.ii config.h.in
 
 clean-local:
 endif
