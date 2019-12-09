@@ -25,12 +25,12 @@ find_package( Boost REQUIRED )
 #==============================================================================
 # OPTIONS
 
-# Option 'EnableDebugGlobal' is available when OptionEnableDebug is ON (otherwise OFF).
+# Option 'EnableDebugGlobal' is available when OptionEnableLibcwd is ON (otherwise OFF).
 option( EnableDebugGlobal
         "Enable debug code that checks the correct usage of Global<> and Singleton<>" ON
-        "OptionEnableDebug" OFF )
+        "OptionEnableLibcwd" OFF )
 
-if ( OptionEnableDebug )
+if ( OptionEnableLibcwd )
   message( DEBUG "OptionEnableDebugGlobal is ${OptionEnableDebugGlobal}" )
 endif ()
 if ( OptionEnableDebugGlobal )
@@ -147,6 +147,13 @@ target_link_libraries( utils_ObjLib
         Boost::boost
         Threads::Threads
 )
+
+if ( OptionEnableLibcwd )
+  target_link_libraries( utils_ObjLib
+      PUBLIC
+          PkgConfig::Libcwd_r
+)
+endif()
 
 # Create an ALIAS target.
 add_library( AICxx::utils ALIAS utils_ObjLib )
