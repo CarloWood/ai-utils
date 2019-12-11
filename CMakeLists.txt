@@ -62,6 +62,12 @@ CONFIGURE_FILE( ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
 # Tell cwds/sys.h that we have a config.h.
 add_compile_definitions(HAVE_CONFIG_H)
 
+# Clean up rule for the above.
+ADD_CUSTOM_TARGET( maintainer-clean-utils
+    COMMAND rm config.h
+    COMMAND rm -rf cw_utils_sys_malloc_overhead cw_utils_sys_cacheline_size
+)
+
 #==============================================================================
 # BUILD PROJECT
 #
