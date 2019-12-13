@@ -4,7 +4,7 @@ project( utils
          LANGUAGES C CXX
          DESCRIPTION "C++ Core utilities" )
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/../cwm4/cmake/AICxxProject.cmake)
+include( AICxxProject )
 
 #==============================================================================
 # DEPENDENCIES
@@ -60,7 +60,7 @@ CONFIGURE_FILE( ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
                 @ONLY )
 
 # Tell cwds/sys.h that we have a config.h.
-add_compile_definitions(HAVE_CONFIG_H)
+add_compile_definitions( HAVE_CONFIG_H )
 
 # Clean up rule for the above.
 ADD_CUSTOM_TARGET( maintainer-clean-utils
@@ -131,7 +131,7 @@ target_sources( utils_ObjLib
 )
 
 # Required include search-paths.
-get_target_property(CWDS_INTERFACE_INCLUDE_DIRECTORIES AICxx::cwds INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property( CWDS_INTERFACE_INCLUDE_DIRECTORIES AICxx::cwds INTERFACE_INCLUDE_DIRECTORIES )
 target_include_directories( utils_ObjLib
     PUBLIC
         "${CWDS_INTERFACE_INCLUDE_DIRECTORIES}" # For sys.h and debug.h.
@@ -155,7 +155,7 @@ if ( OptionEnableLibcwd )
       PUBLIC
           PkgConfig::Libcwd_r
 )
-endif()
+endif ()
 
 # Create an ALIAS target.
 add_library( AICxx::utils ALIAS utils_ObjLib )
