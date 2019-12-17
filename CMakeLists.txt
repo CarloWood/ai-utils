@@ -22,7 +22,7 @@ find_package( Boost REQUIRED )
 # OPTIONS
 
 # Option 'EnableDebugGlobal' is available when OptionEnableLibcwd is ON (otherwise OFF).
-option( EnableDebugGlobal
+cw_option( EnableDebugGlobal
         "Enable debug code that checks the correct usage of Global<> and Singleton<>" ON
         "OptionEnableLibcwd" OFF )
 
@@ -55,15 +55,12 @@ include( CW_SYS_CACHELINE_SIZE )
 CW_SYS_CACHELINE_SIZE()                 # Find the cacheline size.
 
 # Specify utils specific configure file.
-CONFIGURE_FILE( ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
                 ${CMAKE_CURRENT_BINARY_DIR}/config.h
                 @ONLY )
 
-# Tell cwds/sys.h that we have a config.h.
-add_compile_definitions( HAVE_CONFIG_H )
-
 # Clean up rule for the above.
-ADD_CUSTOM_TARGET( maintainer-clean-utils
+add_custom_target( maintainer-clean-utils
     COMMAND rm config.h
     COMMAND rm -rf cw_utils_sys_malloc_overhead cw_utils_sys_cacheline_size
 )
@@ -74,6 +71,12 @@ ADD_CUSTOM_TARGET( maintainer-clean-utils
 
 # This project is an OBJECT-library, used by other git submodules and the main project.
 add_library( utils_ObjLib OBJECT )
+
+# Tell cwds/sys.h that we have a config.h.
+target_compile_definitions( utils_ObjLib
+    PUBLIC
+        HAVE_UTILS_CONFIG_H
+)
 
 # Set SOURCE_DIR to the current directory.
 set_property(
@@ -135,7 +138,7 @@ get_target_property( CWDS_INTERFACE_INCLUDE_DIRECTORIES AICxx::cwds INTERFACE_IN
 target_include_directories( utils_ObjLib
     PUBLIC
         "${CWDS_INTERFACE_INCLUDE_DIRECTORIES}" # For sys.h and debug.h.
-        "${CMAKE_CURRENT_BINARY_DIR}"           # For generated files like config.h.
+        "${top_objdir}"                         # For utils/config.h.
 )
 
 # Require support for C++17.
@@ -160,5 +163,5 @@ endif ()
 # Create an ALIAS target.
 add_library( AICxx::utils ALIAS utils_ObjLib )
 
-# Prepend this object library to list.
+# Prepend this object library to the list.
 set( AICXX_OBJECTS_LIST AICxx::utils ${AICXX_OBJECTS_LIST} CACHE INTERNAL "List of OBJECT libaries that this project uses." )
