@@ -1,14 +1,19 @@
 cmake_minimum_required( VERSION 3.12...3.16 )
 
 project( utils
-         LANGUAGES C CXX
-         DESCRIPTION "C++ Core utilities" )
+         DESCRIPTION "C++ Core utilities"
+         LANGUAGES CXX C        # Language "C" is required for find_package(Threads).
+)
 
 include( AICxxProject )
 
 #==============================================================================
 # DEPENDENCIES
 #
+
+# AICxx projects are always multi-threaded.
+# As utils is also always required, this is the last place where Threads need to be mentioned.
+find_package( Threads REQUIRED )
 
 # This project uses header-only boost libraries:
 # AIAlert.h:      #include <boost/lexical_cast.hpp>
@@ -66,7 +71,7 @@ add_custom_target( maintainer-clean-utils
 )
 
 #==============================================================================
-# BUILD PROJECT
+# BUILD OBJECT LIBRARY
 #
 
 # This project is an OBJECT-library, used by other git submodules and the main project.
