@@ -7,6 +7,9 @@ project( utils
 
 include( AICxxProject )
 
+# See comment in cwds/CMakeLists.txt.
+hunter_add_package( Boost )
+
 #==============================================================================
 # DEPENDENCIES
 #
@@ -21,7 +24,7 @@ find_package( Threads REQUIRED )
 # macros.h:       #include <boost/preprocessor/stringize.hpp>
 #                 #include <boost/preprocessor/expand.hpp>
 # StreamHasher.h: #include <boost/functional/hash.hpp>
-find_package( Boost REQUIRED )
+find_package( Boost CONFIG REQUIRED )
 
 #==============================================================================
 # OPTIONS
