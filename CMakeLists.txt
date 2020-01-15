@@ -7,9 +7,6 @@ project( utils
 
 include( AICxxProject )
 
-# See comment in cwds/CMakeLists.txt.
-hunter_add_package( Boost )
-
 #==============================================================================
 # DEPENDENCIES
 #
