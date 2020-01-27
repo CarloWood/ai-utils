@@ -162,7 +162,7 @@ target_link_libraries(utils_ObjLib
 if (OptionEnableLibcwd)
   target_link_libraries(utils_ObjLib
     PUBLIC
-      PkgConfig::Libcwd_r
+      ${libcwd_r_TARGET}
 )
 endif ()
 
