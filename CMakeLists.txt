@@ -21,7 +21,7 @@ find_package(Threads REQUIRED)
 # macros.h:       #include <boost/preprocessor/stringize.hpp>
 #                 #include <boost/preprocessor/expand.hpp>
 # StreamHasher.h: #include <boost/functional/hash.hpp>
-find_package(Boost CONFIG REQUIRED)
+find_package(Boost REQUIRED)
 
 #==============================================================================
 # OPTIONS
