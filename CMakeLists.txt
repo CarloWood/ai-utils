@@ -67,7 +67,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
 
 # Clean up rule for the above.
 add_custom_target(maintainer-clean-utils
-  COMMAND rm config.h
+  #  COMMAND rm config.h        # Can't remove this one with a custom command: it is re-generated :/
   COMMAND rm -rf cw_utils_sys_malloc_overhead cw_utils_sys_cacheline_size
 )
 
