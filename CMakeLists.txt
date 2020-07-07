@@ -52,7 +52,7 @@ if (OptionEnableDebugGlobal)
 endif ()
 
 include(CheckCXXSourceCompiles)
-check_cxx_source_compiles("int main(void) { return __builtin_expect(0, 1); }" HAVE_BUILTIN_EXPECT)
+check_cxx_source_compiles("int main() { return __builtin_expect(0, 1); }" HAVE_BUILTIN_EXPECT)
 
 include(CW_SYS_MALLOC_OVERHEAD)
 CW_SYS_MALLOC_OVERHEAD()                # Determine the overhead in bytes of an allocation with malloc(2).
