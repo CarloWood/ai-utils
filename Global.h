@@ -151,7 +151,7 @@
 #include "debug.h"
 #if defined(DEBUGGLOBAL) && (!defined(CWDEBUG) || !CWDEBUG_ALLOC || !CWDEBUG_LOCATION)
 #ifdef CWDEBUG
-#error "Please configure with --disable-debug-global or (re)configure libcwd with --enable-alloc --enable-location."
+#error "Please configure with --disable-debug-global / -DEnableDebugGlobal:BOOL=OFF or (re)configure libcwd with --enable-alloc --enable-location / -DEnableLibcwdAlloc:BOOL=ON -DEnableLibcwdLocation:BOOL=ON (in cmake/gitache-configs/libcwd_r.cmake)."
 #else
 #error "You cannot define DEBUGGLOBAL without having CWDEBUG, CWDEBUG_ALLOC and CWDEBUG_LOCATION defined."
 #endif
