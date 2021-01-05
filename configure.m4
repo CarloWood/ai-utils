@@ -37,7 +37,7 @@ CW_HAVE_BUILTIN_EXPECT
 CW_SYS_MALLOC_OVERHEAD
 
 AC_LANG_SAVE
-AC_LANG_CPLUSPLUS
+AC_LANG([C++])
 
 # Check if the mandatory sparsehash/dense_hash_map exists.
 AC_CHECK_HEADER([sparsehash/dense_hash_map], [],
