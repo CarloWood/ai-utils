@@ -53,7 +53,7 @@ class DictionaryBase
 // dictionary.add(baz, "Baz", Data{baz, "Baz", ...});
 //
 // int i = dictionary.index("Bar");     // Fast
-// ASSERT(i == foo);
+// ASSERT(i == bar);
 // Data& data = dictionary[i];          // Fast
 //
 // i = dictionary.index("unknown");     // Only slow the first time.
