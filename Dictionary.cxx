@@ -12,10 +12,11 @@ size_t DictionaryBase::add_new_unique_word(std::string&& word)
   return index;
 }
 
-size_t DictionaryBase::add_extra_word(std::string&& word)
+size_t DictionaryBase::add_extra_word(std::string_view const& word)
 {
-  add_new_data(m_unique_words.size(), word);
-  return add_new_unique_word(std::move(word));
+  std::string extra_word(word);
+  add_new_data(m_unique_words.size(), extra_word);
+  return add_new_unique_word(std::move(extra_word));
 }
 
 } // namespace utils

@@ -17,7 +17,7 @@ class DictionaryBase
   std::deque<std::string> m_unique_words;       // This must be a random access container that can be accessed through an index and does not invalidate references.
 
  private:
-  size_t add_extra_word(std::string&& word);
+  size_t add_extra_word(std::string_view const& word);
 
  protected:
   size_t add_new_unique_word(std::string&& word);
@@ -32,7 +32,7 @@ class DictionaryBase
       return iter->second;
     //------------------------------------------------------------------------
 
-    return add_extra_word(std::string(word));
+    return add_extra_word(word);
   }
 
   std::string const& word(int i) const { return m_unique_words[i]; }
