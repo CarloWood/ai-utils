@@ -38,7 +38,56 @@ class DictionaryBase
   std::string const& word(int i) const { return m_unique_words[i]; }
 
  private:
-  virtual void add_new_data(size_t index, std::string word) = 0;
+  // This does nothing, unless this is a DictionaryData class.
+  virtual void add_new_data(size_t index, std::string word) { }
+};
+
+// Usage (using utils::VectorIndex):
+//
+// enum enum_type {
+//   foo,
+//   bar,
+//   baz
+// };
+//
+// using index_type = utils::VectorIndex<enum_type>;
+//
+// Dictionary<enum_type, index_type> dictionary;
+//
+// dictionary.add(foo, "Foo");
+// dictionary.add(bar, "Bar");
+// dictionary.add(baz, "Baz");
+//
+// index_type i1 = dictionary.index("Bar");          // Fast
+// ASSERT(i1 == static_cast<index_type>(bar));
+//
+// index_type i2 = dictionary.lookup("unknown");     // Only slow the first time.
+// ASSERT(i2 > static_cast<index_type>(baz));
+//
+template<typename ENUM_TYPE, typename INDEX_TYPE>
+class Dictionary : public DictionaryBase
+{
+ public:
+  using enum_type = ENUM_TYPE;
+  using index_type = INDEX_TYPE;
+
+  static_assert(std::is_convertible_v<ENUM_TYPE, size_t>, "ENUM_TYPE must be convertible to size_t.");
+  static_assert(std::is_constructible_v<index_type, size_t>, "INDEX_TYPE must be constructible from a size_t.");
+
+  // Pre-fill the dictionary with pre-defined words.
+  // The idea is that if index_type is an enum, then add() should
+  // be called for each enumerator in the enum sequentially.
+  void add(ENUM_TYPE index, std::string word)
+  {
+    // index must be sequential, starting with 0 and 1 larger every call.
+    ASSERT(m_unique_words.size() == static_cast<size_t>(index));
+    this->add_new_unique_word(std::move(word));
+  }
+
+  // Return a unique index for each unique word.
+  // Subsequent calls with the same word result in the same return value.
+  // If word was passed to add before then the value of index that was passed to add is returned (cast to an index_type).
+  index_type index(std::string_view const& word) { return static_cast<index_type>(this->lookup(word)); }
 };
 
 // Usage (using utils::Vector):
@@ -61,35 +110,28 @@ class DictionaryBase
 // dictionary.add(bar, "Bar");  // Will construct Data with {static_cast<index_type>(bar), "Bar"};
 // dictionary.add(baz, "Baz", Data{baz, "Baz", ...});
 //
-// index_type index = dictionary.index("Bar");          // Fast
-// ASSERT(index == static_cast<index_type>(bar));
-// Data& data = dictionary[bar];                        // Fast
+// index_type i1 = dictionary.index("Bar");             // Fast
+// ASSERT(i1 == static_cast<index_type>(bar));
+// Data& data1 = dictionary[bar];                       // Fast
 //
-// size_t i = dictionary.lookup("unknown");     // Only slow the first time.
-// ASSERT(i > (size_t)baz);
-// Data& data2 = dictionary[i];                 // Returns a Data constructed with {i, "unknown"}.
+// index_type i2 = dictionary.index("unknown");         // Only slow the first time.
+// ASSERT(i2 > (size_t)baz);
+// Data& data2 = dictionary[i2];                // Returns a Data constructed with {i2, "unknown"}.
 //
 //
 // Usage (using std::vector):
 //
 // using index_type = int;
-//
-// struct Data {
-//   Data(index_type, string&&) { }
-// };
-//
 // Dictionary<enum_type, std:vector<Data>, int> dictionary;
 //
 template<typename ENUM_TYPE, typename DATA_CONTAINER, typename INDEX_TYPE = typename DATA_CONTAINER::index_type>
-class Dictionary : public DictionaryBase
+class DictionaryData : public Dictionary<ENUM_TYPE, INDEX_TYPE>
 {
  public:
   using enum_type = ENUM_TYPE;
-  using value_type = typename DATA_CONTAINER::value_type;
   using index_type = INDEX_TYPE;
+  using value_type = typename DATA_CONTAINER::value_type;
 
-  static_assert(std::is_convertible_v<ENUM_TYPE, size_t>, "ENUM_TYPE must be convertible to size_t.");
-  static_assert(std::is_constructible_v<index_type, size_t>, "INDEX_TYPE must be constructible from a size_t.");
   static_assert(std::is_constructible_v<value_type, index_type, std::string&&>, "DATA_CONTAINER::value_type must be constructible from (INDEX_TYPE, std::string&&).");
 
  private:
@@ -108,13 +150,9 @@ class Dictionary : public DictionaryBase
   // be called for each enumerator in the enum sequentially.
   void add(ENUM_TYPE index, std::string word, value_type data)
   {
-    // index must be sequential, starting with 0 and 1 larger every call.
-    ASSERT(m_data.size() == static_cast<size_t>(index));
+    Dictionary<ENUM_TYPE, INDEX_TYPE>::add(index, std::move(word));
     m_data.emplace_back(std::move(data));
-    add_new_unique_word(std::move(word));
   }
-
-  index_type index(std::string_view const& word) { return static_cast<index_type>(lookup(word)); }
 
   // Access the stored data by index. This has to be fast too.
   value_type& operator[](index_type index) { return m_data[index]; }
