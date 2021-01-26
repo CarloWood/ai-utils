@@ -22,7 +22,7 @@ class c_escape_iterator : public boost::iterator_adaptor<
   void prepare_escape_buf();
 
  public:
-  // Construct an iterator that points at points itBegin.
+  // Construct an iterator that points to itBegin.
   // itEnd must be an iterator that will be reached by repeatedly incrementing itBegin.
   c_escape_iterator(IteratorBase itBegin, IteratorBase itEnd) : c_escape_iterator::iterator_adaptor_(itBegin), m_end(itEnd), m_escape_buf{}
   {
