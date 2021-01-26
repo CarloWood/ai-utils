@@ -33,7 +33,7 @@ class c_escape_iterator : public boost::iterator_adaptor<
   // A c_escape_iterator constructed with this constructor may never be incremented or dereferenced,
   // even if iterator that is the passed is capable to do that. You may only use this
   // to compare with.
-  c_escape_iterator(IteratorBase itEnd) : c_escape_iterator::iterator_adaptor_(itEnd) { }
+  c_escape_iterator(IteratorBase itEnd) : c_escape_iterator::iterator_adaptor_(itEnd), m_end{} { }
 
   void increment()
   {
