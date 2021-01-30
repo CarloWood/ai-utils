@@ -64,7 +64,7 @@ class NodeMemoryResource
   // Destructor.
   ~NodeMemoryResource()
   {
-    DoutEntering(dc::notice, "NodeMemoryResource::~NodeMemoryResource() [" << this << "]");
+    DoutEntering(dc::notice(m_mpp), "NodeMemoryResource::~NodeMemoryResource() [" << this << "]");
   }
 
   // Late initialization.
