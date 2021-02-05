@@ -84,6 +84,13 @@ class Dictionary : public DictionaryBase
     this->add_new_unique_word(std::move(word));
   }
 
+  void add(ENUM_TYPE index, std::string_view&& word)
+  {
+    // index must be sequential, starting with 0 and 1 larger every call.
+    ASSERT(m_unique_words.size() == static_cast<size_t>(index));
+    this->add_new_unique_word(std::string{word});
+  }
+
   // Return a unique index for each unique word.
   // Subsequent calls with the same word result in the same return value.
   // If word was passed to add before then the value of index that was passed to add is returned (cast to an index_type).
