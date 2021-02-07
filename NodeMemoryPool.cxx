@@ -88,6 +88,7 @@ void* NodeMemoryPool::alloc(size_t size)
     // m_size must be greater or equal sizeof(Next), and a multiple of alignof(Chunk).
     ASSERT(m_size >= sizeof(Next) && (m_size & chunk_align_mask) == 0);
     // Allocate space for Begin::free plus Begin::pool followed by m_nchunks of m_size (offsetof(Allocated, data) + m_size) (the real size of Allocated).
+    Dout(dc::notice, "NodeMemoryPool::alloc: allocating " << (offsetof(Begin, first_chunk) + m_nchunks * (offsetof(Allocated, data) + m_size)) << " bytes of memory [" << (void*)this << "].");
     Begin* begin = static_cast<Begin*>(std::malloc(offsetof(Begin, first_chunk) + m_nchunks * (offsetof(Allocated, data) + m_size)));
     begin->pool = this;
     ptr = m_free_list = &begin->first_chunk.free_list;
