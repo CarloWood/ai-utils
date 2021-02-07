@@ -64,7 +64,7 @@ class PrintUsing2
 
   friend std::ostream& operator<<(std::ostream& os, PrintUsing2 print_using)
   {
-    //Dout(dc::notice, "Using " << libcwd::type_info_of<PrintUsing2>().demangled_name());
+    //Dout(dc::notice, "Using " << type_info_of<PrintUsing2>().demangled_name());
     if constexpr (utils::is_pointer_like_dereferencable_v<T>)
     {
       os << '*';
