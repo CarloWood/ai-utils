@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <deque>
 #include <vector>
+#include <exception>
 
 namespace utils {
 
@@ -16,14 +17,15 @@ class DictionaryBase
   std::unordered_map<std::string_view, size_t> m_string_view_to_index;
   std::deque<std::string> m_unique_words;       // This must be a random access container that can be accessed through an index and does not invalidate references.
 
- private:
-  size_t add_extra_word(std::string_view const& word);
-
  protected:
   size_t add_new_unique_word(std::string&& word);
 
  public:
-  size_t lookup(std::string_view const& word)
+  // This should be called when lookup throws.
+  size_t add_extra_word(std::string_view const& word);
+
+  struct NonExistingWord : std::exception { };
+  size_t lookup(std::string_view const& word) const
   {
     //------------------------------------------------------------------------
     // This is the part that has to be fast.
@@ -32,7 +34,7 @@ class DictionaryBase
       return iter->second;
     //------------------------------------------------------------------------
 
-    return add_extra_word(word);
+    throw NonExistingWord{};
   }
 
   std::string const& word(int i) const { return m_unique_words[i]; }
@@ -58,12 +60,58 @@ class DictionaryBase
 // dictionary.add(bar, "Bar");
 // dictionary.add(baz, "Baz");
 //
-// index_type i1 = dictionary.index("Bar");          // Fast
+// index_type i1 = dictionary.index("Bar");          // Fast (throws if "Bar" doesn't exist!)
 // ASSERT(i1 == static_cast<index_type>(bar));
 //
-// index_type i2 = dictionary.lookup("unknown");     // Only slow the first time.
+// std::string_view word("unknown");
+// index_type i2;
+// try
+// {
+//   i2 = dictionary.lookup(word);                   // Throws when word is unknown.
+// }
+// catch (NonExistingWord const&)
+// {
+//   i2 = dictionary.add_extra_word(word);
+// }
 // ASSERT(i2 > static_cast<index_type>(baz));
 //
+//
+// Usage (using aithreadsafe):
+//
+// If the dictionary can be used by multiple threads, for example because it is
+// a static member of a template class, then it should be wrapped by aithreadsafe
+// using a read/write lock:
+//
+// template<typename T>
+// struct Example {
+//   using dictionary_type = aithreadsafe::Wrapper<utils::Dictionary<typename T::enum_type, index_type>, aithreadsafe::policy::ReadWrite<AIReadWriteMutex>>;
+//   static dictionary_type s_dictionary;
+//   ...
+// };
+//
+// // Instantiate the dictionary.
+// template<typename T>
+// typename Example<T>::dictionary_type Example<T>::s_dictionary;
+//
+// And then initialization can be done, for example, like this (using magic_enum to convert the enumerator names to a string):
+//
+// template<typename T>
+// Example<T>::Example()
+// {
+//   // Only initialize the (static) dictionary once!
+//   // See https://stackoverflow.com/a/36596693/1487069
+//   static bool once = [](){
+//     typename dictionary_type::wat dictionary_w(s_dictionary);
+//     for (int i = 0; i < magic_enum::enum_count<typename T::enum_type>(); ++i)
+//     {
+//       typename T::enum_type e = static_cast<typename T::enum_type>(i);
+//       std::string_view e_name = magic_enum::enum_name(e);
+//       dictionary_w->add(e, std::move(e_name));
+//     }
+//     return true;
+//   } ();
+// }
+
 template<typename ENUM_TYPE, typename INDEX_TYPE>
 class Dictionary : public DictionaryBase
 {
@@ -94,7 +142,8 @@ class Dictionary : public DictionaryBase
   // Return a unique index for each unique word.
   // Subsequent calls with the same word result in the same return value.
   // If word was passed to add before then the value of index that was passed to add is returned (cast to an index_type).
-  index_type index(std::string_view const& word) { return static_cast<index_type>(this->lookup(word)); }
+  // If word was not added yet, then this function throws NonExistingWord and word should be passed to add_extra_word.
+  index_type index(std::string_view const& word) const { return static_cast<index_type>(this->lookup(word)); }
 };
 
 // Usage (using utils::Vector):
@@ -117,11 +166,19 @@ class Dictionary : public DictionaryBase
 // dictionary.add(bar, "Bar");  // Will construct Data with {static_cast<index_type>(bar), "Bar"};
 // dictionary.add(baz, "Baz", Data{baz, "Baz", ...});
 //
-// index_type i1 = dictionary.index("Bar");             // Fast
+// index_type i1 = dictionary.index("Bar");     // Fast (would throw if "Bar: wasn't added above).
 // ASSERT(i1 == static_cast<index_type>(bar));
-// Data& data1 = dictionary[bar];                       // Fast
+// Data& data1 = dictionary[bar];               // Fast
 //
-// index_type i2 = dictionary.index("unknown");         // Only slow the first time.
+// std::string_view word("unknown");
+// try
+// {
+//   i2 = dictionary.index(word);               // Throws NonExistingWord.
+// }
+// catch (NonExistingWord const&)
+// {
+//   i2 = dictionary.add_extra_word(word);
+// }
 // ASSERT(i2 > (size_t)baz);
 // Data& data2 = dictionary[i2];                // Returns a Data constructed with {i2, "unknown"}.
 //
