@@ -219,7 +219,7 @@ class Prefix
     /// Construct a prefix @a str of type @a type.
     Prefix(char const* str, alert_line_type_nt type) : mStr(str), mType(type) { }
     /// Construct a prefix @a str of type @a type.
-    Prefix(std::string str, alert_line_type_nt type) : mStr(str), mType(type) { }
+    Prefix(std::string str, alert_line_type_nt type) : mStr(std::move(str)), mType(type) { }
 
     /// Return true if the prefix is not empty.
     operator bool() const { return mType != empty_prefix; }
@@ -265,7 +265,7 @@ class Line
 
     // These are to be used like: translate::getString(line.getXmlDesc(), line.args()) and prepend with a \n if prepend_newline() returns true.
     /// Return the xml key.
-    std::string getXmlDesc() const { return mXmlDesc; }
+    std::string const& getXmlDesc() const { return mXmlDesc; }
     /// Accessor for the replacement map.
     translate::format_map_t const& args() const { return *mArgs; }
     /// Returns true a new line must be prepended before this line.
