@@ -106,6 +106,7 @@ target_sources(utils_ObjLib
     "malloc_size.cxx"
     "MemoryPagePool.cxx"
     "print_using.cxx"
+    "Register.cxx"
     "translate.cxx"
 
     "AIAlert.h"
@@ -135,6 +136,7 @@ target_sources(utils_ObjLib
     "NodeMemoryPool.h"
     "NodeMemoryResource.h"
     "print_using.h"
+    "Register.h"
     "SimpleSegregatedStorage.h"
     "Singleton.h"
     "translate.h"
