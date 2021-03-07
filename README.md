@@ -5,7 +5,7 @@ providing C++ utilities for larger projects, including:
 
 * <tt>AIAlert</tt> : an exception based error reporting system.
 * <tt>AIFIFOBuffer</tt> : A spsc lock-free ring buffer for trivially copyable objects.
-* <tt>AIRefCount</tt> : Base class for classes that need to wrapped into as boost::intrusive_ptr.
+* <tt>AIRefCount</tt> : Base class for classes that need to wrapped into as <tt>boost::intrusive\_ptr</tt>.
 * <tt>AISignals</tt> : C++ wrapper around POSIX signals.
 * <tt>Array</tt> / <tt>Vector</tt> : A wrapper around <tt>std::array</tt> / <tt>std::vector</tt> that only allow a specific type as index.
 * <tt>AtomicFuzzyBool</tt> / <tt>FuzzyBool</tt> : Fuzzy booleans; great for conditions that are subject to races in a multi-threaded application.
@@ -17,7 +17,7 @@ providing C++ utilities for larger projects, including:
 * <tt>InstanceTracker</tt> : Base class to keep track of all existing objects of a given type.
 * <tt>iomanip</tt> : Custom io manipulators.
 * <tt>itoa</tt> : Maximum speed integer to string converter.
-* <tt>MemoryPagePool</tt> : A memory pool that returns fixed-size memory blocks allocated with std::aligned_alloc and aligned to memory_page_size.
+* <tt>MemoryPagePool</tt> : A memory pool that returns fixed-size memory blocks allocated with <tt>std::aligned_alloc</tt> and aligned to <tt>memory_page_size</tt>.
 * <tt>MultiLoop</tt> : A variable number of nested for loops.
 * <tt>NodeMemoryResource</tt> : A fixed size memory resource that uses a MemoryPagePool as upstream.
 * <tt>RandomStream</tt> : Stream producing random characters.
@@ -131,13 +131,6 @@ include(cwm4/cmake/StableGitache)
 # End of gitache configuration.
 
 include(cwm4/cmake/AICxxProject)
-
-# Exit if someone tries to contaminate the source directory with an in-source build.
-if (${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
-  message(FATAL_ERROR "Please do out-of-source builds."
-                      "Cleanup: \"rm -rf CMake CMakeCache.txt CMakeFiles/\"")
-endif ()
-
 include(AICxxSubmodules)
 </pre>
 
@@ -148,8 +141,17 @@ See for example the root [MakeLists.txt](https://github.com/CarloWood/ai-utils-t
 Finally, linking is done by adding <tt>${AICXX_OBJECTS_LIST}</tt> to
 the appropriate <tt>target_link_libraries</tt>.
 
+For example,
+
+<pre>
+include(AICxxProject)
+
+add_executable(register_test register_test.cxx)
+target_link_libraries(register_test PRIVATE ${AICXX_OBJECTS_LIST})
+</pre>
+
 See this [MakeLists.txt](https://github.com/CarloWood/ai-utils-testsuite/blob/master/src/CMakeLists.txt)
-of ai-utils-testsuite as example.
+of ai-utils-testsuite for a complete example.
 
 ### Using GNU autotools
 
