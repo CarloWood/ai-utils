@@ -103,22 +103,20 @@ For that to happen create in the root of the project (that uses utils)
 a directory <tt>cmake/gitache-configs</tt> and put in it the file <tt>libcwd\_r.cmake</tt>
 with the content:
 
-<pre>
-gitache\_config(
-  GIT\_REPOSITORY
-    "https://github.com/CarloWood/libcwd.git"
-  GIT\_TAG
-    "master"
-  CMAKE\_ARGS
-    "-DEnableLibcwdAlloc:BOOL=OFF -DEnableLibcwdLocation:BOOL=ON"
-)
-</pre>
+    gitache_config(
+      GIT_REPOSITORY
+        "https://github.com/CarloWood/libcwd.git"
+      GIT_TAG
+        "master"
+      CMAKE_ARGS
+        "-DEnableLibcwdAlloc:BOOL=OFF -DEnableLibcwdLocation:BOOL=ON"
+   )
 
 Add the variable <tt>GITACHE\_ROOT</tt> to your environment,
 for example add to your <tt>~/.bashrc</tt> the line:
 
 <pre>
-export GITACHE\_ROOT="/opt/gitache"
+export GITACHE_ROOT="/opt/gitache"
 </pre>
 
 Add the following lines to the <tt>CMakeLists.txt</tt> in the
@@ -126,7 +124,7 @@ root of the project (directly under the <tt>project</tt> line):
 
 <pre>
 # Begin of gitache configuration.
-set(GITACHE\_PACKAGES libcwd\_r)
+set(GITACHE_PACKAGES libcwd_r)
 include(cwm4/cmake/StableGitache)
 # End of gitache configuration.
 
@@ -146,8 +144,8 @@ For example,
 <pre>
 include(AICxxProject)
 
-add\_executable(register\_test register\_test.cxx)
-target\_link\_libraries(register\_test PRIVATE ${AICXX\_OBJECTS\_LIST})
+add_executable(register_test register_test.cxx)
+target_link_libraries(register_test PRIVATE ${AICXX_OBJECTS_LIST})
 </pre>
 
 See this [MakeLists.txt](https://github.com/CarloWood/ai-utils-testsuite/blob/master/src/CMakeLists.txt)
@@ -162,17 +160,17 @@ which works as usual;
 for example, a module that defines a
 
 <pre>
-bin\_PROGRAMS = singlethreaded\_foobar multithreaded\_foobar
+bin_PROGRAMS = singlethreaded_foobar multithreaded_foobar
 </pre>
 
 would also define
 
 <pre>
-singlethreaded\_foobar\_CXXFLAGS = @LIBCWD\_FLAGS@
-singlethreaded\_foobar\_LDADD = ../utils/libutils.la $(top\_builddir)/cwds/libcwds.la
+singlethreaded_foobar_CXXFLAGS = @LIBCWD_FLAGS@
+singlethreaded_foobar_LDADD = ../utils/libutils.la $(top_builddir)/cwds/libcwds.la
 
-multithreaded\_foobar\_CXXFLAGS = @LIBCWD\_R\_FLAGS@
-multithreaded\_foobar\_LDADD = ../utils/libutils\_r.la $(top\_builddir)/cwds/libcwds\_r.la
+multithreaded_foobar_CXXFLAGS = @LIBCWD_R_FLAGS@
+multithreaded_foobar_LDADD = ../utils/libutils_r.la $(top_builddir)/cwds/libcwds_r.la
 </pre>
 
 or whatever the path to `utils` is, to link with the required submodules,
