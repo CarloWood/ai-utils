@@ -5,7 +5,7 @@ providing C++ utilities for larger projects, including:
 
 * <tt>AIAlert</tt> : an exception based error reporting system.
 * <tt>AIFIFOBuffer</tt> : A spsc lock-free ring buffer for trivially copyable objects.
-* <tt>AIRefCount</tt> : Base class for classes that need to wrapped into as <tt>boost::intrusive\_ptr</tt>.
+* <tt>AIRefCount</tt> : Base class for classes that need to wrapped into as ``boost::intrusive_ptr``.
 * <tt>AISignals</tt> : C++ wrapper around POSIX signals.
 * <tt>Array</tt> / <tt>Vector</tt> : A wrapper around <tt>std::array</tt> / <tt>std::vector</tt> that only allow a specific type as index.
 * <tt>AtomicFuzzyBool</tt> / <tt>FuzzyBool</tt> : Fuzzy booleans; great for conditions that are subject to races in a multi-threaded application.
@@ -42,11 +42,9 @@ The root project should be using
 
 To clone a project example-project that uses ai-utils simply run:
 
-<pre>
-<b>git clone --recursive</b> &lt;<i>URL-to-project</i>&gt;<b>/example-project.git</b>
-<b>cd example-project</b>
-<b>AUTOGEN_CMAKE_ONLY=1 ./autogen.sh</b>
-</pre>
+    <b>git clone --recursive</b> &lt;<i>URL-to-project</i>&gt;<b>/example-project.git</b>
+    <b>cd example-project</b>
+    <b>AUTOGEN_CMAKE_ONLY=1 ./autogen.sh</b>
 
 The <tt>--recursive</tt> is optional because <tt>./autogen.sh</tt> will fix
 it when you forgot it.
@@ -57,19 +55,15 @@ as option to the generated <tt>configure</tt> script.
 
 In order to use <tt>cmake</tt> configure as usual, for example to build with 8 cores a debug build:
 
-<pre>
-<b>mkdir build_debug</b>
-<b>cmake -S . -B build_debug -DCMAKE_MESSAGE_LOG_LEVEL=DEBUG -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=ON -DEnableDebugGlobal:BOOL=OFF</b>
-<b>cmake --build build_debug --config Debug --parallel 8</b>
-</pre>
+    <b>mkdir build_debug</b>
+    <b>cmake -S . -B build_debug -DCMAKE_MESSAGE_LOG_LEVEL=DEBUG -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=ON -DEnableDebugGlobal:BOOL=OFF</b>
+    <b>cmake --build build_debug --config Debug --parallel 8</b>
 
 Or to make a release build:
 
-<pre>
-<b>mkdir build_release</b>
-<b>cmake -S . -B build_release -DCMAKE_BUILD_TYPE=Release</b>
-<b>cmake --build build_release --config Release --parallel 8</b>
-</pre>
+    <b>mkdir build_release</b>
+    <b>cmake -S . -B build_release -DCMAKE_BUILD_TYPE=Release</b>
+    <b>cmake --build build_release --config Release --parallel 8</b>
 
 ## Adding the ai-utils submodule to a project
 
@@ -81,9 +75,7 @@ where you want to have the <tt>utils</tt> subdirectory (the
 root of the project is recommended as that is the only thing
 I've tested so far):
 
-<pre>
-git submodule add https://github.com/CarloWood/ai-utils.git utils
-</pre>
+    git submodule add https://github.com/CarloWood/ai-utils.git utils
 
 This should clone ai-utils into the subdirectory <tt>utils</tt>, or
 if you already cloned it there, it should add it.
@@ -92,10 +84,8 @@ if you already cloned it there, it should add it.
 
 Check out the submodules [cwds](https://github.com/CarloWood/cwds) and [cwm4](https://github.com/CarloWood/cwm4) in the root of the project:
 
-<pre>
-git submodule add https://github.com/CarloWood/cwds.git
-git submodule add https://github.com/CarloWood/cwm4.git
-</pre>
+    git submodule add https://github.com/CarloWood/cwds.git
+    git submodule add https://github.com/CarloWood/cwm4.git
 
 The easiest way to use libcwd is by using [gitache](https://github.com/CarloWood/gitache).
 
@@ -115,22 +105,18 @@ with the content:
 Add the variable <tt>GITACHE\_ROOT</tt> to your environment,
 for example add to your <tt>~/.bashrc</tt> the line:
 
-<pre>
-export GITACHE_ROOT="/opt/gitache"
-</pre>
+    export GITACHE_ROOT="/opt/gitache"
 
 Add the following lines to the <tt>CMakeLists.txt</tt> in the
 root of the project (directly under the <tt>project</tt> line):
 
-<pre>
-# Begin of gitache configuration.
-set(GITACHE_PACKAGES libcwd_r)
-include(cwm4/cmake/StableGitache)
-# End of gitache configuration.
+    # Begin of gitache configuration.
+    set(GITACHE_PACKAGES libcwd_r)
+    include(cwm4/cmake/StableGitache)
+    # End of gitache configuration.
 
-include(cwm4/cmake/AICxxProject)
-include(AICxxSubmodules)
-</pre>
+    include(cwm4/cmake/AICxxProject)
+    include(AICxxSubmodules)
 
 <tt>add\_subdirectory</tt> is not necessary for <tt>cwds</tt>, <tt>cwm4</tt> or <tt>utils</tt>.
 
@@ -141,12 +127,10 @@ the appropriate <tt>target\_link\_libraries</tt>.
 
 For example,
 
-<pre>
-include(AICxxProject)
+    include(AICxxProject)
 
-add_executable(register_test register_test.cxx)
-target_link_libraries(register_test PRIVATE ${AICXX_OBJECTS_LIST})
-</pre>
+    add_executable(register_test register_test.cxx)
+    target_link_libraries(register_test PRIVATE ${AICXX_OBJECTS_LIST})
 
 See this [MakeLists.txt](https://github.com/CarloWood/ai-utils-testsuite/blob/master/src/CMakeLists.txt)
 of ai-utils-testsuite for a complete example.
@@ -159,28 +143,22 @@ which works as usual;
 
 for example, a module that defines a
 
-<pre>
-bin_PROGRAMS = singlethreaded_foobar multithreaded_foobar
-</pre>
+    bin_PROGRAMS = singlethreaded_foobar multithreaded_foobar
 
 would also define
 
-<pre>
-singlethreaded_foobar_CXXFLAGS = @LIBCWD_FLAGS@
-singlethreaded_foobar_LDADD = ../utils/libutils.la $(top_builddir)/cwds/libcwds.la
+    singlethreaded_foobar_CXXFLAGS = @LIBCWD_FLAGS@
+    singlethreaded_foobar_LDADD = ../utils/libutils.la $(top_builddir)/cwds/libcwds.la
 
-multithreaded_foobar_CXXFLAGS = @LIBCWD_R_FLAGS@
-multithreaded_foobar_LDADD = ../utils/libutils_r.la $(top_builddir)/cwds/libcwds_r.la
-</pre>
+    multithreaded_foobar_CXXFLAGS = @LIBCWD_R_FLAGS@
+    multithreaded_foobar_LDADD = ../utils/libutils_r.la $(top_builddir)/cwds/libcwds_r.la
 
 or whatever the path to `utils` is, to link with the required submodules,
 libraries, and assuming you also use the [cwds](https://github.com/CarloWood/cwds) submodule.
 
 Finally, run
 
-<pre>
-./autogen.sh
-</pre>
+    ./autogen.sh
 
 to let cwm4 do its magic, and commit all the changes.
 
