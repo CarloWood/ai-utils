@@ -17,21 +17,21 @@ providing C++ utilities for larger projects, including:
 * ``InstanceTracker`` : Base class to keep track of all existing objects of a given type.
 * ``iomanip`` : Custom io manipulators.
 * ``itoa`` : Maximum speed integer to string converter.
-* ``MemoryPagePool`` : A memory pool that returns fixed-size memory blocks allocated with ``std::aligned\_alloc`` and aligned to ``memory\_page\_size``.
+* ``MemoryPagePool`` : A memory pool that returns fixed-size memory blocks allocated with ``std::aligned_alloc`` and aligned to ``memory_page_size``.
 * ``MultiLoop`` : A variable number of nested for loops.
 * ``NodeMemoryResource`` : A fixed size memory resource that uses a MemoryPagePool as upstream.
 * ``RandomStream`` : Stream producing random characters.
 * ``Register`` : Register callbacks for global objects, to be called once main() is entered.
-* ``REMOVE\_TRAILING\_COMMA`` : Macro that removes the last (possibly empty) argument.
+* ``REMOVE_TRAILING_COMMA`` : Macro that removes the last (possibly empty) argument.
 * ``SimpleSegregatedStorage`` : Maintains an unordered free list of blocks (used by NodeMemoryResource and MemoryPagePool).
 * ``StreamHasher`` : Calculate a digest of input written using operator<<.
 * ``VTPtr`` : Custom virtual table for classes. The advantage being that the virtual table is dynamic and can be altered during runtime.
 
-* Several utilities like ``almost\_equal``, ``at\_scope\_end``, ``c\_escape``, ``clz / ctz / mssb / popcount``,
-  ``constexpr\_ceil``, ``cpu\_relax``, ``double\_to\_str\_precision``, ``for\_each\_until``,
-  ``is\_pointer\_like``, ``is\_power\_of\_two``, ``log2``, ``malloc\_size``,
-  ``nearest\_multiple\_of\_power\_of\_two``, ``nearest\_power\_of\_two``, ``print\_using`` ``reversed``,
-  ``split``, ``ulong\_to\_base`` and convenience macros.
+* Several utilities like ``almost_equal``, ``at_scope_end``, ``c_escape``, ``clz / ctz / mssb / popcount``,
+  ``constexpr_ceil``, ``cpu_relax``, ``double_to_str_precision``, ``for_each_until``,
+  ``is_pointer_like``, ``is_power_of_two``, ``log2``, ``malloc_size``,
+  ``nearest_multiple_of_power_of_two``, ``nearest_power_of_two``, ``print_using`` ``reversed``,
+  ``split``, ``ulong_to_base`` and convenience macros.
 
 The root project should be using
 [cmake](https://cmake.org/overview/)
@@ -50,7 +50,7 @@ The ``--recursive`` is optional because ``./autogen.sh`` will fix
 it when you forgot it.
 
 When using [GNU autotools](https://en.wikipedia.org/wiki/GNU_Autotools) you should of course
-not set ``AUTOGEN\_CMAKE\_ONLY``. Also, you probably want to use ``--enable-mainainer-mode``
+not set ``AUTOGEN_CMAKE_ONLY``. Also, you probably want to use ``--enable-mainainer-mode``
 as option to the generated ``configure`` script.
 
 In order to use ``cmake`` configure as usual, for example to build with 8 cores a debug build:
@@ -90,7 +90,7 @@ Check out the submodules [cwds](https://github.com/CarloWood/cwds) and [cwm4](ht
 The easiest way to use libcwd is by using [gitache](https://github.com/CarloWood/gitache).
 
 For that to happen create in the root of the project (that uses utils)
-a directory ``cmake/gitache-configs`` and put in it the file ``libcwd\_r.cmake``
+a directory ``cmake/gitache-configs`` and put in it the file ``libcwd_r.cmake``
 with the content:
 
     gitache_config(
@@ -102,7 +102,7 @@ with the content:
         "-DEnableLibcwdAlloc:BOOL=OFF -DEnableLibcwdLocation:BOOL=ON"
    )
 
-Add the variable ``GITACHE\_ROOT`` to your environment,
+Add the variable ``GITACHE_ROOT`` to your environment,
 for example add to your ``~/.bashrc`` the line:
 
     export GITACHE_ROOT="/opt/gitache"
@@ -118,12 +118,12 @@ root of the project (directly under the ``project`` line):
     include(cwm4/cmake/AICxxProject)
     include(AICxxSubmodules)
 
-``add\_subdirectory`` is not necessary for ``cwds``, ``cwm4`` or ``utils``.
+``add_subdirectory`` is not necessary for ``cwds``, ``cwm4`` or ``utils``.
 
 See for example the root [MakeLists.txt](https://github.com/CarloWood/ai-utils-testsuite/blob/master/CMakeLists.txt) of of ai-utils-testsuite.
 
-Finally, linking is done by adding ``${AICXX\_OBJECTS\_LIST}`` to
-the appropriate ``target\_link\_libraries``.
+Finally, linking is done by adding ``${AICXX_OBJECTS_LIST}`` to
+the appropriate ``target_link_libraries``.
 
 For example,
 
