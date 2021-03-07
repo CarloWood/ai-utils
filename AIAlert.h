@@ -50,11 +50,13 @@
 #pragma once
 
 #include "translate.h"
+#include "has_print_on.h"
 
 #include <deque>
 #include <exception>
 #include <string>
 #include <map>
+#include <sstream>
 #include <boost/lexical_cast.hpp>
 
 //===================================================================================================================================
@@ -156,6 +158,9 @@
  * A wrapper around a `std::map` (translate::format_map_t) to allow constructing a dictionary on one line by doing:
  *
  * @{AIArgs("[ARG1]", arg1)("[ARG2]", arg2)("[ARG3]", arg3)...}
+ *
+ * Here the arguments are serialized into characters by using argX.print_on if
+ * that exists, otherwise by using boost::lexical_cast<std::string>.
  */
 class AIArgs
 {
@@ -166,9 +171,16 @@ class AIArgs
     /// Construct an empty map.
     AIArgs() { }
     /// Construct a map with a single replacement.
-    template<typename T> AIArgs(char const* key, T const& replacement) { mArgs[key] = boost::lexical_cast<std::string>(replacement); }
+    // boost::lexical_cast doesn't work when T only has a print_on method.
+    template<typename T, typename std::enable_if<!utils::has_print_on<T const>, int>::type = 0>
+    AIArgs(char const* key, T const& replacement) { mArgs[key] = boost::lexical_cast<std::string>(replacement); }
+    template<typename T, typename std::enable_if<utils::has_print_on<T const>, int>::type = 0>
+    AIArgs(char const* key, T const& replacement) { std::ostringstream oss; replacement.print_on(oss); mArgs[key] = oss.str(); }
     /// Add another replacement.
-    template<typename T> AIArgs& operator()(char const* key, T const& replacement) { mArgs[key] = boost::lexical_cast<std::string>(replacement); return *this; }
+    template<typename T, typename std::enable_if<!utils::has_print_on<T const>, int>::type = 0>
+    AIArgs& operator()(char const* key, T const& replacement) { mArgs[key] = boost::lexical_cast<std::string>(replacement); return *this; }
+    template<typename T, typename std::enable_if<utils::has_print_on<T const>, int>::type = 0>
+    AIArgs& operator()(char const* key, T const& replacement) { std::ostringstream oss; replacement.print_on(oss); mArgs[key] = oss.str(); return *this; }
 
     /// Accessor, returns the underlaying map.
     translate::format_map_t const& operator*() const { return mArgs; }
