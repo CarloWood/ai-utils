@@ -63,6 +63,16 @@
   _Pragma("GCC diagnostic push")
 #endif
 
+#if defined(__GNUC__) && defined(__clang__) // clang doesn't have a -Wdeprecated_declarations warning.
+#define PRAGMA_DIAGNOSTIC_PUSH_IGNORE_deprecated_declarations \
+  _Pragma("GCC diagnostic push") \
+  _Pragma("GCC diagnostic ignored \"-W#pragma-messages\"")
+#else
+#define PRAGMA_DIAGNOSTIC_PUSH_IGNORE_deprecated_declarations \
+  _Pragma("GCC diagnostic push") \
+  _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
+#endif
+
 #define PRAGMA_DIAGNOSTIC_PUSH_IGNORED(warn_option) \
   _Pragma("GCC diagnostic push") \
   _Pragma(BOOST_PP_STRINGIZE(GCC diagnostic ignored BOOST_PP_EXPAND(warn_option)))
