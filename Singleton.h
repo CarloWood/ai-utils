@@ -35,8 +35,8 @@
 //   friend_Instance;
 // private:    // IMPORTANT! DO NOT FORGET THIS `private:' and the three declarations below!
 //             // Without it, this is not a real singleton!
-//   MySingleton() { }
-//   ~MySingleton() { }
+//   MySingleton() = default;
+//   ~MySingleton() = default;
 //   MySingleton(MySingleton const&) = delete;
 //
 // public:
@@ -45,7 +45,7 @@
 //
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
 // namespace {
-// SingletonInstance<MySingleton> dummy __attribute__ ((__unused__));
+// [[maybe_unused]] SingletonInstance<MySingleton> dummy;
 // } // namespace
 //
 // int main(int argc, char* argv[])
