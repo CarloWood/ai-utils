@@ -67,7 +67,7 @@ class ColorPool
 
  public:
   void use_color(int color);
-  int get_color();
+  int get_color() const;
 
   ColorPool() : history(cs::fake_history >> 8 * (8 - number_of_colors)) { }
 };
@@ -86,7 +86,7 @@ void ColorPool<number_of_colors>::use_color(int color)
 }
 
 template<int number_of_colors>
-int ColorPool<number_of_colors>::get_color()
+int ColorPool<number_of_colors>::get_color() const
 {
   return log2(history >> (8 * (number_of_colors - 1)));
 }
