@@ -115,7 +115,6 @@ target_sources(utils_ObjLib
     "threading/SpinSemaphore.cxx"
 
     "AIAlert.h"
-    "AIFIFOBuffer.h"
     "AIRefCount.h"
     "DelayLoopCalibration.h"
     "Dictionary.h"

@@ -2,9 +2,9 @@
  * ai-utils -- C++ Core utilities
  *
  * @file
- * @brief Declaration of class Gate.
+ * @brief Implementation of unlock_guard.
  *
- * @Copyright (C) 2017  Carlo Wood.
+ * @Copyright (C) 2021  Carlo Wood.
  *
  * RSA-1024 0x624ACAD5 1997-01-26                    Sign & Encrypt
  * Fingerprint16 = 32 EC A7 B6 AC DB 65 A6  F6 F6 55 DD 1C DC FF 61
@@ -27,40 +27,19 @@
 
 #pragma once
 
-//#include "AIMutex.h"
-#include <condition_variable>
+namespace utils::threading {
 
-namespace utils::threading
-{
-
-// Block (multiple) thread(s) until open() is called.
-//
-// If open() was already called before wait() then
-// wait() also doesn't block anymore.
-//
-class Gate : public std::mutex
+template<typename T>
+class unlock_guard
 {
  private:
-  std::condition_variable_any m_condition_variable;
-  bool m_open;
+  T& m_mutex;
 
  public:
-  Gate() : m_open(false) { }
-
-  void wait()
-  {
-    std::lock_guard<std::mutex> lock(*this);
-    m_condition_variable.wait(*this, [this](){ return m_open; });
-  }
-
-  void open()
-  {
-    {
-      std::lock_guard<std::mutex> lock(*this);
-      m_open = true;
-    }
-    m_condition_variable.notify_all();
-  }
+  unlock_guard(T& mutex) : m_mutex(mutex) { m_mutex.unlock(); }
+  unlock_guard(unlock_guard const&) = delete;
+  unlock_guard(unlock_guard&&) = delete;
+  ~unlock_guard() { m_mutex.lock(); }
 };
 
 } // namespace utils::threading
