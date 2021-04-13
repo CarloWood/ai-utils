@@ -28,8 +28,7 @@ SOURCES = \
 	threading/aithreadid.cxx \
 	threading/Semaphore.cxx \
 	threading/SpinSemaphore.cxx
-
-HEADERS = \
+\
 	AIAlert.h \
 	AIRefCount.h \
 	DelayLoopCalibration.h \
@@ -69,11 +68,11 @@ HEADERS = \
 	threading/StartingGate.h \
 	threading/aithreadid.h
 
-libutils_la_SOURCES = ${SOURCES} ${HEADERS}
+libutils_la_SOURCES = ${SOURCES}
 libutils_la_CXXFLAGS = @LIBCWD_FLAGS@
 libutils_la_LIBADD = @LIBCWD_LIBS@
 
-libutils_r_la_SOURCES = ${SOURCES} ${HEADERS}
+libutils_r_la_SOURCES = ${SOURCES}
 libutils_r_la_CXXFLAGS = @LIBCWD_R_FLAGS@
 libutils_r_la_LIBADD = @LIBCWD_R_LIBS@
 
