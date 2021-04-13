@@ -110,6 +110,10 @@ target_sources(utils_ObjLib
     "print_using.cxx"
     "translate.cxx"
 
+    "threading/aithreadid.cxx"
+    "threading/Semaphore.cxx"
+    "threading/SpinSemaphore.cxx"
+
     "AIAlert.h"
     "AIFIFOBuffer.h"
     "AIRefCount.h"
@@ -143,6 +147,15 @@ target_sources(utils_ObjLib
     "print_using.h"
     "translate.h"
     "ulong_to_base.h"
+
+    "threading/FIFOBuffer.h"
+    "threading/Futex.h"
+    "threading/Gate.h"
+    "threading/MpscQueue.h"
+    "threading/Semaphore.h"
+    "threading/SpinSemaphore.h"
+    "threading/StartingGate.h"
+    "threading/aithreadid.h"
 )
 
 # Required include search-paths.
