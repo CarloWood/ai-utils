@@ -12,55 +12,58 @@ endif
 #bin_PROGRAMS = singleton_test
 
 SOURCES = \
-	debug_ostream_operators.cxx \
-	debug_ostream_operators.h \
 	AIAlert.cxx \
-	AIAlert.h \
-	translate.cxx \
-	translate.h \
-	double_to_str_precision.cxx \
-	double_to_str_precision.h \
+	DelayLoopCalibration.cxx \
+	FuzzyBool.cxx \
 	GlobalObjectManager.cxx \
+	MemoryPagePool.cxx \
+	NodeMemoryPool.cxx \
+	Signals.cxx \
+	debug_ostream_operators.cxx \
+	double_to_str_precision.cxx \
+	itoa.cxx \
+	malloc_size.cxx \
+	print_using.cxx \
+	translate.cxx \
+
+HEADERS = \
+	AIAlert.h \
+	AIRefCount.h \
+	DelayLoopCalibration.h \
+	FunctionView.h \
+	FuzzyBool.h \
 	GlobalObjectManager.h \
 	Global.h \
-	Singleton.h \
-	NodeMemoryPool.cxx \
-	NodeMemoryPool.h \
-	SimpleSegregatedStorage.h \
-	MemoryPagePool.cxx \
 	MemoryPagePool.h \
+	NodeMemoryPool.h \
 	NodeMemoryResource.h \
-	itoa.cxx \
-	itoa.h \
-	malloc_size.cxx \
-	malloc_size.h \
-	FuzzyBool.cxx \
-	FuzzyBool.h \
-	Signals.cxx \
-	Signals.h \
-	DelayLoopCalibration.h \
-	DelayLoopCalibration.cxx \
-	print_using.h \
-	print_using.cxx \
-	AIFIFOBuffer.h \
-	AIRefCount.h \
-	FunctionView.h \
 	MultiLoop.h \
+	SimpleSegregatedStorage.h \
+	Signals.h \
+	Singleton.h \
 	apply_function.h \
 	at_scope_end.h \
-	for_each_until.h \
-	is_power_of_two.h \
-	is_pointer_like.h \
-	macros.h \
-	ulong_to_base.h \
 	cpu_relax.h \
-	log2.h
+	debug_ostream_operators.h \
+	double_to_str_precision.h \
+	for_each_until.h \
+	is_pointer_like.h \
+	is_power_of_two.h \
+	itoa.h \
+	log2.h \
+	macros.h \
+	malloc_size.h \
+	print_using.h \
+	translate.h \
+	ulong_to_base.h \
+\
+	threading/FIFOBuffer.h
 
-libutils_la_SOURCES = ${SOURCES}
+libutils_la_SOURCES = ${SOURCES} ${HEADERS}
 libutils_la_CXXFLAGS = @LIBCWD_FLAGS@
 libutils_la_LIBADD = @LIBCWD_LIBS@
 
-libutils_r_la_SOURCES = ${SOURCES}
+libutils_r_la_SOURCES = ${SOURCES} ${HEADERS}
 libutils_r_la_CXXFLAGS = @LIBCWD_R_FLAGS@
 libutils_r_la_LIBADD = @LIBCWD_R_LIBS@
 

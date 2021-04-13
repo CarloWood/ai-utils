@@ -32,9 +32,15 @@
  *
  *   2018/01/02
  *   - Changed license to GPL-3.
+ *
+ *   2021/04/11
+ *   - Renamed AIFIFOBuffer to utils::threading::FIFOBuffer
+ *     and moved the header to utils/threading.
  */
 
 #pragma once
+
+namespace utils::threading {
 
 // Lock-free ring buffer for trivially copyable objects, to be written and
 // read (using std::memcpy) in chunks of (a fixed) T_per_chunk objects at a time.
@@ -81,12 +87,12 @@
 // Empty the buffer (sets m_tail and m_readptr to where m_head is).
 //
 template <int T_per_chunk, typename T>
-class AIFIFOBuffer
+class FIFOBuffer
 {
   // This buffer uses std::memcpy to move the objects around.
-  static_assert(std::is_trivially_copyable<T>::value, "AIFIFOBuffer requires a trivially copyable type.");
+  static_assert(std::is_trivially_copyable<T>::value, "FIFOBuffer requires a trivially copyable type.");
   // If this fails than reallocate_buffer needs to be changed to allocate memory aligned to 'alignment'.
-  static_assert(alignof(T) <= alignof(std::max_align_t), "AIFIFOBuffer requires objects with fundamental alignment.");
+  static_assert(alignof(T) <= alignof(std::max_align_t), "FIFOBuffer requires objects with fundamental alignment.");
 
  public:
   static constexpr size_t alignment           = alignof(T);               // Buffer alignment (as well as the alignment of every other pointer we deal with).
@@ -113,11 +119,11 @@ class AIFIFOBuffer
 
  public:
   // Construct a buffer with zero capacity. Call reallocate_buffer to finish initialization.
-  AIFIFOBuffer() : m_capacity(0), m_buffer(nullptr), m_head(nullptr), m_readptr(nullptr), m_tail(nullptr) {}
+  FIFOBuffer() : m_capacity(0), m_buffer(nullptr), m_head(nullptr), m_readptr(nullptr), m_tail(nullptr) {}
   // Construct a buffer of nchunk chunks (each of n objects).
-  AIFIFOBuffer(int nchunks) : m_buffer(nullptr) { reallocate_buffer(nchunks); }
+  FIFOBuffer(int nchunks) : m_buffer(nullptr) { reallocate_buffer(nchunks); }
   // Destructor.
-  virtual ~AIFIFOBuffer() { if (m_storage) delete [] m_storage; }
+  virtual ~FIFOBuffer() { if (m_storage) delete [] m_storage; }
 
   //-------------------------------------------------------------------------
   // Producer thread.
@@ -241,14 +247,16 @@ class AIFIFOBuffer
 
 // This may only be used to resize a buffer that is not in use at the moment.
 template <int T_per_chunk, typename T>
-void AIFIFOBuffer<T_per_chunk, T>::reallocate_buffer(int nchunks)
+void FIFOBuffer<T_per_chunk, T>::reallocate_buffer(int nchunks)
 {
   m_capacity = T_per_chunk * nchunks;
   // The following is safe because the buffer isn't used at the moment.
   if (m_storage)
     delete [] m_storage;
   m_storage = new typename std::aligned_storage<sizeof(T), alignof(T)>::type [m_capacity];
-  Dout(dc::notice, "Allocated AIFIFOBuffer buffer at " << m_buffer << " till " << &m_buffer[m_capacity]);
+  Dout(dc::notice, "Allocated FIFOBuffer buffer at " << m_buffer << " till " << &m_buffer[m_capacity]);
   m_head = m_buffer;
   clear();
 }
+
+} // namespace utils::threading
