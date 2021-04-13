@@ -2,7 +2,7 @@
  * ai-utils -- C++ Core utilities
  *
  * @file
- * @brief Definition of class AISignal.
+ * @brief Definition of class Signals.
  *
  * @Copyright (C) 2019  Carlo Wood.
  *
@@ -27,7 +27,7 @@
 
 #include "sys.h"
 #include "debug.h"
-#include "AISignals.h"
+#include "Signals.h"
 #include "macros.h"
 #include <string>
 #include <cstring>
@@ -35,15 +35,15 @@
 namespace utils {
 
 namespace {
-SingletonInstance<Signals> dummy __attribute__ ((unused));
+SingletonInstance<Signal> dummy __attribute__ ((unused));
 
 int constexpr max_signum = 31;
 
 std::string signal_name_str(int signum)
 {
-  // Only pass real signals to AISignal, that are defined in <csignal>.
+  // Only pass real signals to Signals, that are defined in <csignal>.
   // Do not pass Real Time signal numbers [SIGRTMIN, SIGRTMAX]; these can't be hardcoded.
-  // Instead, request the number you need as second parameter to AISignals and use Signal::instance().next_rt_signum().
+  // Instead, request the number you need as second parameter to Signals and use Signal::instance().next_rt_signum().
   ASSERT(0 < signum && signum <= max_signum);
   switch (signum)
   {
@@ -84,11 +84,11 @@ std::string signal_name_str(int signum)
 
 } // namespace
 
-Signals::~Signals()
+Signal::~Signal()
 {
 }
 
-void Signals::print_on(std::ostream& os) const
+void Signal::print_on(std::ostream& os) const
 {
   os << "Reserved signals: ";
   char const* separator = "";
@@ -101,12 +101,12 @@ void Signals::print_on(std::ostream& os) const
   os << "; reserved number of RT signals: " << m_number_of_RT_signals << '.';
 }
 
-void Signals::priv_reserve(int number_of_RT_signals)
+void Signal::priv_reserve(int number_of_RT_signals)
 {
   int prev_number_of_RT_signals = m_number_of_RT_signals;
   m_number_of_RT_signals += number_of_RT_signals;
-  // Instantiate AISignals object(s) before creating any threads!
-  // This is necessary because threads created before instantiating AISignals will receive all signals,
+  // Instantiate Signals object(s) before creating any threads!
+  // This is necessary because threads created before instantiating Signals will receive all signals,
   // which is probably not what you want. Instead register the signals that your thread is interested
   // in afterwards, at the start of your thread.
 #ifdef CWDEBUG
@@ -125,23 +125,23 @@ void Signals::priv_reserve(int number_of_RT_signals)
   }
 }
 
-int Signals::priv_next_rt_signum()
+int Signal::priv_next_rt_signum()
 {
   std::lock_guard<std::mutex> lock(m_next_rt_signum_mutex);
-  DoutEntering(dc::notice, "Signals::priv_next_rt_signum() with m_next_rt_signum = " << m_next_rt_signum << "; m_number_of_RT_signals = " << m_number_of_RT_signals << ".");
-  // Reserve the number of required Real Time signals in advance by creating an AISignals object at the start of main().
-  // In initializer lists of (global) objects, use utils::Signals::reserve_and_next_rt_signum().
+  DoutEntering(dc::notice, "Signal::priv_next_rt_signum() with m_next_rt_signum = " << m_next_rt_signum << "; m_number_of_RT_signals = " << m_number_of_RT_signals << ".");
+  // Reserve the number of required Real Time signals in advance by creating an Signals object at the start of main().
+  // In initializer lists of (global) objects, use utils::Signal::reserve_and_next_rt_signum().
   ASSERT(m_next_rt_signum < SIGRTMIN + m_number_of_RT_signals);
   return m_next_rt_signum++;
 }
 
-int Signals::priv_reserve_and_next_rt_signum()
+int Signal::priv_reserve_and_next_rt_signum()
 {
   priv_reserve(1);
   return priv_next_rt_signum();
 }
 
-void Signals::reserve(std::vector<int> const& signums, unsigned int number_of_RT_signals)
+void Signal::reserve(std::vector<int> const& signums, unsigned int number_of_RT_signals)
 {
 #ifdef CWDEBUG
   std::string signum_names;
@@ -151,7 +151,7 @@ void Signals::reserve(std::vector<int> const& signums, unsigned int number_of_RT
     signum_names += separator + signal_name_str(signum);
     separator = ", ";
   }
-  DoutEntering(dc::notice, "Signals::reserve({" << signum_names << "}, " << number_of_RT_signals << ")");
+  DoutEntering(dc::notice, "Signal::reserve({" << signum_names << "}, " << number_of_RT_signals << ")");
 #endif
   priv_reserve(number_of_RT_signals);
   // Ignore all reserved signals (except SIGKILL and SIGSTOP).
@@ -182,20 +182,20 @@ void Signals::reserve(std::vector<int> const& signums, unsigned int number_of_RT
   sigprocmask(SIG_BLOCK, &all_signals, nullptr);
 }
 
-void Signals::register_callback(int signum, void (*cb)(int))
+void Signal::register_callback(int signum, void (*cb)(int))
 {
-  DoutEntering(dc::notice, "Signals::register_callback(" << signum << ", " << (void*)cb << ")");
+  DoutEntering(dc::notice, "Signal::register_callback(" << signum << ", " << (void*)cb << ")");
   if (0 < signum && signum <= max_signum)
   {
     // No locking necessary because m_reserved_signals is initialized before any threads are created.
     if (sigismember(&m_reserved_signals, signum) != 1)
-      // Register signals first by creating an AISignal object at the start of main.
+      // Register signals first by creating an Signals object at the start of main.
       // Note that you cannot specify a callback for SIGKILL or SIGSTOP.
       DoutFatal(dc::core, "Trying to register a callback for a signal (" << signal_name_str(signum) << ") that was not registered.");
   }
   else if (!(SIGRTMIN <= signum && signum < SIGRTMIN + m_next_rt_signum))
-    // Only use RT signals that were returned by Signals::priv_next_rt_signum.
-    DoutFatal(dc::core, "Trying to register a callback for RT signal " << (signum - SIGRTMIN) << " which is not a value returned by AISignals::next_rt_signum().");
+    // Only use RT signals that were returned by Signal::priv_next_rt_signum.
+    DoutFatal(dc::core, "Trying to register a callback for RT signal " << (signum - SIGRTMIN) << " which is not a value returned by Signals::next_rt_signum().");
 
   std::lock_guard<std::mutex> lock(m_callback_mutex);
   struct sigaction action;
@@ -211,9 +211,9 @@ void Signals::register_callback(int signum, void (*cb)(int))
 }
 
 //static
-void Signals::unblock(sigset_t* sigmask, int signum, void (*cb)(int))
+void Signal::unblock(sigset_t* sigmask, int signum, void (*cb)(int))
 {
-  DoutEntering(dc::notice, "Signals::unblock(sigmask, " << signum << ", " << (void*)cb << ")");
+  DoutEntering(dc::notice, "Signal::unblock(sigmask, " << signum << ", " << (void*)cb << ")");
   sigemptyset(sigmask);
   sigaddset(sigmask, signum);
   if (cb != SIG_IGN)
@@ -222,9 +222,9 @@ void Signals::unblock(sigset_t* sigmask, int signum, void (*cb)(int))
 }
 
 //static
-void Signals::block_and_unregister(int signum)
+void Signal::block_and_unregister(int signum)
 {
-  DoutEntering(dc::notice, "Signals::block_and_unregister(" << signum << ")");
+  DoutEntering(dc::notice, "Signal::block_and_unregister(" << signum << ")");
   sigset_t sigmask;
   sigemptyset(&sigmask);
   sigaddset(&sigmask, signum);
@@ -241,30 +241,30 @@ void Signals::block_and_unregister(int signum)
 #endif
 }
 
-} // namespace utils
-
-AISignals::AISignals(std::vector<int> signums, unsigned int number_of_RT_signals)
+Signals::Signals(std::vector<int> signums, unsigned int number_of_RT_signals)
 {
-  utils::Signals::instance().reserve(signums, number_of_RT_signals);
+  utils::Signal::instance().reserve(signums, number_of_RT_signals);
 }
 
-AISignals::AISignals(int signum, unsigned int number_of_RT_signals)
+Signals::Signals(int signum, unsigned int number_of_RT_signals)
 {
-  utils::Signals::instance().reserve({signum}, number_of_RT_signals);
+  utils::Signal::instance().reserve({signum}, number_of_RT_signals);
 }
 
-void AISignals::register_callback(int signum, void (*cb)(int))
+void Signals::register_callback(int signum, void (*cb)(int))
 {
-  utils::Signals::instance().register_callback(signum, cb);
+  utils::Signal::instance().register_callback(signum, cb);
 }
 
-void AISignals::default_handler(int signum)
+void Signals::default_handler(int signum)
 {
-  utils::Signals::instance().default_handler(signum);
+  utils::Signal::instance().default_handler(signum);
 }
 
-std::ostream& operator<<(std::ostream& os, AISignals const&)
+std::ostream& operator<<(std::ostream& os, Signals const&)
 {
-  utils::Signals::instance().print_on(os);
+  utils::Signal::instance().print_on(os);
   return os;
 }
+
+} // namespace utils

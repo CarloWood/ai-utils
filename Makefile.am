@@ -36,8 +36,8 @@ SOURCES = \
 	malloc_size.h \
 	FuzzyBool.cxx \
 	FuzzyBool.h \
-	AISignals.cxx \
-	AISignals.h \
+	Signals.cxx \
+	Signals.h \
 	DelayLoopCalibration.h \
 	DelayLoopCalibration.cxx \
 	print_using.h \

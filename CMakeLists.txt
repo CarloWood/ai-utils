@@ -94,7 +94,7 @@ set_property(
 target_sources(utils_ObjLib
   PRIVATE
     "AIAlert.cxx"
-    "AISignals.cxx"
+    "Signals.cxx"
     "debug_ostream_operators.cxx"
     "DelayLoopCalibration.cxx"
     "Dictionary.cxx"
@@ -112,7 +112,7 @@ target_sources(utils_ObjLib
     "AIAlert.h"
     "AIFIFOBuffer.h"
     "AIRefCount.h"
-    "AISignals.h"
+    "Signals.h"
     "apply_function.h"
     "at_scope_end.h"
     "cpu_relax.h"

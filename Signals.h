@@ -2,7 +2,7 @@
  * ai-utils -- C++ Core utilities
  *
  * @file
- * @brief Declaration of AISignals.
+ * @brief Declaration of Signals.
  *
  * @Copyright (C) 2019  Carlo Wood.
  *
@@ -41,13 +41,13 @@
 
 namespace utils {
 
-class Signals : public Singleton<Signals>
+class Signal : public Singleton<Signal>
 {
   friend_Instance;
  private:
-  Signals() : m_number_of_RT_signals(0), m_next_rt_signum(SIGRTMIN) { sigemptyset(&m_reserved_signals); }
-  ~Signals();
-  Signals(Signals const&) = delete;
+  Signal() : m_number_of_RT_signals(0), m_next_rt_signum(SIGRTMIN) { sigemptyset(&m_reserved_signals); }
+  ~Signal();
+  Signal(Signal const&) = delete;
 
   sigset_t m_reserved_signals;          // The signals that this application is interested in. All other signals use their default handler.
   std::mutex m_next_rt_signum_mutex;
@@ -78,15 +78,13 @@ class Signals : public Singleton<Signals>
   void print_on(std::ostream& os) const;
 };
 
-} // namespace utils
-
 // Usage, in main(), before creating any thread use:
 //
-//      AISignals signals({SIGINT, SIGABRT}, 3);     // Use signals SIGINT, SIGABRT and three RT signals.
+//      Signals signals({SIGINT, SIGABRT}, 3);     // Use signals SIGINT, SIGABRT and three RT signals.
 //
-// Obtain the three reserved RT signal numbers by three calls to utils::Signals::next_rt_signum().
+// Obtain the three reserved RT signal numbers by three calls to utils::Signal::next_rt_signum().
 //
-// All these signals will be ignored by default (SIG_IGN). Signals that are not mentioned
+// All these signals will be ignored by default (SIG_IGN). Signal that are not mentioned
 // or reserved will keep their default handler (for example, by passing SIGINT that signal won't
 // interrupt the program anymore (ie, pressing control-C will stop working), but if you don't
 // pass it then that still works as normal).
@@ -101,11 +99,11 @@ class Signals : public Singleton<Signals>
 //
 // In threads, optionally unblock signals again with:
 //
-//      utils::Signals::unblock(signum);
+//      utils::Signal::unblock(signum);
 //
 // It is also possible to combine this with setting a handler:
 //
-//      utils::Signals::unblock(signum, my_callback);
+//      utils::Signal::unblock(signum, my_callback);
 //
 // instead of using signals.register_callback.
 //
@@ -113,22 +111,24 @@ class Signals : public Singleton<Signals>
 // so when you unblock a signal and then create a thread, then that signal is also
 // unblocked in the new thread.
 //
-// Signals are handled by a random thread of the threads that have that signal unblocked.
+// Signal are handled by a random thread of the threads that have that signal unblocked.
 //
 // Also note that handlers are per process. You can not set a different handler in
 // different threads.
 
-class AISignals
+class Signals
 {
  public:
-  AISignals() { }
+  Signals() { }
 
-  AISignals(int signum, unsigned int number_of_RT_signals = 0);
-  AISignals(std::vector<int> signums, unsigned int number_of_RT_signals = 0);
-  AISignals(std::initializer_list<int> signums, unsigned int number_of_RT_signals = 0) { AISignals(std::vector<int>(signums), number_of_RT_signals); }
+  Signals(int signum, unsigned int number_of_RT_signals = 0);
+  Signals(std::vector<int> signums, unsigned int number_of_RT_signals = 0);
+  Signals(std::initializer_list<int> signums, unsigned int number_of_RT_signals = 0) { Signals(std::vector<int>(signums), number_of_RT_signals); }
 
   void register_callback(int signum, void (*cb)(int));
   void default_handler(int signum);
 
-  friend std::ostream& operator<<(std::ostream& os, AISignals const& signals);
+  friend std::ostream& operator<<(std::ostream& os, Signals const& signals);
 };
+
+} // namespace utils
