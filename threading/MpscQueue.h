@@ -189,9 +189,9 @@ struct MpscNode
 //
 class MpscQueue
 {
- private:
+ protected:
   std::atomic<MpscNode*> m_head;
-  MpscNode*              m_tail;
+  std::atomic<MpscNode*> m_tail;
   MpscNode               m_stub;
 
  public:
@@ -209,7 +209,7 @@ class MpscQueue
 
   MpscNode* pop()
   {
-    MpscNode* tail = m_tail;
+    MpscNode* tail = m_tail.load(std::memory_order_relaxed);
     MpscNode* next = tail->m_next.load(std::memory_order_acquire);
     if (tail == &m_stub)
     {
@@ -220,16 +220,16 @@ class MpscQueue
       if (nullptr == next)
         return nullptr;
       // Skip m_stub.
-      m_tail = next;
+      m_tail.store(next, std::memory_order_relaxed);
       tail = next;
-      next = next->m_next.load(std::memory_order_acquire);
+      next = tail->m_next.load(std::memory_order_acquire);
     }
     // Are there at least two nodes in the list?
     // Aka, m_tail ---> node1 ===> node2
     if (next)
     {
       // Remove node and return it.
-      m_tail = next;
+      m_tail.store(next, std::memory_order_release);
       return tail;
     }
     // If we get here we had the situation, at the time of the above load(), of
@@ -263,7 +263,7 @@ class MpscQueue
     if (next)
     {
       // Remove node and return it.
-      m_tail = next;
+      m_tail.store(next, std::memory_order_relaxed);
       return tail;
     }
     return nullptr;
