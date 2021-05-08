@@ -29,40 +29,122 @@
 
 #include "threadsafe/aithreadsafe.h"
 #include <set>
+#include "debug.h"
+
+#if defined(CWDEBUG) && !defined(DOXYGEN)
+NAMESPACE_DEBUG_CHANNELS_START
+extern channel_ct tracker;
+NAMESPACE_DEBUG_CHANNELS_END
+#endif
 
 namespace utils {
+
+namespace detail {
+class InstanceCollectionTracker;
+} // namespace detail
+
+namespace InstanceCollections {
+
+extern std::set<detail::InstanceCollectionTracker*>* g_collection;
+#ifdef CW_DEBUG
+extern std::thread::id g_id;
+#endif
+
+void add(detail::InstanceCollectionTracker* instance_collection);
+void remove(detail::InstanceCollectionTracker* instance_collection);
+void dump();
+
+} // namespace InstanceCollections
+
+namespace detail {
+
+class InstanceCollectionTracker
+{
+ public:
+  InstanceCollectionTracker()
+  {
+    InstanceCollections::add(this);
+  }
+
+  ~InstanceCollectionTracker()
+  {
+    InstanceCollections::remove(this);
+  }
+
+  virtual void dump() const = 0;
+};
+
+template<typename T>
+class InstanceCollection : public InstanceCollectionTracker
+{
+ public:
+  using collection_t = aithreadsafe::Wrapper<std::set<T*>, aithreadsafe::policy::Primitive<std::mutex>>;
+
+ private:
+  collection_t m_collection;
+
+ public:
+  InstanceCollection() { }
+
+  void add(T* instance)
+  {
+    typename collection_t::wat collection_w(m_collection);
+    collection_w->insert(instance);
+  }
+
+  void remove(T* instance)
+  {
+    typename collection_t::wat collection_w(m_collection);
+    collection_w->erase(instance);
+  }
+
+  void for_each_instance(std::function<void(T const*)> const& func) const
+  {
+    typename collection_t::crat collection_r(m_collection);
+    for (T const* instance : *collection_r)
+      func(instance);
+  }
+
+ private:
+  // Implementation of base class interface.
+  void dump() const override
+  {
+    Dout(dc::tracker, "Instances of " << type_info_of<T>().demangled_name() << ":");
+    debug::Indent indent(2);
+    for_each_instance([&](T const* instance)
+    {
+      Dout(dc::tracker, print_using(*instance, &T::print_tracker_info_on));
+    });
+  }
+};
+
+} // namespace detail
 
 template<typename T>
 class InstanceTracker
 {
  private:
-  using collection_t = aithreadsafe::Wrapper<std::set<T*>, aithreadsafe::policy::Primitive<std::mutex>>;
-  static collection_t s_collection;
+  static detail::InstanceCollection<T> s_collection;
 
  protected:
   InstanceTracker()
   {
-    typename collection_t::wat collection_w(s_collection);
-    collection_w->insert(static_cast<T*>(this));
+    s_collection.add(static_cast<T*>(this));
   }
 
   ~InstanceTracker()
   {
-    typename collection_t::wat collection_w(s_collection);
-    collection_w->erase(static_cast<T*>(this));
+    s_collection.remove(static_cast<T*>(this));
   }
 
  public:
-  static void for_each(std::function<void(T const*)> const& func)
+  static void for_each_instance(std::function<void(T const*)> const& func)
   {
-    typename collection_t::wat collection_w(s_collection);
-    for (auto&& p : *collection_w)
-      func(p);
+    s_collection.for_each_instance(func);
   }
 };
 
-//static
 template<typename T>
-typename InstanceTracker<T>::collection_t InstanceTracker<T>::s_collection;
+typename detail::InstanceCollection<T> InstanceTracker<T>::s_collection;
 
 } // namespace utils

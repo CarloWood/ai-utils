@@ -52,6 +52,23 @@ class PrintUsing1
 
 PrintUsing1 print_using(void (*print_on)(std::ostream&));
 
+template<typename> struct member_function_traits
+{
+  using instance_type = void;
+};
+
+template<typename Return, typename Object, typename... Args>
+struct member_function_traits<Return (Object::*)(Args...)>
+{
+  using instance_type = Object;
+};
+
+template<typename Return, typename Object, typename... Args>
+struct member_function_traits<Return (Object::*)(Args...) const>
+{
+  using instance_type = Object;
+};
+
 template<typename T, typename print_on_type>
 class PrintUsing2
 {
@@ -65,7 +82,10 @@ class PrintUsing2
   friend std::ostream& operator<<(std::ostream& os, PrintUsing2 print_using)
   {
     //Dout(dc::notice, "Using " << type_info_of<PrintUsing2>().demangled_name());
-    if constexpr (utils::is_pointer_like_dereferencable_v<T>)
+    if constexpr (utils::is_pointer_like_dereferencable_v<T> &&
+                  ((std::is_member_function_pointer_v<print_on_type> &&
+                   std::is_same_v<T, typename member_function_traits<print_on_type>::instance_type>) ||
+                   !std::is_member_function_pointer_v<print_on_type>))
     {
       os << '*';
       if constexpr (std::is_member_function_pointer_v<print_on_type>)
