@@ -82,21 +82,30 @@ class PrintUsing2
   friend std::ostream& operator<<(std::ostream& os, PrintUsing2 print_using)
   {
     //Dout(dc::notice, "Using " << type_info_of<PrintUsing2>().demangled_name());
-    if constexpr (utils::is_pointer_like_dereferencable_v<T> &&
-                  ((std::is_member_function_pointer_v<print_on_type> &&
-                   std::is_same_v<T, typename member_function_traits<print_on_type>::instance_type>) ||
-                   !std::is_member_function_pointer_v<print_on_type>))
+    if constexpr (utils::is_pointer_like_dereferencable_v<T>)
     {
-      os << '*';
-      if constexpr (std::is_member_function_pointer_v<print_on_type>)
-        ((*print_using.m_obj).*print_using.m_print_on)(os);
+      if constexpr (((std::is_member_function_pointer_v<print_on_type> &&
+                        std::is_same_v<std::decay_t<decltype(*std::declval<T>())>, typename member_function_traits<print_on_type>::instance_type>) ||
+                      !std::is_member_function_pointer_v<print_on_type>))
+      {
+        os << '*';
+        if constexpr (std::is_member_function_pointer_v<print_on_type>)
+          ((*print_using.m_obj).*print_using.m_print_on)(os);
+        else
+          print_using.m_print_on(os, *print_using.m_obj);
+      }
+      // This part...
+      else if constexpr (std::is_member_function_pointer_v<print_on_type>)
+        (print_using.m_obj.*print_using.m_print_on)(os);
       else
-        print_using.m_print_on(os, *print_using.m_obj);
+        print_using.m_print_on(os, print_using.m_obj);
     }
+    // Is repeated here...
     else if constexpr (std::is_member_function_pointer_v<print_on_type>)
       (print_using.m_obj.*print_using.m_print_on)(os);
     else
       print_using.m_print_on(os, print_using.m_obj);
+
     return os;
   }
 };

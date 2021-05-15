@@ -7,7 +7,7 @@ namespace utils::InstanceCollections {
 std::set<detail::InstanceCollectionTracker*>* g_collection;
 
 #ifdef CW_DEBUG
-std::thread::id InstanceCollections::g_id;
+std::thread::id g_id;
 #endif
 
 void add(detail::InstanceCollectionTracker* instance_collection)
