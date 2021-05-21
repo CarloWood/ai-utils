@@ -70,8 +70,10 @@
 //       // Inner loop body.
 //
 //       if (...)
-//         continue;                    // Normal continue of inner loop;
-//                                      // Calling ml.breaks(0); break; is allowed too.
+//       {
+//         ml.breaks(0);                // Normal continue of inner loop;
+//         break;                       // Return control to MultiLoop.
+//       }
 //       else if (...)
 //         //ml.breaks(1);              // Allowed, but doesn't have any effect.
 //         break;                       // Normal break from inner loop.
