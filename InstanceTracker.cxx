@@ -32,11 +32,13 @@ void remove(detail::InstanceCollectionTracker* instance_collection)
   }
 }
 
+#ifdef CWDEBUG
 void dump()
 {
   for (detail::InstanceCollectionTracker const* instance_collection : *g_collection)
     instance_collection->dump();
 }
+#endif
 
 } // namespace utils::InstanceCollections
 

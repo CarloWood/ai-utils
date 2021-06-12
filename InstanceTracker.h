@@ -52,7 +52,9 @@ extern std::thread::id g_id;
 
 void add(detail::InstanceCollectionTracker* instance_collection);
 void remove(detail::InstanceCollectionTracker* instance_collection);
+#ifdef CW_DEBUG
 void dump();
+#endif
 
 } // namespace InstanceCollections
 
@@ -71,7 +73,9 @@ class InstanceCollectionTracker
     InstanceCollections::remove(this);
   }
 
+#ifdef CWDEBUG
   virtual void dump() const = 0;
+#endif
 };
 
 template<typename T>
@@ -106,6 +110,7 @@ class InstanceCollection : public InstanceCollectionTracker
   }
 
  private:
+#ifdef CWDEBUG
   // Implementation of base class interface.
   void dump() const override
   {
@@ -116,6 +121,7 @@ class InstanceCollection : public InstanceCollectionTracker
       Dout(dc::tracker, print_using(*instance, &T::print_tracker_info_on));
     });
   }
+#endif
 };
 
 } // namespace detail
