@@ -98,7 +98,6 @@ target_sources(utils_ObjLib
     "Dictionary.cxx"
     "FuzzyBool.cxx"
     "GlobalObjectManager.cxx"
-    "InstanceTracker.cxx"
     "MemoryPagePool.cxx"
     "NodeMemoryPool.cxx"
     "Register.cxx"
@@ -123,7 +122,6 @@ target_sources(utils_ObjLib
     "FuzzyBool.h"
     "Global.h"
     "GlobalObjectManager.h"
-    "InstanceTracker.h"
     "MultiLoop.h"
     "MemoryPagePool.h"
     "NodeMemoryPool.h"
@@ -158,6 +156,14 @@ target_sources(utils_ObjLib
     "threading/StartingGate.h"
     "threading/aithreadid.h"
 )
+
+if (EXISTS "${CMAKE_SOURCE_DIR}/aithreadsafe")
+target_sources(utils_ObjLib
+  PRIVATE
+    "InstanceTracker.cxx"
+    "InstanceTracker.h"
+)
+endif ()
 
 # Required include search-paths.
 get_target_property(CWDS_INTERFACE_INCLUDE_DIRECTORIES AICxx::cwds INTERFACE_INCLUDE_DIRECTORIES)
