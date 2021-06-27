@@ -157,7 +157,7 @@ target_sources(utils_ObjLib
     "threading/aithreadid.h"
 )
 
-if (EXISTS "${CMAKE_SOURCE_DIR}/aithreadsafe")
+if (EXISTS "${CMAKE_SOURCE_DIR}/threadsafe")
 target_sources(utils_ObjLib
   PRIVATE
     "InstanceTracker.cxx"
