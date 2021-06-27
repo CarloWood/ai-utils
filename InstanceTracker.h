@@ -28,6 +28,7 @@
 #pragma once
 
 #include "threadsafe/aithreadsafe.h"
+#include "utils/print_using.h"
 #include <set>
 #include "debug.h"
 
@@ -118,7 +119,7 @@ class InstanceCollection : public InstanceCollectionTracker
     debug::Indent indent(2);
     for_each_instance([&](T const* instance)
     {
-      Dout(dc::tracker, print_using(*instance, &T::print_tracker_info_on));
+      Dout(dc::tracker, utils::print_using(*instance, &T::print_tracker_info_on));
     });
   }
 #endif
