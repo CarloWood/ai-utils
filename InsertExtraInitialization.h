@@ -6,8 +6,8 @@
 // it declares a data member of unspecified name and type, but size
 // zero, whose initialization runs the given code.
 //
-// This is especially handy when using base class constructors while
-// extra initialization of the derived class is still needed.
+// This is especially handy when inheriting base class constructors
+// while extra initialization of the derived class is still needed.
 //
 // The lambda is NOT run for copy and move constructors.
 //
@@ -34,7 +34,7 @@ class Derived : public Base
     Dout(dc::notice, "WE GET HERE");
   };
 
-  MemberIsConstructedAfter x;           // Executed after.
+  MemberIsConstructedAfter y;           // Executed after.
 };
 #endif
 //
@@ -43,7 +43,7 @@ class Derived : public Base
 // INSERT_EXTRA_INITIALIZATION should go after the last element of the class.
 // Otherwise the default construction of following members will happen after
 // the lambda of the INSERT_EXTRA_INITIALIZATION, which might have unexpected
-// results when you use it to alter said members.
+// results when you used it to alter said members.
 //
 // Note: when adding a constructor to Derived, its body will be executed
 // after the lambda of INSERT_EXTRA_INITIALIZATION (which, afterall, is merely
