@@ -48,7 +48,7 @@ class ArrayIndex
  public:
   ArrayIndex() : m_value(-1) { }
   explicit constexpr ArrayIndex(int value) : m_value(value) { }
-  int get_value() const { return m_value; }
+  constexpr int get_value() const { return m_value; }
 
   ArrayIndex& operator++() { ++m_value; return *this; }
   ArrayIndex operator++(int) { ArrayIndex old(m_value); ++m_value; return old; }
