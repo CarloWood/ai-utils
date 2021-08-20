@@ -27,7 +27,6 @@
 
 #pragma once
 
-//#include "debug.h"
 #include "is_pointer_like.h"
 #include <iostream>
 #include <memory>
