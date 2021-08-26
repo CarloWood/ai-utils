@@ -102,6 +102,11 @@ class Vector : public std::vector<T, _Alloc>
   using allocator_type = typename _Base::allocator_type;
   using index_type = _Index;
 
+  // Move constructor from underlaying std::vector.
+  explicit Vector(std::vector<T, _Alloc>&& x) : std::vector<T, _Alloc>(std::move(x)) { }
+  // Move assignment from underlaying std::vector.
+  Vector& operator=(std::vector<T, _Alloc>&& __x) noexcept(_Alloc_traits::_S_nothrow_move()) { return static_cast<Vector&>(_Base::operator=(std::move(__x))); }
+
   Vector()
 #if __cplusplus >= 201103L
       noexcept(std::is_nothrow_default_constructible<_Alloc>::value)
