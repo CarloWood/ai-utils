@@ -39,12 +39,14 @@ void splitN(std::string_view str, char delim, std::array<std::string_view, N>& o
       if (iter == end)
         break;
       if (i == N)
-        THROW_ALERT("Too many tokens in \"[STR]\" (required [N])", AIArgs("[STR]", str)("[N]", N));
+        THROW_ALERT("Too many separator characters ('[DELIM]') in \"[STR]\" (exactly [N] [VERB] required)",
+            AIArgs("[DELIM]", delim)("[STR]", str)("[N]", N - 1)("[VERB]", N == 2 ? "is" : "are"));
       first = iter + 1;
     }
   }
   if (i != N)
-    THROW_ALERT("Not enough tokens in \"[STR]\" (required [N])", AIArgs("[STR]", str)("[N]", N));
+    THROW_ALERT("Not enough separator characters ('[DELIM]') in \"[STR]\" (exactly [N] [VERB] required)",
+        AIArgs("[DELIM]", delim)("[STR]", str)("[N]", N - 1)("[VERB]", N == 2 ? "is" : "are"));
 }
 
 } // namespace utils
