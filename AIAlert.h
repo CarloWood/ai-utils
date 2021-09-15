@@ -234,7 +234,7 @@ class Prefix
     Prefix(std::string str, alert_line_type_nt type) : mStr(std::move(str)), mType(type) { }
 
     /// Return true if the prefix is not empty.
-    operator bool() const { return mType != empty_prefix; }
+    explicit operator bool() const { return mType != empty_prefix; }
     /// Accessor for the type of the prefix.
     alert_line_type_nt type() const { return mType; }
     /// Accessor for the prefix string.
