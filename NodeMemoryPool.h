@@ -50,16 +50,21 @@ struct FreeList;
 // one object at a time; where the size and type of the object are not known until
 // the first allocation.
 //
-// The reason for that is that it is intended to be used with std::allocate_shared.
+// The reason for that is that it is intended to be used with std::allocate_shared or std::list.
 //
 // Usage:
 //
 // utils::NodeMemoryPool pool(64); // Will allocate 64 objects at a time.
 //
 // utils::Allocator<MyObject, utils::NodeMemoryPool> allocator(pool);
-// std::shared_ptr<MyObject> = std::allocate_shared<MyObject>(allocator, ...MyObject constructor arguments...);
+// std::shared_ptr<MyObject> ptr = std::allocate_shared<MyObject>(allocator, ...MyObject constructor arguments...);
 //
-// The Allocator can also be used to allocate objects of different types provided
+// or (typically you shouldn't use the pool for both std::allocate_shared AND std::list,
+// since they will allocate different sizes):
+//
+// std::list<MyObject, decltype(allocator)> my_list([optional other args...,] allocator);
+//
+// The Allocator CAN also be used to allocate objects of different types provided
 // that their sizes are (about) the same. For example, if you want to allocate objects
 // of size 32 and 30 bytes you could do:
 //
@@ -136,6 +141,7 @@ struct Allocator
 template<class Tp, class Mp>
 Tp* Allocator<Tp, Mp>::allocate(std::size_t DEBUG_ONLY(n))
 {
+  // Only use this allocator with std::allocate_shared or std::list.
   ASSERT(n == 1);
   return m_memory_pool.template malloc<Tp>();
 }

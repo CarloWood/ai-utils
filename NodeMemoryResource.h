@@ -43,7 +43,7 @@ namespace utils {
 //
 //   utils::MemoryPagePool mpp(0x8000);                 // Serves chunks of 32 kB.
 //   utils::NodeMemoryResource nmr(mpp);                // Serves chunks of unknown but fixed size (512 bytes in the case of a deque).
-//   DequePoolAllocator<AIStatefulTask*> alloc(nmr);    // Wrapper around a pointer to utils::NodeMemoryResource, providing an allocator interface.
+//   utils::DequeAllocator<AIStatefulTask*> alloc(nmr); // Wrapper around a pointer to utils::NodeMemoryResource, providing an allocator interface.
 //   std::deque<AIStatefulTask*, decltype(alloc)> test_deque(alloc);
 //
 // Note: it is possible to specify a block size upon construction (which obviously must be

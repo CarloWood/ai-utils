@@ -98,7 +98,7 @@ void* NodeMemoryPool::alloc(size_t size)
     m_blocks.push_back(begin);
     m_total_free += m_nchunks;
   }
-  // size must fit.
+  // size must fit. If you use multiple sizes, allocate the largest size first.
   ASSERT(size <= m_size);
   if (AI_UNLIKELY(ptr->m_next.n < m_nchunks && ptr->m_next.ptr))
   {
