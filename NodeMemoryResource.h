@@ -88,6 +88,9 @@ class NodeMemoryResource
       // If this is inside a call to AIStatefulTaskMutex::lock then you probably forgot to create
       // a statefultask::DefaultMemoryPagePool object at the top of main. Go read the documentation
       // at the top of statefultask/DefaultMemoryPagePool.h.
+      //
+      // If this is inside a call to utils::DequeMemoryResource::allocate then you forgot to
+      // construct a utils::DequeMemoryResource::Initialization object at the top of main.
       ASSERT(m_mpp != nullptr);
       m_block_size = block_size;
       Dout(dc::notice, "NodeMemoryResource::m_block_size using [" << m_mpp << "] set to " << block_size << " [" << this << "]");

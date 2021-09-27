@@ -95,6 +95,7 @@ target_sources(utils_ObjLib
   PRIVATE
     "AIAlert.cxx"
     "DelayLoopCalibration.cxx"
+    "DequeMemoryResource.cxx"
     "Dictionary.cxx"
     "FuzzyBool.cxx"
     "GlobalObjectManager.cxx"
@@ -117,6 +118,8 @@ target_sources(utils_ObjLib
     "AIAlert.h"
     "AIRefCount.h"
     "DelayLoopCalibration.h"
+    "DequeAllocator.h"
+    "DequeMemoryResource.h"
     "Dictionary.h"
     "FunctionView.h"
     "FuzzyBool.h"
