@@ -80,10 +80,19 @@ class NodeMemoryResource
   void* allocate(size_t block_size)
   {
     //DoutEntering(dc::notice|continued_cf, "NodeMemoryResource::allocate(" << block_size << ") = ");
-    if (AI_UNLIKELY(m_block_size == 0))
+    size_t stored_block_size = m_block_size.load(std::memory_order_relaxed);
+    if (AI_UNLIKELY(stored_block_size == 0))
     {
-      static std::mutex m;
-      std::lock_guard<std::mutex> guard(m);
+      // No mutex is required here; it is not allowed to have a race condition between
+      // two different block_size's. If different block sizes are used, then the largest
+      // block_size must be used first, as in: the call to allocate(largest_block_size)
+      // MUST already have returned before a call to allocate(smaller_block_size) may
+      // happen. It is the responsibility of the user to make sure this is the case.
+      //
+      // Therefore we can assume here that any race conditions between multiple threads
+      // calling this function while m_block_size is still 0 happen with the same value
+      // of block_size.
+
       // Call NodeMemoryResource::init before using a default constructed NodeMemoryResource.
       // If this is inside a call to AIStatefulTaskMutex::lock then you probably forgot to create
       // a statefultask::DefaultMemoryPagePool object at the top of main. Go read the documentation
@@ -92,18 +101,19 @@ class NodeMemoryResource
       // If this is inside a call to utils::DequeMemoryResource::allocate then you forgot to
       // construct a utils::DequeMemoryResource::Initialization object at the top of main.
       ASSERT(m_mpp != nullptr);
-      m_block_size = block_size;
+      m_block_size.store(block_size, std::memory_order_relaxed);
+      stored_block_size = block_size;
       Dout(dc::notice, "NodeMemoryResource::m_block_size using [" << m_mpp << "] set to " << block_size << " [" << this << "]");
     }
 #ifdef CWDEBUG
     else
-      ASSERT(block_size <= m_block_size);
+      ASSERT(block_size <= stored_block_size);
 #endif
-    void* ptr = m_sss.allocate([this](){
+    void* ptr = m_sss.allocate([this, stored_block_size](){
           void* chunk = m_mpp->allocate();
           if (!chunk)
             return false;
-          m_sss.add_block(chunk, m_mpp->block_size(), m_block_size);
+          m_sss.add_block(chunk, m_mpp->block_size(), stored_block_size);
           return true;
         });
     //Dout(dc::finish, ptr);
@@ -119,7 +129,7 @@ class NodeMemoryResource
  private:
   MemoryPagePool* m_mpp;
   SimpleSegregatedStorage m_sss;
-  size_t m_block_size;
+  std::atomic<size_t> m_block_size;
 };
 
 } // namespace utils
