@@ -76,7 +76,10 @@ class VectorIndex
 template<typename Category>
 std::ostream& operator<<(std::ostream& os, VectorIndex<Category> const& index)
 {
-  os << '#' << index.m_value;
+  if (index.undefined())
+    os << "<undefined>";
+  else
+    os << '#' << index.m_value;
   return os;
 }
 
