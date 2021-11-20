@@ -27,6 +27,7 @@
 
 #pragma once
 
+#include "itoa.h"
 #include <vector>
 #include <iostream>
 #include "debug.h"
@@ -81,6 +82,20 @@ std::ostream& operator<<(std::ostream& os, VectorIndex<Category> const& index)
   else
     os << '#' << index.m_value;
   return os;
+}
+
+template<typename Category>
+std::string to_string(VectorIndex<Category> const& index)
+{
+  std::string result("#");
+  if (index.undefined())
+    result = "<undefined>";
+  else
+  {
+    std::array<char, 21> buf;                   // 20 = number of chars in decimal of size_t(-1). Plus one for terminating zero.
+    result += itoa(buf, index.get_value());
+  }
+  return result;
 }
 
 template <typename T, typename _Index = VectorIndex<T>, typename _Alloc = std::allocator<T>>
