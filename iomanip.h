@@ -99,7 +99,7 @@ class DataTransfer
 // Usage:
 //
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.h}
-// class MyManipulator : public utils::iomanip::Sticky<2>
+// class MyManipulator : public utils::iomanip::Sticky
 // {
 //  private:
 //   static utils::iomanip::Index s_index;
