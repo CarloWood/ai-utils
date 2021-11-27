@@ -98,7 +98,7 @@ constexpr uint64_t table(uint64_t e00, uint64_t e10, uint64_t e20, uint64_t e30,
 // Hence the value x == y *was* true == false (which is false), but it
 // might or might not have been changed (for example when x OR y changed
 // value). Therefore it should be interpreted as WasFalse. Most notably
-// it cannot be False, because means it is *certainly* false despite
+// it cannot be False, because that means it is *certainly* false despite
 // what other threads have done in the meantime, nor can it be True,
 // nor can it be WasTrue -- because it wasn't.
 //
