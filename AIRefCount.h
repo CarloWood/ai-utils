@@ -203,4 +203,11 @@ class AIRefCount
   // Used when deferred deleting an object.
   void mark_deleted() const { m_count = s_deleted; }
 #endif
+#ifdef CWDEBUG
+  // Purely for debug code. The returned value suffers from race conditions and is not stable.
+  int read_count_racy() const
+  {
+    return m_count.load(std::memory_order_relaxed);
+  }
+#endif
 };
