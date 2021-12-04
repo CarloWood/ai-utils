@@ -27,7 +27,7 @@ SOURCES = \
 	translate.cxx \
 	threading/aithreadid.cxx \
 	threading/Semaphore.cxx \
-	threading/SpinSemaphore.cxx
+	threading/SpinSemaphore.cxx \
 \
 	AIAlert.h \
 	AIRefCount.h \
