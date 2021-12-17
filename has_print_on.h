@@ -25,4 +25,4 @@ template<typename T>
 constexpr bool has_print_on<T, std::void_t<decltype(std::declval<T>().print_on(std::declval<std::ostream&>()))>> = true;
 
 } // namespace
-} // namespace
+} // namespace utils

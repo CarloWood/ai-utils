@@ -31,9 +31,9 @@ class UniqueIDContext
  public:
   UniqueIDContext() = default;
 
-  UniqueID<T> get_id() const
+  UniqueID<T> get_id()
   {
-    return { m_next_id++ };
+    return { {}, m_next_id++ };
   }
 };
 
