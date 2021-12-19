@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Badge.h"
+#include <atomic>
 #include <concepts>
 
 namespace utils {
