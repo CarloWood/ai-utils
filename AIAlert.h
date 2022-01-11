@@ -172,14 +172,14 @@ class AIArgs
     AIArgs() { }
     /// Construct a map with a single replacement.
     // boost::lexical_cast doesn't work when T only has a print_on method.
-    template<typename T, typename std::enable_if<!utils::has_print_on<T const>, int>::type = 0>
+    template<typename T, typename std::enable_if<!utils::has_print_on::has_print_on<T const>, int>::type = 0>
     AIArgs(char const* key, T const& replacement) { mArgs[key] = boost::lexical_cast<std::string>(replacement); }
-    template<typename T, typename std::enable_if<utils::has_print_on<T const>, int>::type = 0>
+    template<typename T, typename std::enable_if<utils::has_print_on::has_print_on<T const>, int>::type = 0>
     AIArgs(char const* key, T const& replacement) { std::ostringstream oss; replacement.print_on(oss); mArgs[key] = oss.str(); }
     /// Add another replacement.
-    template<typename T, typename std::enable_if<!utils::has_print_on<T const>, int>::type = 0>
+    template<typename T, typename std::enable_if<!utils::has_print_on::has_print_on<T const>, int>::type = 0>
     AIArgs& operator()(char const* key, T const& replacement) { mArgs[key] = boost::lexical_cast<std::string>(replacement); return *this; }
-    template<typename T, typename std::enable_if<utils::has_print_on<T const>, int>::type = 0>
+    template<typename T, typename std::enable_if<utils::has_print_on::has_print_on<T const>, int>::type = 0>
     AIArgs& operator()(char const* key, T const& replacement) { std::ostringstream oss; replacement.print_on(oss); mArgs[key] = oss.str(); return *this; }
 
     /// Accessor, returns the underlaying map.

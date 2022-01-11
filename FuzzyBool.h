@@ -27,6 +27,7 @@
 
 #pragma once
 
+#include "has_print_on.h"
 #include "debug.h"
 
 namespace utils {
@@ -172,6 +173,8 @@ static constexpr utils::FuzzyBoolPOD False = { utils::fuzzy_false };            
 } // namespace fuzzy
 
 namespace utils {
+// This class defines a print_on method.
+using has_print_on::operator<<;
 
 class FuzzyBool : public FuzzyBoolPOD
 {

@@ -34,12 +34,15 @@
 #pragma once
 
 #include "utils/Singleton.h"
+#include "utils/has_print_on.h"
 #include <vector>
 #include <csignal>
 #include <iosfwd>
 #include <mutex>
 
 namespace utils {
+// This class defines a print_on method.
+using has_print_on::operator<<;
 
 class Signal : public Singleton<Signal>
 {
