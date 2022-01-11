@@ -61,15 +61,16 @@ class VectorIndex
   void set_to_undefined() { m_value = -1; }
   bool undefined() const { return m_value == (std::size_t)-1; }
 
-  bool operator==(VectorIndex const& index) const { return m_value == index.m_value; }
-  bool operator!=(VectorIndex const& index) const { return m_value != index.m_value; }
-  bool operator<(VectorIndex const& index) const { return m_value < index.m_value; }
-  bool operator>(VectorIndex const& index) const { return m_value > index.m_value; }
-  bool operator<=(VectorIndex const& index) const { return m_value <= index.m_value; }
-  bool operator>=(VectorIndex const& index) const { return m_value >= index.m_value; }
+  bool operator==(VectorIndex index) const { return m_value == index.m_value; }
+  bool operator!=(VectorIndex index) const { return m_value != index.m_value; }
+  bool operator<(VectorIndex index) const { return m_value < index.m_value; }
+  bool operator>(VectorIndex index) const { return m_value > index.m_value; }
+  bool operator<=(VectorIndex index) const { return m_value <= index.m_value; }
+  bool operator>=(VectorIndex index) const { return m_value >= index.m_value; }
 
   VectorIndex operator-(int n) const { return VectorIndex{m_value - n}; }
   VectorIndex operator+(int n) const { return VectorIndex{m_value + n}; }
+  VectorIndex operator%(VectorIndex m) const { return VectorIndex{m_value % m.m_value}; }
 
   friend std::ostream& operator<<<>(std::ostream& os, VectorIndex<Category> const& index);
 };
