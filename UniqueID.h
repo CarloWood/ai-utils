@@ -60,7 +60,7 @@ class UniqueIDContext<T>
   T m_next_id;
 
  public:
-  UniqueIDContext() = default;
+  UniqueIDContext(T initial_value) : m_next_id(std::move(initial_value)) { }
 
   UniqueID<T> get_id()
   {
