@@ -40,6 +40,12 @@
 
 #pragma once
 
+#include <type_traits>
+#include <cstdint>
+#include <atomic>
+#include <cstring>
+#include "debug.h"
+
 namespace utils::threading {
 
 // Lock-free ring buffer for trivially copyable objects, to be written and
