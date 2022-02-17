@@ -34,7 +34,7 @@
 #include <map>
 #include <random>
 #include <thread>
-#include <pthread.h>
+#include <sched.h>
 
 #ifdef CWDEBUG
 //#define GNUPLOT
@@ -409,7 +409,7 @@ unsigned int DelayLoopCalibrationBase::peak_detect(double goal
         unsigned int s = std::round(step * sg64);       // The loop size to test.
 
         // Force a context switch in an attempt to decorrelate anomalies in the measured delay between measurements.
-        pthread_yield();        // Note: this might not be needed.
+        sched_yield();          // Note: this might not be needed.
         // Do the actual measurement (or reading from input file / writing to output file).
 #ifdef INPUT_FILE
         double a;
