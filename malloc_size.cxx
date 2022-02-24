@@ -63,7 +63,7 @@ size_t malloc_size(size_t min_size)
 }
 
 // Return the largest possible size less than or equal max_size
-// such that malloc(size) == size. If this is not possible because
+// such that malloc_size(size) == size. If this is not possible because
 // max_size < minimum_heap_size - config::malloc_overhead_c, then return 0.
 size_t max_malloc_size(size_t max_size)
 {
