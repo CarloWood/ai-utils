@@ -5,7 +5,7 @@
 namespace utils {
 
 // To add more pointers to hash h1.
-inline uint64_t pointer_hash_combine(uint64_t h1, void* p2)
+inline uint64_t pointer_hash_combine(uint64_t h1, void const* p2)
 {
   // Magic numbers.
   static constexpr uint64_t m1 = 0x73b7b5e0bd014e8d;    // uint64_t h = 1; for (int n = 0; n < 5; ++n) h ^= h * 0x200000008000208c; cout << hex << h;
@@ -22,7 +22,7 @@ inline uint64_t pointer_hash_combine(uint64_t h1, void* p2)
 }
 
 // This function is suited to calculate a 64-bit hash from two 64-bit pointers to (heap allocated) memory.
-inline uint64_t pointer_hash(void* p1, void* p2)
+inline uint64_t pointer_hash(void const* p1, void const* p2)
 {
   return pointer_hash_combine(reinterpret_cast<uint64_t>(p1), p2);
 }
