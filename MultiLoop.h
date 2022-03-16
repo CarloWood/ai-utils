@@ -29,6 +29,30 @@
 
 #include <cstring>
 #include <cassert>
+#include <vector>
+
+struct MultiLoopState
+{
+  std::vector<int> M_counters;
+  int           M_current_loop;
+  bool          M_continued;
+
+  // Uninitialized default construction. Call initialize or set_state before use.
+  MultiLoopState() = default;
+
+  void initialize(unsigned int n, int b)
+  {
+    M_counters.resize(n + 1);
+    M_current_loop = n > 0 ? 1 : 0;
+    M_continued = false;
+    M_counters[M_current_loop] = b;
+  }
+
+  void set_state(MultiLoopState const& initial_state)
+  {
+    *this = initial_state;
+  }
+};
 
 // Implements a variable number of loops inside eachother.
 // Usage:
@@ -96,21 +120,23 @@
 //   }
 // }
 
-class MultiLoop
+class MultiLoop : private MultiLoopState
 {
  public:
+  // Uninitialized MultiLoop object.
+  MultiLoop() = default;
+
   // Construct a MultiLoop of n loops.
-  explicit MultiLoop(unsigned int n, int b = 0) :
-    M_loops(n),
-    M_counters(new int[n + 1]),
-    M_current_loop(n > 0 ? 1 : 0),
-    M_continued(false)
-    {
-      M_counters[M_current_loop] = b;
-    }
+  explicit MultiLoop(unsigned int n, int b = 0) { initialize(n, b); }
 
   // Destructor.
-  ~MultiLoop() { delete [] M_counters; }
+  ~MultiLoop() = default;
+
+  // Accessor for the internal state of the MultiLoop.
+  MultiLoopState const& state() const { return *this; }
+
+  // (Re)initialize MultiLoop with internal state.
+  MultiLoop& operator=(MultiLoopState const& internal_state) { set_state(internal_state); return *this; }
 
   // Return the current loop number (0 ... n-1).
   unsigned int operator*() const { return M_current_loop - 1; }
@@ -141,22 +167,16 @@ class MultiLoop
   bool finished() const { return M_current_loop == 0; }
 
   // Return true when we are in the inner loop.
-  bool inner_loop() const { return M_current_loop == (int)M_loops; }
+  bool inner_loop() const { return M_current_loop == (int)M_counters.size() - 1; }
 
   // Return true when we're at the end of a loop (but not the inner loop).
   int end_of_loop() const { return M_continued ? -1 : M_current_loop - 2; }
-
- private:
-  unsigned int  M_loops;
-  int*          M_counters;
-  int           M_current_loop;
-  bool          M_continued;
 };
 
 inline void MultiLoop::start_next_loop_at(int b)
 {
   // If we are not in the inner loop, start a next loop.
-  if (M_current_loop < (int)M_loops)
+  if (M_current_loop < (int)M_counters.size() - 1)
   {
     ++M_current_loop;
     M_counters[M_current_loop] = b;
