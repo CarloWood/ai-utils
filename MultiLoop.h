@@ -33,10 +33,12 @@
 
 struct MultiLoopState
 {
+ protected:
   std::vector<int> M_counters;
   int           M_current_loop;
   bool          M_continued;
 
+ public:
   // Uninitialized default construction. Call initialize or set_state before use.
   MultiLoopState() = default;
 
@@ -120,7 +122,7 @@ struct MultiLoopState
 //   }
 // }
 
-class MultiLoop : private MultiLoopState
+class MultiLoop : public MultiLoopState
 {
  public:
   // Uninitialized MultiLoop object.
