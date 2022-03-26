@@ -75,7 +75,8 @@ int Dictionary::find(std::u8string_view glyph) const
 // followed by two hexidecimal characters for each code point of
 // the glyph.
 //
-// Regardless of what is in `from`, each '%' will be replaced with "%%".
+// If `from` does not contain the escape character, then each '%' will
+// be replaced with "%%".
 //
 // All glyphs in `to` that are not in `from` are considered illegal
 // and will also be escaped.
