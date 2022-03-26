@@ -1,5 +1,6 @@
 #pragma once
 
+#include "debug.h"
 #include <iosfwd>
 
 namespace utils {
