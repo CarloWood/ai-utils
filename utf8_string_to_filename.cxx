@@ -119,7 +119,7 @@ std::filesystem::path utf8_string_to_filename(std::u8string const& str, std::u8s
     if (illegal_dictionary.find(glyph) != -1 ||
         // If an input glyph is not in the from_dictionary (aka, it wasn't just translated) but
         // it is in the to_dictionary - then also escape it. This is necessary to make sure that
-        // each unique input str results in a unique filename (and consequently is reversable).
+        // each unique input str results in a unique filename (and consequently is reversible).
         (from_index == -1 && to_dictionary.find(glyph) != -1))
     {
       // Escape illegal glyphs.
