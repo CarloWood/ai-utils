@@ -94,7 +94,7 @@ std::filesystem::path utf8_string_to_filename(std::u8string const& str, std::u8s
   illegal_dictionary.add({ &escape, 1 });
 
   // For each `from` entry there must exist one `to` entry.
-  ASSERT(from_dictionary.size() <= to_dictionary.size());
+  ASSERT(from_dictionary.size() == to_dictionary.size());
 
   std::filesystem::path filename;
 
@@ -104,32 +104,33 @@ std::filesystem::path utf8_string_to_filename(std::u8string const& str, std::u8s
   {
     glen = utf8_glyph_length(gp);
     std::u8string_view glyph(gp, glen);
-    if (*gp == escape)
-      filename += escape;
-    else
+    // Perform translation.
+    int from_index = from_dictionary.find(glyph);
+    if (from_index != -1)
+      glyph = to_dictionary[from_index];
+    else if (*gp == escape)
     {
-      // Perform translation.
-      int from_index = from_dictionary.find(glyph);
-      if (from_index != -1)
-        glyph = to_dictionary[from_index];
-      // What is in illegal is *always* illegal - even when it is the result of a translation.
-      if (illegal_dictionary.find(glyph) != -1 ||
-          // If an input glyph is not in the from_dictionary (aka, it wasn't just translated) but
-          // it is in the to_dictionary - then also escape it. This is necessary to make sure that
-          // each unique input str results in a unique filename (and consequently is reversable).
-          (from_index == -1 && to_dictionary.find(glyph) != -1))
+      filename += escape;
+      filename += escape;
+      continue;
+    }
+    // What is in illegal is *always* illegal - even when it is the result of a translation.
+    if (illegal_dictionary.find(glyph) != -1 ||
+        // If an input glyph is not in the from_dictionary (aka, it wasn't just translated) but
+        // it is in the to_dictionary - then also escape it. This is necessary to make sure that
+        // each unique input str results in a unique filename (and consequently is reversable).
+        (from_index == -1 && to_dictionary.find(glyph) != -1))
+    {
+      // Escape illegal glyphs.
+      // Always escape the original input (not a possible translation), otherwise
+      // we can't know if what the input was when decoding: the input could have been
+      // translated first or not.
+      for (int j = 0; j < glen; ++j)
       {
-        // Escape illegal glyphs.
-        // Always escape the original input (not a possible translation), otherwise
-        // we can't know if what the input was when decoding: the input could have been
-        // translated first or not.
-        for (int j = 0; j < glen; ++j)
-        {
-          filename += escape;
-          filename += to_hex_string(gp[j]);
-        }
-        continue;
+        filename += escape;
+        filename += to_hex_string(gp[j]);
       }
+      continue;
     }
     // Append the glyph to the filename.
     filename += glyph;
