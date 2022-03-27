@@ -110,8 +110,8 @@ target_sources(utils_ObjLib
     "malloc_size.cxx"
     "print_using.cxx"
     "translate.cxx"
+    "u8string_to_filename.cxx"
     "utf8_glyph_length.cxx"
-    "utf8_string_to_filename.cxx"
 
     "threading/aithreadid.cxx"
     "threading/Semaphore.cxx"
@@ -150,9 +150,9 @@ target_sources(utils_ObjLib
     "malloc_size.h"
     "print_using.h"
     "translate.h"
+    "u8string_to_filename.h"
     "ulong_to_base.h"
     "utf8_glyph_length.h"
-    "utf8_string_to_filename.h"
 
     "threading/FIFOBuffer.h"
     "threading/Futex.h"

@@ -1,5 +1,5 @@
 #include "sys.h"
-#include "utf8_string_to_filename.h"
+#include "u8string_to_filename.h"
 #include "utf8_glyph_length.h"
 #include "debug.h"
 #include <vector>
@@ -69,7 +69,7 @@ int Dictionary::find(std::u8string_view glyph) const
 } // namespace utils::detail
 
 // Copy str to the returned filename, replacing every occurance of
-// the utf8 glyphs in `from` with the corresponding one in `to`.
+// the UTF8 glyphs in `from` with the corresponding one in `to`.
 //
 // All glyphs in `illegal` will be escaped with a percentage sign (%)
 // followed by two hexidecimal characters for each code point of
@@ -81,7 +81,7 @@ int Dictionary::find(std::u8string_view glyph) const
 // All glyphs in `to` that are not in `from` are considered illegal
 // and will also be escaped.
 //
-std::filesystem::path utf8_string_to_filename(std::u8string const& str, std::u8string const& illegal, std::u8string const& from, std::u8string const& to)
+std::filesystem::path u8string_to_filename(std::u8string const& str, std::u8string const& illegal, std::u8string const& from, std::u8string const& to)
 {
   using namespace detail::us2f;
 
@@ -140,7 +140,7 @@ std::filesystem::path utf8_string_to_filename(std::u8string const& str, std::u8s
   return filename;
 }
 
-std::u8string utf8_filename_to_string(std::filesystem::path const& filename, std::u8string const& from, std::u8string const& to)
+std::u8string filename_to_u8string(std::filesystem::path const& filename, std::u8string const& from, std::u8string const& to)
 {
   using namespace detail::us2f;
 
