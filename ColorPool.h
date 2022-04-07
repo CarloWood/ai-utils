@@ -29,6 +29,8 @@
 
 #include "log2.h"
 #include <cstdint>
+#include <array>
+#include <type_traits>
 
 // class ColorPool
 //
@@ -37,58 +39,131 @@
 //
 // Usage:
 //
-// utils::ColorPool<6> cp;      // Only return values in the range [0, 6>.
+// utils::ColorPool<24> cp;     // Only return values in the range [0, 24>.
 //
 // int color = cp.get_color();  // Returns a color that hasn't been used yet, or
 //                              // that hasn't been used for the longest time.
 // cp.use_color(color);         // Actually use the color.
 //
-// get_color() will keep returning the same color of course, until you use it.
-// use_color may be called for any color in the range [0, 6> as many times as
-// you want; it keeps automatically track of which color hasn't been used for
-// the longest time, which then will be returned by get_color().
+// use_color(color) may be called for any color in the range [0, 24> as many times
+// as you want; it keeps automatically track of when a color was used last.
+// get_color() will return the color that wasn't use for the longest time.
+// Note that get_color() will keep returning the same color until you use it.
 
 namespace utils {
-
-namespace cs {
-static constexpr uint64_t one = 1;
-static constexpr uint64_t ones = 0x0101010101010101ULL;
-static constexpr uint64_t fake_history = 0x0102040810204080ULL;
-static constexpr uint64_t color2mask(int color) { return one << color; }
-} // namespace cs
 
 template<int number_of_colors>
 class ColorPool
 {
-  static_assert(0 < number_of_colors && number_of_colors <= 8, "number_of_colors must be in the range [1, 8].");
+ public:
+  static_assert(0 < number_of_colors && number_of_colors <= 256, "number_of_colors must be in the range [1, 256].");
 
- private:
-  uint64_t history;
+  static constexpr int bits = ceil_log2(static_cast<unsigned int>(number_of_colors));
+  using indexpair_type = typename std::conditional<bits <= 4, uint8_t, uint16_t>::type;
+  static constexpr int width = sizeof(indexpair_type) << 2;
+  static constexpr indexpair_type prev_mask = static_cast<indexpair_type>(-(1U << width));      // PREV0000
+  static constexpr indexpair_type next_mask = static_cast<indexpair_type>(~-(1U << width));     // 0000NEXT
+  using index_type = indexpair_type;
+
+  static index_type next(indexpair_type index_pair) { return index_pair & next_mask; }
+  static index_type prev(indexpair_type index_pair) { return index_pair >> width; }
+  static indexpair_type index_to_next(index_type index) { return index; }
+  static indexpair_type index_to_prev(index_type index) { return index << width; }
+  static indexpair_type prev_to_next(indexpair_type index_pair) { return index_pair >> width; }
+  static indexpair_type next_to_prev(indexpair_type index_pair) { return index_pair << width; }
+  static indexpair_type combine(index_type prev, index_type next) { return (prev << width) | next; }
+
+// private:
+  alignas(config::cacheline_size_c) std::array<indexpair_type, number_of_colors> history;
+  int m_next_color{};
 
  public:
   void use_color(int color);
-  int get_color() const;
+  int get_color() const { return m_next_color; }
 
-  ColorPool() : history(cs::fake_history >> 8 * (8 - number_of_colors)) { }
+  int get_and_use_color()
+  {
+    int nc = m_next_color;
+    m_next_color = next(history[nc]);
+    return nc;
+  }
+
+  ColorPool();
 };
+
+template<int number_of_colors>
+ColorPool<number_of_colors>::ColorPool()
+{
+  indexpair_type last_pair = combine(number_of_colors - 2, 0);
+  for (index_type i = 0; i < history.size(); ++i)
+    last_pair = history[i] =
+      combine((prev(last_pair) + 1) % number_of_colors,
+              (next(last_pair) + 1) % number_of_colors);
+}
 
 template<int number_of_colors>
 void ColorPool<number_of_colors>::use_color(int color)
 {
-  uint64_t where = cs::ones << color;
-  uint64_t color_in_history = history & where;
-  uint64_t rotate_mask = color_in_history - 1;
-  uint64_t needs_rotation = history & rotate_mask;
-  rotate_mask |= color_in_history;
-  history &= ~rotate_mask;
-  history |= needs_rotation << 8;
-  history |= cs::color2mask(color);
-}
+  if (color == m_next_color)
+  {
+    m_next_color = next(history[m_next_color]);
+    return;
+  }
 
-template<int number_of_colors>
-int ColorPool<number_of_colors>::get_color() const
-{
-  return log2(history >> (8 * (number_of_colors - 1)));
+  // We have the following in the history:
+  //
+  // index   prev/next
+  //    pi:    xx|CC   = hp
+  // color:    pi|ni   = color_PN
+  //    ni:    CC|yy   = hn
+  //
+  // This must become (after removal of 'color'):
+  //
+  //    pi:    xx|ni
+  // color:    pi|ni
+  //    ni:    pi|yy
+  //
+  // Load the history into L1 cache.
+  indexpair_type color_PN = history[color];
+  // Decode it.
+  index_type ni = next(color_PN);
+  // If this is already the last color to use, then we don't need to do anything.
+  if (ni == m_next_color)
+    return;
+  index_type pi = prev(color_PN);
+  // Prepare the bits that we need to write to remove this node from the list.
+  indexpair_type  prev_0N = index_to_next(ni);  // 00|ni
+  indexpair_type  next_P0 = index_to_prev(pi);  // pi|00
+  // Read the other history values that we need.
+  indexpair_type hp = history[pi];
+  indexpair_type hn = history[ni];
+  // Actually remove the color node:
+  history[pi] = (hp & prev_mask) | prev_0N;     // xx|ni
+  history[ni] = (hn & next_mask) | next_P0;     // pi|yy
+
+  // Furthermore, we have the following in the history (where nc = m_next_color):
+  //
+  // index   prev/next
+  //    pi:    xx|nc   = hp
+  //    nc:    pi|yy   = hn
+  //
+  // which has to become (after insertion of 'color'):
+  //
+  //    pi:    xx|CC
+  // color:    pi|nc
+  //    nc:    CC|yy
+  //
+  // Read the remaining history values that we need:
+  hn = history[m_next_color];
+  pi = prev(hn);
+  hp = history[pi];
+  // Prepare the bits that we need to write to remove this node from the list.
+  prev_0N = index_to_next(color);  // 00|CC
+  next_P0 = index_to_prev(color);  // CC|00
+  // Actually insert the color node:
+  history[m_next_color] = (hn & next_mask) | next_P0;
+  history[pi] = (hp & prev_mask) | prev_0N;
+  history[color] = combine(pi, m_next_color);
 }
 
 } // namespace utils
