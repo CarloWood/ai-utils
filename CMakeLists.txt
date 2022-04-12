@@ -103,6 +103,7 @@ target_sources(utils_ObjLib
     "NodeMemoryPool.cxx"
     "Register.cxx"
     "Signals.cxx"
+    "UltraHash.cxx"
 
     "debug_ostream_operators.cxx"
     "double_to_str_precision.cxx"
@@ -135,6 +136,7 @@ target_sources(utils_ObjLib
     "Signals.h"
     "SimpleSegregatedStorage.h"
     "Singleton.h"
+    "UltraHash.h"
 
     "apply_function.h"
     "at_scope_end.h"
