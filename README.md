@@ -9,8 +9,11 @@ providing C++ utilities for larger projects, including:
 * ``AISignals`` : C++ wrapper around POSIX signals.
 * ``Array`` / ``Vector`` : A wrapper around ``std::array`` / ``std::vector`` that only allow a specific type as index.
 * ``AtomicFuzzyBool`` / ``FuzzyBool`` : Fuzzy booleans; great for conditions that are subject to races in a multi-threaded application.
+* ``Badge`` : No need to make a class a friend in order to access ONE member function! Just give it access to that one member function.
 * ``BitSet<T>`` : A wrapper around unsigned integral types T that allows fast bit-level manipulation, including iterating in a loop over all set bits.
+* ``ColorPool` : Allows to hand out a "color" (just a small int, an index), from a pool, that wasn't used for the longest period. Intended to color debug output of threads and used by [threadpool](https://github.com/CarloWood/threadpool).
 * ``DelayLoopCalibration`` : Determine the required loop size for a given lambda to delay the code a given amount of milliseconds.
+* ``DequeAllocator`` : The perfect allocator for your deque's.
 * ``Dictionary`` : Map known words to known enum values, and unknown words to new (different) values.
 * ``FunctionView`` : Cheap, lightweight Callable (like std::function) suitable for passing arbitrary functions as argument.
 * ``Global`` / ``Singleton`` : template classes for global objects.
@@ -19,19 +22,25 @@ providing C++ utilities for larger projects, including:
 * ``itoa`` : Maximum speed integer to string converter.
 * ``MemoryPagePool`` : A memory pool that returns fixed-size memory blocks allocated with ``std::aligned_alloc`` and aligned to ``memory_page_size``.
 * ``MultiLoop`` : A variable number of nested for loops.
-* ``NodeMemoryResource`` : A fixed size memory resource that uses a MemoryPagePool as upstream.
+* ``NodeMemoryPool` : A memory pool intended for fixed size allocations, one object at a time, where the size and type of the object are not known until the first allocation. Intended to be used with ``std::allocate_shared`` or ``std::list``.
+* ``NodeMemoryResource`` : A fixed size memory resource that uses a ``MemoryPagePool`` as upstream.
+* ``pointer_hash`` : The ideal hash function for pointers returned by new or malloc (or any pointer really).
 * ``RandomStream`` : Stream producing random characters.
 * ``Register`` : Register callbacks for global objects, to be called once main() is entered.
 * ``REMOVE_TRAILING_COMMA`` : Macro that removes the last (possibly empty) argument.
 * ``SimpleSegregatedStorage`` : Maintains an unordered free list of blocks (used by NodeMemoryResource and MemoryPagePool).
+* ``Signals`` : Finally get your POSIX signals working the Right Way(tm).
 * ``StreamHasher`` : Calculate a digest of input written using operator<<.
+* ``u8string_to_filename`` : convert any UTF8 string to a still human readable and legal filename - and back if you want.
+* ``UltraHash`` : convert 64-bit keys into a small lookup table index [0..256] in 67 clock cycles.
+* ``UniqueID.h`` : Hands out unique IDs, unique within a given context.
 * ``VTPtr`` : Custom virtual table for classes. The advantage being that the virtual table is dynamic and can be altered during runtime.
 
-* Several utilities like ``almost_equal``, ``at_scope_end``, ``c_escape``, ``clz / ctz / mssb / popcount``,
-  ``constexpr_ceil``, ``cpu_relax``, ``double_to_str_precision``, ``for_each_until``,
+* Several utilities like ``almost_equal``, ``at_scope_end``, ``c_escape``, ``clz / ctz / mssb / parity / popcount``,
+  ``constexpr_ceil``, ``cpu_relax``, ``double_to_str_precision``, ``for_each_until``, ``get_Nth_type``,
   ``is_pointer_like``, ``is_power_of_two``, ``log2``, ``malloc_size``,
   ``nearest_multiple_of_power_of_two``, ``nearest_power_of_two``, ``print_using`` ``reversed``,
-  ``split``, ``ulong_to_base`` and convenience macros.
+  ``split``, ``ulong_to_base``, ``unstable_remove`` and convenience macros.
 
 The root project should be using
 [cmake](https://cmake.org/overview/)
@@ -55,15 +64,15 @@ as option to the generated ``configure`` script.
 
 In order to use ``cmake`` configure as usual, for example to build with 8 cores a debug build:
 
-    <b>mkdir build_debug</b>
-    <b>cmake -S . -B build_debug -DCMAKE_MESSAGE_LOG_LEVEL=DEBUG -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=ON -DEnableDebugGlobal:BOOL=OFF</b>
-    <b>cmake --build build_debug --config Debug --parallel 8</b>
+    mkdir build_debug
+    cmake -S . -B build_debug -DCMAKE_MESSAGE_LOG_LEVEL=DEBUG -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=ON -DEnableDebugGlobal:BOOL=OFF
+    cmake --build build_debug --config Debug --parallel 16
 
 Or to make a release build:
 
-    <b>mkdir build_release</b>
-    <b>cmake -S . -B build_release -DCMAKE_BUILD_TYPE=Release</b>
-    <b>cmake --build build_release --config Release --parallel 8</b>
+    mkdir build_release
+    cmake -S . -B build_release -DCMAKE_BUILD_TYPE=Release
+    cmake --build build_release --config Release --parallel 16
 
 ## Adding the ai-utils submodule to a project
 
@@ -120,7 +129,7 @@ root of the project (directly under the ``project`` line):
 
 ``add_subdirectory`` is not necessary for ``cwds``, ``cwm4`` or ``utils``.
 
-See for example the root [MakeLists.txt](https://github.com/CarloWood/ai-utils-testsuite/blob/master/CMakeLists.txt) of of ai-utils-testsuite.
+See for example the root [MakeLists.txt](https://github.com/CarloWood/ai-utils-testsuite/blob/master/CMakeLists.txt) of ai-utils-testsuite.
 
 Finally, linking is done by adding ``${AICXX_OBJECTS_LIST}`` to
 the appropriate ``target_link_libraries``.
