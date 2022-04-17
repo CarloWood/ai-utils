@@ -65,7 +65,14 @@ using Matrix64x64 = std::array<uint64_t, 64>;
 class UltraHash
 {
  private:
+  // If you REALLY need more than 200 keys, you can increase this a bit - but it can cause initialize() to become exponentially slow
+  // when you near a (high) power of two keys. For example adding 500 keys can easily cause initialize() to take 1 second to complete.
+  // The number of brute forced attempts to squeeze the keys into `number_of_keys / 64 sets` is namely 64^k where k is the number of
+  // tested bits. Aka, 500 / 64 = 7.8, requires 8 sets - which in turn requires 3 test bits; so that we call create_set up till
+  // 64^3 = 262144 times. With less keys the likeliness to find something that works is much higher, even if the number of tested
+  // bits is 3 or even 4. Perhaps I should allow to pass a minimum number of test bits...
   static int constexpr max_test_bits = 2;
+
   std::array<uint64_t, max_test_bits> m_b{};                            // Initialized with zero means: only one set.
   std::array<std::array<uint64_t, 6>, 1 << max_test_bits> m_M_sets;     // Allow up to two to the power m_b.size() sets.
 
@@ -90,17 +97,20 @@ class UltraHash
  public:
   // Returns the size of the lookup table required (values returned by `index` will be less than this value).
   // The returned value will always be less than or equal 2^(6 + max_test_bits) (aka 256).
+  //
+  // This call takes typically a few milliseconds with outlayers up till 50 ms.
   int initialize(std::vector<uint64_t> const& keys);
 
   // Returns a unique integer for each key that can be used as index into a table.
+  //
+  // This call takes rougly 67 clock cycles (18 ns on a typical CPU).
   int index(uint64_t key) const
   {
     int si = set_index(key);
     std::array<uint64_t, 6> const& s = m_M_sets[si];
     int idx = si << 6;
-    int m = 1;
     for (int i = 0; i < 6; ++i)
-      idx |= parity(s[i] ^ key) << i;
+      idx |= parity(s[i] & key) << i;
     return idx;
   }
 };

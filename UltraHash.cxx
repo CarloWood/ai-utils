@@ -1,15 +1,18 @@
 #include "sys.h"
 #include "UltraHash.h"
-#include "log2.h"
 #include "MultiLoop.h"
 #include "AIAlert.h"
 #include "debug.h"
 #include <algorithm>
 #include <bit>
+
+// Define this to enable debugging code (used while developing this utility).
+//#define DEBUG_ULTRAHASH
+
+#ifdef DEBUG_ULTRAHASH
 #include <iostream>
 #include <iomanip>
-
-#include <bitset>
+#endif
 
 namespace utils {
 
@@ -46,10 +49,52 @@ void transpose(std::array<uint64_t, 64>& M_dst, std::array<uint64_t, 64> const& 
   }
 }
 
-uint64_t just_last_bit(uint64_t n)
+#ifdef DEBUG_ULTRAHASH
+template<size_t ROWS>
+void debug_ultrahash_print(std::array<uint64_t, ROWS> const& M, int rows = ROWS, int cols = 64, int highlight_row = -1, int highlight_col = -1)
 {
-  return ((n ^ (n - 1)) >> 1) + 1;
+  // Print row 0 last.
+  for (int row = rows - 1; row >= 0; --row)
+  {
+    std::cout << std::setfill('0') << std::setw(16) << std::hex << M[row] << "  ";
+
+    if (row == rows - 1)
+      std::cout << "⎡";
+    else if (row > 0)
+      std::cout << "⎢";
+    else
+      std::cout << "⎣";
+
+    if (row == highlight_row)
+      std::cout << "\e[41m";
+
+    for (int col = cols - 1; col >= 0; --col)
+    {
+      if (col == highlight_col)
+        std::cout << "\e[41m";
+
+      uint64_t bit = uint64_t{1} << col;
+      if ((M[row] & bit))
+        std::cout << " 1";
+      else
+        std::cout << " 0";
+
+      if (col == highlight_col)
+        std::cout << "\e[0m";
+    }
+
+    if (row == highlight_row)
+      std::cout << "\e[0m";
+
+    if (row == rows - 1)
+      std::cout << " ⎤\n";
+    else if (row > 0)
+      std::cout << " ⎥\n";
+    else
+      std::cout << " ⎦\n";
+  }
 }
+#endif // DEBUG_ULTRAHASH
 
 // This function checks if the n given keys (in K) are linear independent and
 // if they are - fills in Mᵀ with the magic numbers to convert the keys to a
@@ -275,6 +320,11 @@ uint64_t just_last_bit(uint64_t n)
 //
 bool UltraHash::create_set(std::array<uint64_t, 6>& MT, std::array<uint64_t, 64>& K, int n)
 {
+#ifdef DEBUG_ULTRAHASH
+  std::cout << "Entering UltraHash::create_set(MT, K, " << n << ") with K =" << '\n';
+  debug_ultrahash_print(K, n);
+#endif
+
   // Detect if we have a zero key.
   bool has_zero_key = false;
   for (int i = 0; i < n; ++i)
@@ -291,6 +341,21 @@ bool UltraHash::create_set(std::array<uint64_t, 6>& MT, std::array<uint64_t, 64>
     L[i] = i + has_zero_key;
   for (int i = n; i < 64; ++i)
     L[i] = 0;
+
+#ifdef DEBUG_ULTRAHASH
+  if (has_zero_key)
+  {
+    std::cout << "Zero key detected and removed. K is now\n";
+    debug_ultrahash_print(K, n);
+  }
+  std::cout << "L =\n";
+  debug_ultrahash_print(L, n, 6);
+  ASSERT(0 < n && n <= 64);
+
+  // Keep copies.
+  std::array<uint64_t, 64> const K_orig = K;
+  std::array<uint64_t, 64> const L_orig = L;
+#endif
 
   // Swipe K and L.
   //
@@ -339,11 +404,23 @@ bool UltraHash::create_set(std::array<uint64_t, 6>& MT, std::array<uint64_t, 64>
         L[row] ^= L[target_row];
 
         if (K[row] == 0 && L[row] != 0)
+        {
+#ifdef DEBUG_ULTRAHASH
+          std::cout << "Returning false because K'[" << row << "] became zero while L'[" << row << "] is non-zero." << std::endl;
+#endif
           return false;                 // No solution.
+        }
       }
     }
     ++target_row;
   }
+
+#ifdef DEBUG_ULTRAHASH
+  std::cout << "K' in echelon form =" << '\n';
+  debug_ultrahash_print(K, n);
+  std::cout << "L' =\n";
+  debug_ultrahash_print(L, n, 6);
+#endif
 
   // Fill MT with all zeroes.
   MT = {};
@@ -357,6 +434,36 @@ bool UltraHash::create_set(std::array<uint64_t, 6>& MT, std::array<uint64_t, 64>
     for (uint64_t L_col_bit = uint64_t{1} << L_col; L_col_bit; --L_col, L_col_bit >>= 1)
       MT[L_col] ^= (!(L[KL_row] & L_col_bit) != !parity(K[KL_row] & MT[L_col])) ? MT_col_bit : 0;
   }
+
+#ifdef DEBUG_ULTRAHASH
+  std::cout << "MT =" << '\n';
+  debug_ultrahash_print(MT, 6);
+
+  // The last loop worked if we can generate L' from K' and MT:
+  for (int L_row = 0; L_row < n; ++L_row)
+    for (int L_col = 0; L_col < 6; ++L_col)
+    {
+      uint64_t L_col_bit = uint64_t{1} << L_col;
+      bool L_set = L[L_row] & L_col_bit;
+      ASSERT(parity(K[L_row] & MT[L_col]) == L_set);
+    }
+
+  // And the first part of the function worked if this is also true with the original L and K.
+  for (int L_row = 0; L_row < n; ++L_row)
+  {
+    std::cout << std::setfill('0') << std::setw(16) << std::hex << K_orig[L_row] << " --> ";
+    uint64_t val = 0;
+    for (int L_col = 0; L_col < 6; ++L_col)
+    {
+      uint64_t L_col_bit = uint64_t{1} << L_col;
+      bool L_set = L_orig[L_row] & L_col_bit;
+      ASSERT(parity(K_orig[L_row] & MT[L_col]) == L_set);
+      if (L_set)
+        val |= L_col_bit;
+    }
+    std::cout << std::dec << val << '\n';
+  }
+#endif
 
   return true;
 }
