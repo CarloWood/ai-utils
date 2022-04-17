@@ -185,7 +185,7 @@ void debug_ultrahash_print(std::array<uint64_t, ROWS> const& M, int rows = ROWS,
 // right than the previous row (the row below it).
 //
 // This already proves that the keys were linearly independent,
-// because there is no row that has all zeroes in K and not in L.
+// because there is no row that has all zeroes in K.
 // Note that even if there was a row in K with all zeroes, we might
 // still be able to find a solution if also L has all zeroes in that row.
 //
@@ -224,7 +224,7 @@ void debug_ultrahash_print(std::array<uint64_t, ROWS> const& M, int rows = ROWS,
 //                   ⎣ 1 1 ⎦
 //
 // That is, the bit in L at row n and column m is the parity of
-// the XOR between the key at row n in K and column m of M.
+// the bit-wise AND between the key at row n in K and column m of M.
 //
 // Finally we transpose this result to get the output variable MT:
 //
