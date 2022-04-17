@@ -22,7 +22,7 @@ providing C++ utilities for larger projects, including:
 * ``itoa`` : Maximum speed integer to string converter.
 * ``MemoryPagePool`` : A memory pool that returns fixed-size memory blocks allocated with ``std::aligned_alloc`` and aligned to ``memory_page_size``.
 * ``MultiLoop`` : A variable number of nested for loops.
-* ``NodeMemoryPool` : A memory pool intended for fixed size allocations, one object at a time, where the size and type of the object are not known until the first allocation. Intended to be used with ``std::allocate_shared`` or ``std::list``.
+* ``NodeMemoryPool`` : A memory pool intended for fixed size allocations, one object at a time, where the size and type of the object are not known until the first allocation. Intended to be used with ``std::allocate_shared`` or ``std::list``.
 * ``NodeMemoryResource`` : A fixed size memory resource that uses a ``MemoryPagePool`` as upstream.
 * ``pointer_hash`` : The ideal hash function for pointers returned by new or malloc (or any pointer really).
 * ``RandomStream`` : Stream producing random characters.
