@@ -51,9 +51,9 @@ The root project should be using
 
 To clone a project example-project that uses ai-utils simply run:
 
-    <b>git clone --recursive</b> &lt;<i>URL-to-project</i>&gt;<b>/example-project.git</b>
-    <b>cd example-project</b>
-    <b>AUTOGEN_CMAKE_ONLY=1 ./autogen.sh</b>
+    git clone --recursive <URL-to-project>/example-project.git
+    cd example-project
+    AUTOGEN_CMAKE_ONLY=1 ./autogen.sh
 
 The ``--recursive`` is optional because ``./autogen.sh`` will fix
 it when you forgot it.
