@@ -6,8 +6,8 @@
  *
  * @Copyright (C) 2021  Carlo Wood.
  *
- * pub   dsa3072/C155A4EEE4E527A2 2018-08-16 Carlo Wood (CarloWood on freenode) <carlo@alinoe.com>
- * Primary key fingerprint: 8020 B266 6305 EE2F D53E  6827 C155 A4EE E4E5 27A2
+ * pub   dsa3072/C155A4EEE4E527A2 2018-08-16 Carlo Wood (CarloWood on Libera) <carlo@alinoe.com>
+ * fingerprint: 8020 B266 6305 EE2F D53E  6827 C155 A4EE E4E5 27A2
  *
  * This file is part of ai-utils.
  *

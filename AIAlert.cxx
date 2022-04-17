@@ -6,8 +6,8 @@
  *
  * @Copyright (C) 2013, 2016  Carlo Wood.
  *
- * RSA-1024 0x624ACAD5 1997-01-26                    Sign & Encrypt
- * Fingerprint16 = 32 EC A7 B6 AC DB 65 A6  F6 F6 55 DD 1C DC FF 61
+ * pub   dsa3072/C155A4EEE4E527A2 2018-08-16 Carlo Wood (CarloWood on Libera) <carlo@alinoe.com>
+ * fingerprint: 8020 B266 6305 EE2F D53E  6827 C155 A4EE E4E5 27A2
  *
  * This file is part of ai-utils.
  *
@@ -45,6 +45,9 @@
  *
  *   2018/01/02
  *   - Changed license to GPL-3.
+ *
+ *   2022/04/16
+ *   - Updated GPG key with newer version (from 2018).
  */
 
 #include "AIAlert.h"
