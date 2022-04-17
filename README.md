@@ -11,7 +11,7 @@ providing C++ utilities for larger projects, including:
 * ``AtomicFuzzyBool`` / ``FuzzyBool`` : Fuzzy booleans; great for conditions that are subject to races in a multi-threaded application.
 * ``Badge`` : No need to make a class a friend in order to access ONE member function! Just give it access to that one member function.
 * ``BitSet<T>`` : A wrapper around unsigned integral types T that allows fast bit-level manipulation, including iterating in a loop over all set bits.
-* ``ColorPool` : Allows to hand out a "color" (just a small int, an index), from a pool, that wasn't used for the longest period. Intended to color debug output of threads and used by [threadpool](https://github.com/CarloWood/threadpool).
+* ``ColorPool`` : Allows to hand out a "color" (just a small int, an index), from a pool, that wasn't used for the longest period. Intended to color debug output of threads and used by [threadpool](https://github.com/CarloWood/threadpool).
 * ``DelayLoopCalibration`` : Determine the required loop size for a given lambda to delay the code a given amount of milliseconds.
 * ``DequeAllocator`` : The perfect allocator for your deque's.
 * ``Dictionary`` : Map known words to known enum values, and unknown words to new (different) values.
