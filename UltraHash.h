@@ -65,13 +65,15 @@ using Matrix64x64 = std::array<uint64_t, 64>;
 class UltraHash
 {
  private:
-  // If you REALLY need more than 200 keys, you can increase this a bit - but it can cause initialize() to become exponentially slow
-  // when you near a (high) power of two keys. For example adding 500 keys can easily cause initialize() to take 1 second to complete.
-  // The number of brute forced attempts to squeeze the keys into `number_of_keys / 64 sets` is namely 64^k where k is the number of
-  // tested bits. Aka, 500 / 64 = 7.8, requires 8 sets - which in turn requires 3 test bits; so that we call create_set up till
-  // 64^3 = 262144 times. With less keys the likeliness to find something that works is much higher, even if the number of tested
-  // bits is 3 or even 4. Perhaps I should allow to pass a minimum number of test bits...
-  static int constexpr max_test_bits = 2;
+  // If you REALLY need more than 800 keys, you can increase this a bit.
+  // The main disadvantage is that the of UltraHash will double for each
+  // bit; and eventually `initialize` might get very slow.
+  static int constexpr max_test_bits = 4;                               // Return up till 4 + 6 = 10 bits (for use with 1024 sized lookup tables).
+                                                                        // Which can savely be used to store at least up to 800 keys.
+  static size_t constexpr brute_force_limit = 16000;                    // After this number of failed attempts with N bits, go to N+1 bits.
+                                                                        // This avoids `initialize` to become extremely slow, at the cost of
+                                                                        // perhaps requiring a lookup table that is twice as large as strictly
+                                                                        // needed.
 
   std::array<uint64_t, max_test_bits> m_b{};                            // Initialized with zero means: only one set.
   std::array<std::array<uint64_t, 6>, 1 << max_test_bits> m_M_sets;     // Allow up to two to the power m_b.size() sets.

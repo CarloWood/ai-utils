@@ -630,6 +630,7 @@ int UltraHash::initialize(std::vector<uint64_t> const& keys)
     // also for larger number of bits; so it might be worth it.
     //
     // Start `number_of_bits` for loops.
+    size_t attempts = 0;
     for (MultiLoop ml(number_of_bits); !ml.finished(); ml.next_loop())
     {
       // The first loop (when *ml == 0) ends at 63, other loops end just before the current value[] of the previous loop.
@@ -683,7 +684,7 @@ int UltraHash::initialize(std::vector<uint64_t> const& keys)
             }
           if (!found_sets)
           {
-            ml.breaks(0);       // continue
+            ml.breaks(++attempts > brute_force_limit ? number_of_bits : 0);       // give up or continue
             break;
           }
 
@@ -705,7 +706,7 @@ int UltraHash::initialize(std::vector<uint64_t> const& keys)
   }
 
   if (!found_sets)
-    THROW_ALERT("Too many keys ([KEYS])! UltraHash was written for ~100 keys, but should work up till [WORKS] keys.", AIArgs("[KEYS]", number_of_keys)("[WORKS]", 50 * m_M_sets.size()));
+    THROW_ALERT("Too many keys ([KEYS])! UltraHash should work up till [WORKS] keys.", AIArgs("[KEYS]", number_of_keys)("[WORKS]", 50 * m_M_sets.size()));
 
   return 1 << (6 + number_of_bits);
 }
