@@ -35,59 +35,51 @@
 // Ultra fast lookup in small sized container of 64-bit integer values using dynamic perfect hashing.
 // See https://stackoverflow.com/questions/71811886/
 //
-// Measured time of a call to UltraHash::index(uint64_t key): 56 clock cycles
+// Measured time of a call to UltraHash::index(uint64_t key): 70 clock cycles
 // on one core of a AMD Ryzen 9 3950X 16-Core Processor (average over 1000000 calls).
-// Lowest measurement: 38 clock cycles (average over 10 calls).
 //
 // The input is a std::vector<uint64_t> with keys that should be well-hashed (make
 // use of all 64 bits).
 //
-// The only thing that is tried to partition the keys into sets of roughly 62 keys
-// is by one or two bits that are determined in a heuristic way.
+// The only thing that is tried is to partition the keys into sets of roughly 62 keys
+// by one, two, three or four bits that are determined in a heuristic way.
 //
-// Lets say that we have 200 keys, then ceil(200 / 62) = 4 - which can be encoded
-// with two bits. Certain failure happens with more than 4 * 64 = 256 keys.
-// Likely failure happens near 4 * 62 = 248, depending on the keys.
-// The utility is really intended for a maximum of 100 keys are so (something that
-// fits well in two sets of 62, or less than 124 keys). It will work well up till
-// 200 keys though: if something is intended to work with 100 keys, it should work
-// with double that too to give plenty of room.
+// Lets say that we have 800 keys, then ceil(800 / 62) = 13 - which can be encoded
+// with four bits. Certain failure happens with more than 16 * 64 = 1024 keys.
+// Likely failure happens near 16 * 62 = 992, depending on the keys.
+// The utility is really intended for a maximum of 800 keys are so (something that
+// fits well in 16 sets of 62).
 //
-// Let the two heuristically determined bits be m_b[0] and m_b[1] (presented as bit mask)
-// then if a key & m_b[0] is false we continue with Set 0 or 2, depending on the
-// value of key & m_b[1]. If only one key is needed then m_b[1] is set to 0.
+// For example, let the two heuristically determined bits be b0 = 1 << m_shift[0]
+// and b1 = 1 << m_shift[1] then if a key has b0 unset we continue with Set 0 or 2,
+// depending on whether key has b1 set or not.
 //
 
 namespace utils {
 
-using Matrix64x64 = std::array<uint64_t, 64>;
-
 class UltraHash
 {
- private:
+ public:
   // If you REALLY need more than 800 keys, you can increase this a bit.
   // The main disadvantage is that the of UltraHash will double for each
   // bit; and eventually `initialize` might get very slow.
   static int constexpr max_test_bits = 4;                               // Return up till 4 + 6 = 10 bits (for use with 1024 sized lookup tables).
                                                                         // Which can savely be used to store at least up to 800 keys.
-  static size_t constexpr brute_force_limit = 16000;                    // After this number of failed attempts with N bits, go to N+1 bits.
+  static size_t constexpr brute_force_limit = 4096;                     // After this number of failed attempts with N bits, go to N+1 bits.
                                                                         // This avoids `initialize` to become extremely slow, at the cost of
                                                                         // perhaps requiring a lookup table that is twice as large as strictly
                                                                         // needed.
 
-  std::array<uint64_t, max_test_bits> m_b{};                            // Initialized with zero means: only one set.
-  std::array<std::array<uint64_t, 6>, 1 << max_test_bits> m_M_sets;     // Allow up to two to the power m_b.size() sets.
+ private:
+  int m_number_of_bits;
+  std::array<int, max_test_bits> m_shift;
+  std::array<std::array<uint64_t, 6>, 1 << max_test_bits> m_M_sets;     // Allow up to two to the power m_shift.size() sets.
 
-  int set_index(uint64_t key) const                                     // Return the index into m_M_sets for the set to be used for this key.
+  [[gnu::always_inline]] unsigned int set_index(uint64_t key) const     // Return the index into m_M_sets for the set to be used for this key.
   {
-    int si = 0;
-    int s_bit = 1;
-    for (uint64_t mask : m_b)
-    {
-      if ((key & mask))
-        si |= s_bit;
-      s_bit <<= 1;
-    }
+    unsigned int si = 0;
+    for (int i = 0; i < m_number_of_bits; ++i)
+      si |= ((key >> m_shift[i]) & 1) << i;
     return si;
   }
 

@@ -60,6 +60,10 @@ CW_SYS_MALLOC_OVERHEAD()                # Determine the overhead in bytes of an 
 include(CW_SYS_CACHELINE_SIZE)
 CW_SYS_CACHELINE_SIZE()                 # Find the cacheline size.
 
+#include(CW_CHECK_BMI2_SUPPORT)
+#CW_CHECK_BMI2_SUPPORT()                 # Test for bmi2 support.
+#set(GCC_BMI2_COMPILE_FLAGS "-mbmi2")    # Will be added if support was detected, see below.
+
 # Specify utils specific configure file.
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
                ${CMAKE_CURRENT_BINARY_DIR}/config.h
@@ -186,6 +190,18 @@ target_include_directories(utils_ObjLib
 target_compile_features(utils_ObjLib
   PUBLIC cxx_std_17
 )
+
+# Add GCC_BMI2_COMPILE_FLAGS if supported.
+#if (CW_BMI2_SUPPORT)
+#  get_target_property(TMP_COMPILE_FLAGS utils_ObjLib COMPILE_FLAGS)
+#  if (TMP_COMPILE_FLAGS STREQUAL "TMP_COMPILE_FLAGS-NOTFOUND")
+#    set(TMP_COMPILE_FLAGS "")
+#  else ()
+#    set(TMP_COMPILE_FLAGS "${TMP_COMPILE_FLAGS} ")
+#  endif ()
+#  set(TMP_COMPILE_FLAGS "${TMP_COMPILE_FLAGS}${GCC_BMI2_COMPILE_FLAGS}")
+#  set_target_properties(utils_ObjLib PROPERTIES COMPILE_FLAGS ${TMP_COMPILE_FLAGS})
+#endif ()
 
 # Set link dependencies.
 target_link_libraries(utils_ObjLib

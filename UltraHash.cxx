@@ -8,8 +8,10 @@
 
 // Define this to enable debugging code (used while developing this utility).
 //#define DEBUG_ULTRAHASH
+// Define this to enable printing some statistics on how often things are called.
+//#define ULTRAHASH_STATS
 
-#ifdef DEBUG_ULTRAHASH
+#if defined(DEBUG_ULTRAHASH) || defined(ULTRAHASH_STATS)
 #include <iostream>
 #include <iomanip>
 #endif
@@ -473,6 +475,12 @@ int UltraHash::initialize(std::vector<uint64_t> const& keys)
   size_t const number_of_keys = keys.size();
   DoutEntering(dc::notice, "UltraHash::initialize(<vector with " << number_of_keys << " keys>)");
 
+#ifdef ULTRAHASH_STATS
+  int calls_to_create_set = 0;
+  int visited_inner_loop = 0;
+  long calls_to_set_index = 0;
+#endif
+
   // If the keys are well hashed, then statistically we should have
   // on average 62.18 contigous linearly independent keys, with a
   // maximum of 64 of course (the keys live in a 64 dimensional space).
@@ -517,7 +525,7 @@ int UltraHash::initialize(std::vector<uint64_t> const& keys)
   //                                 1  ⎞
   //   1                           1101 ⎟
   //   1                           0101 ⎟
-  //   0...........................1010 ⎟-- The count of keys that have that bits set
+  //   0...........................1010 ⎟-- The count of keys that have that bit set
   //   1...........................1101 ⎟   (the count is vertically with the lsb at the bottom).
   //   1...........................1010 ⎟
   //   1...........................1111 ⎠
@@ -571,14 +579,11 @@ int UltraHash::initialize(std::vector<uint64_t> const& keys)
   std::sort(M.begin(), M.end());
   // This gives a list of bits indices in the lower 32bits of M that we want to
   // try, starting at M[0], getting worse for larger indices of M.
-  // Instead of the bit index, lets store them as a mask; which is also the format
-  // that the bits that we'll use for real, in the end, will be stored in m_b.
-  std::array<uint64_t, 64> bit_mask;
+  // The bit index is stored in m_shift; so that we can right-shift a key to
+  // get the correct bit in the least significant bit.
+  std::array<uint32_t, 64> bit_shift;
   for (int i = 0; i < 64; ++i)
-  {
-    uint32_t bit_index = M[i];
-    bit_mask[i] = uint64_t{1} << bit_index;
-  }
+    bit_shift[i] = M[i];
 
   bool found_sets = false;
   // Try if we can find lineary independent sets using just minimum number of
@@ -590,19 +595,24 @@ int UltraHash::initialize(std::vector<uint64_t> const& keys)
     // Using this many bits, the number of sets we'll have is
     int const number_of_sets = 1 << number_of_bits;
 
+    std::vector<std::array<uint64_t, 64>> key_sets(number_of_sets);
+    std::vector<int> ki(number_of_sets);  // Current key index.
+
+    // For the sake of set_index.
+    m_number_of_bits = number_of_bits;
+
     if (number_of_bits == 0)
     {
       std::array<uint64_t, 64> set0{};
       int sz = keys.size();
       for (int i = 0; i < sz; ++i)
         set0[i] = keys[i];
+#ifdef ULTRAHASH_STATS
+      ++calls_to_create_set;
+#endif
       found_sets = create_set(m_M_sets[0], set0, sz);
       if (found_sets)
-      {
-        for (int b = 0; b < max_test_bits; ++b)
-          m_b[b] = 0;
         break;
-      }
       ++number_of_bits;
       continue;
     }
@@ -638,29 +648,37 @@ int UltraHash::initialize(std::vector<uint64_t> const& keys)
       {
         if (ml.inner_loop())
         {
+#ifdef ULTRAHASH_STATS
+          ++visited_inner_loop;
+#endif
           // Using these bits (bit_mask[ml[0..number_of_bits]]) we're going
           // partition the keys into number_of_sets sets of linearly independent
           // keys, if possible.
-          std::vector<std::array<uint64_t, 64>> key_sets(number_of_sets);
-          std::vector<int> ki(number_of_sets);  // Current key index.
-          // Sanity check.
-          for (int i = 0; i < number_of_sets; ++i)
-            ASSERT(ki[i] == 0);
-          // First put the bit masks in m_b so that we can use set_index().
-          for (int b = 0; b < max_test_bits; ++b)
-            m_b[b] = b < number_of_bits ? bit_mask[ml[b]] : 0;
+          std::memset(ki.data(), 0, sizeof(int) * number_of_sets);
+          //
+          // First put the bit shifts in m_shift so that we can use set_index().
+          for (int b = 0; b < number_of_bits; ++b)
+            m_shift[b] = bit_shift[ml[b]];
           // Next, partition the keys.
           bool too_many_keys_in_one_set = false;
+
+          //========================================================================================
+          // For larger amounts of keys almost all CPU is spent in this code block.
           for (uint64_t key : keys)
           {
-            int si = set_index(key);
+#ifdef ULTRAHASH_STATS
+            ++calls_to_set_index;
+#endif
+            unsigned int si = set_index(key);
             // Paranoia check; should never fail.
-            ASSERT(si < number_of_sets);
+            ASSERT(si < (unsigned int)number_of_sets);
             key_sets[si][ki[si]++] = key;
             // More than 64 keys can never be linear independent so we don't even try.
             if ((too_many_keys_in_one_set = ki[si] > size_t{64}))
               break;
           }
+          //========================================================================================
+
           if (too_many_keys_in_one_set)
           {
             ml.breaks(0);       // continue
@@ -677,11 +695,16 @@ int UltraHash::initialize(std::vector<uint64_t> const& keys)
 
           // Try to create the 6x64 matrices in m_M_sets.
           for (int si = 0; si < number_of_sets; ++si)
+          {
+#ifdef ULTRAHASH_STATS
+            ++calls_to_create_set;
+#endif
             if (!create_set(m_M_sets[si], key_sets[si], ki[si]))
             {
               found_sets = false;
               break;
             }
+          }
           if (!found_sets)
           {
             ml.breaks(++attempts > brute_force_limit ? number_of_bits : 0);       // give up or continue
@@ -707,6 +730,14 @@ int UltraHash::initialize(std::vector<uint64_t> const& keys)
 
   if (!found_sets)
     THROW_ALERT("Too many keys ([KEYS])! UltraHash should work up till [WORKS] keys.", AIArgs("[KEYS]", number_of_keys)("[WORKS]", 50 * m_M_sets.size()));
+
+#ifdef ULTRAHASH_STATS
+#ifdef CWDEBUG
+  Dout(dc::notice, "#calls to create_set: " << calls_to_create_set << "; #inner loop starts: " << visited_inner_loop << "; #calls to set_index: " << calls_to_set_index);
+#else
+  std::cout << "#calls to create_set: " << calls_to_create_set << "; #inner loop starts: " << visited_inner_loop << "; #calls to set_index: " << calls_to_set_index << std::endl;
+#endif
+#endif
 
   return 1 << (6 + number_of_bits);
 }
