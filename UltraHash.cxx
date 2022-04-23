@@ -729,7 +729,18 @@ int UltraHash::initialize(std::vector<uint64_t> const& keys)
   }
 
   if (!found_sets)
+  {
+    if (number_of_keys <= 800)
+    {
+#ifdef CWDEBUG
+      Dout(dc::warning, "While trying to initialize UltraHash with the keys:");
+      for (uint64_t key : keys)
+        Dout(dc::warning, "0x" << std::hex << key);
+#endif
+      THROW_ALERT("Failed to initialize UltraHash. Duplicated keys?");
+    }
     THROW_ALERT("Too many keys ([KEYS])! UltraHash should work up till [WORKS] keys.", AIArgs("[KEYS]", number_of_keys)("[WORKS]", 50 * m_M_sets.size()));
+  }
 
 #ifdef ULTRAHASH_STATS
 #ifdef CWDEBUG

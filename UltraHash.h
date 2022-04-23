@@ -71,7 +71,8 @@ class UltraHash
                                                                         // needed.
 
  private:
-  int m_number_of_bits;
+  int m_number_of_bits{};                                               // Default initialization causes set_index to always return 0 and therefore index()
+                                                                        // to return values less than 64 (for, obviously, non-existent keys).
   std::array<int, max_test_bits> m_shift;
   std::array<std::array<uint64_t, 6>, 1 << max_test_bits> m_M_sets;     // Allow up to two to the power m_shift.size() sets.
 
