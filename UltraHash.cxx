@@ -475,6 +475,13 @@ int UltraHash::initialize(std::vector<uint64_t> const& keys)
   size_t const number_of_keys = keys.size();
   DoutEntering(dc::notice, "UltraHash::initialize(<vector with " << number_of_keys << " keys>)");
 
+  // If there are no keys then we don't need to initialize anything; nevertheless - lets set m_number_of_bits to zero.
+  if (number_of_keys == 0)
+  {
+    m_number_of_bits = 0;
+    return 0;
+  }
+
 #ifdef ULTRAHASH_STATS
   int calls_to_create_set = 0;
   int visited_inner_loop = 0;
