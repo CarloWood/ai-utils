@@ -86,8 +86,9 @@ class Signal : public Singleton<Signal>
 //      Signals signals({SIGINT, SIGABRT}, 3);     // Use signals SIGINT, SIGABRT and three RT signals.
 //
 // Obtain the three reserved RT signal numbers by three calls to utils::Signal::next_rt_signum().
+// See `man 7 signal` for a list of existing SIGnals.
 //
-// All these signals will be ignored by default (SIG_IGN). Signal that are not mentioned
+// All these signals will be ignored by default (SIG_IGN). Signals that are not mentioned
 // or reserved will keep their default handler (for example, by passing SIGINT that signal won't
 // interrupt the program anymore (ie, pressing control-C will stop working), but if you don't
 // pass it then that still works as normal).
