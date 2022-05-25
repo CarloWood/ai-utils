@@ -34,6 +34,7 @@
 #include <map>
 #include <random>
 #include <thread>
+#include <array>
 #include <sched.h>
 
 #ifdef CWDEBUG
