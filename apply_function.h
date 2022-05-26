@@ -36,8 +36,8 @@ auto dispatch_function(Func f, std::tuple<Args...>& args, index_sequence<IDX...>
 template <typename Func, typename ...Args>
 auto apply_function(Func f, std::tuple<Args...>& args) -> typename std::result_of<Func(Args&...)>::type
 {
-  typename index_sequence_generator<sizeof...(Args)>::type indexes;
-  return dispatch_function(f, args, indexes);
+  typename index_sequence_generator<sizeof...(Args)>::type indices;
+  return dispatch_function(f, args, indices);
 }
 
 } // namespace utils
