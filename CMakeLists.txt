@@ -160,6 +160,7 @@ target_sources(utils_ObjLib
     "ulong_to_base.h"
     "utf8_glyph_length.h"
 
+    "threading/aithreadid.h"
     "threading/FIFOBuffer.h"
     "threading/Futex.h"
     "threading/Gate.h"
@@ -167,7 +168,6 @@ target_sources(utils_ObjLib
     "threading/Semaphore.h"
     "threading/SpinSemaphore.h"
     "threading/StartingGate.h"
-    "threading/aithreadid.h"
 )
 
 if (EXISTS "${CMAKE_SOURCE_DIR}/threadsafe")
