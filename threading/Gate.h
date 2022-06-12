@@ -41,7 +41,7 @@ namespace utils::threading
 class Gate : public std::mutex
 {
  private:
-  std::condition_variable_any m_condition_variable;
+  std::condition_variable m_condition_variable;
   bool m_open;
 
  public:
@@ -49,14 +49,14 @@ class Gate : public std::mutex
 
   void wait()
   {
-    std::lock_guard<std::mutex> lock(*this);
-    m_condition_variable.wait(*this, [this](){ return m_open; });
+    std::unique_lock<std::mutex> lk(*this);
+    m_condition_variable.wait(lk, [this](){ return m_open; });
   }
 
   void open()
   {
     {
-      std::lock_guard<std::mutex> lock(*this);
+      std::lock_guard<std::mutex> lk(*this);
       m_open = true;
     }
     m_condition_variable.notify_all();
