@@ -49,6 +49,7 @@ class ArrayIndex
   ArrayIndex() : m_value(-1) { }
   explicit constexpr ArrayIndex(int value) : m_value(value) { }
   constexpr int get_value() const { return m_value; }
+  explicit constexpr operator std::size_t() const { return m_value; }
 
   ArrayIndex& operator++() { ++m_value; return *this; }
   ArrayIndex operator++(int) { ArrayIndex old(m_value); ++m_value; return old; }
@@ -89,11 +90,11 @@ class Array : public std::array<T, N>
   using const_reference = typename _Base::const_reference;
   using index_type = _Index;
 
-  reference operator[](index_type __n) _GLIBCXX_NOEXCEPT { return _Base::operator[](__n.get_value()); }
-  const_reference operator[](index_type __n) const _GLIBCXX_NOEXCEPT { return _Base::operator[](__n.get_value()); }
+  reference operator[](index_type __n) _GLIBCXX_NOEXCEPT { return _Base::operator[](static_cast<size_t>(__n)); }
+  const_reference operator[](index_type __n) const _GLIBCXX_NOEXCEPT { return _Base::operator[](static_cast<size_t>(__n)); }
 
-  reference at(index_type __n) { return _Base::at(__n.get_value()); }
-  const_reference at(index_type __n) const { return _Base::at(__n.get_value()); }
+  reference at(index_type __n) { return _Base::at(static_cast<size_t>(__n)); }
+  const_reference at(index_type __n) const { return _Base::at(static_cast<size_t>(__n)); }
 
   index_type ibegin() const { return index_type(0); }
   index_type iend() const { return index_type((int)N); }
