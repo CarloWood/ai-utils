@@ -85,6 +85,14 @@
 //   intrusive_ptr_release(ptr);        // Cancel initial call to intrusive_ptr_add_ref.
 //                                      // This *might* cause ptr to be destructed immediately.
 
+// Forward declare intrusive_ptr_add_ref and intrusive_ptr_release because
+// that gives a much clearer compile error on g++ when the class used in
+// a boost::intrusive_ptr was only forward declared (and not fully defined)
+// at the point the boost::intrusive_ptr is being used.
+class AIRefCount;
+inline void intrusive_ptr_add_ref(AIRefCount const* ptr);
+inline void intrusive_ptr_release(AIRefCount const* ptr);
+
 class AIRefCount
 {
  private:
