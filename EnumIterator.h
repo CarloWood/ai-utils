@@ -1,5 +1,7 @@
 #pragma once
 
+#include <type_traits>
+
 namespace utils {
 
 // This assumes a contiguous range of enum values, each one larger than the previous value.
