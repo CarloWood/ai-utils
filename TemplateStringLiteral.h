@@ -9,13 +9,13 @@ namespace utils {
 //
 // Usage example:
 //
-// template<TemplateStringLiteral S>
+// template<utils::TemplateStringLiteral S>
 // struct A
 // {
 //   static constexpr auto str = S.chars;
 // };
 //
-// template<TemplateStringLiteral S>
+// template<utils::TemplateStringLiteral S>
 // constexpr void f(A<S>)
 // {
 //   std::cout << "The type passed to f() contains \"" << std::string(S.chars.begin(), S.chars.end()) << "\".\n";
@@ -23,10 +23,10 @@ namespace utils {
 //
 // int main()
 // {
-//   constexpr auto ts1 = TemplateStringLiteral{"Hello"};
-//   constexpr auto ts2 = TemplateStringLiteral{"World"};               
+//   constexpr auto ts1 = utils::TemplateStringLiteral{"Hello"};
+//   constexpr auto ts2 = utils::TemplateStringLiteral{"World"};
 //  
-//   constexpr auto ts12 = Catenate_v<ts1, ts2>;
+//   constexpr auto ts12 = utils::Catenate_v<ts1, ts2>;
 //  
 //   for (char c : ts12.chars)
 //     std::cout << c;
