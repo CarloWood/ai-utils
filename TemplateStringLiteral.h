@@ -43,7 +43,7 @@ struct TemplateStringLiteral
   consteval TemplateStringLiteral(std::array<char, N> str) : chars(str) { }
   consteval TemplateStringLiteral(const char (&literal)[N]) { std::copy_n(literal, N, chars.begin()); }
 
-  consteval operator std::string_view() const { return { chars.begin(), N }; }
+  operator std::string_view() const { return { chars.begin(), N }; }
 };
 
 template<TemplateStringLiteral S1, TemplateStringLiteral S2>
