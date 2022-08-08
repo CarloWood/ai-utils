@@ -25,9 +25,9 @@ namespace utils {
 // {
 //   constexpr auto ts1 = utils::TemplateStringLiteral{"Hello"};
 //   constexpr auto ts2 = utils::TemplateStringLiteral{"World"};
-//  
+//
 //   constexpr auto ts12 = utils::Catenate_v<ts1, ts2>;
-//  
+//
 //   for (char c : ts12.chars)
 //     std::cout << c;
 //   std::cout << '\n';
@@ -42,6 +42,8 @@ struct TemplateStringLiteral
   std::array<char, N> chars;
   consteval TemplateStringLiteral(std::array<char, N> str) : chars(str) { }
   consteval TemplateStringLiteral(const char (&literal)[N]) { std::copy_n(literal, N, chars.begin()); }
+
+  consteval operator std::string_view() const { return { chars.begin(), N }; }
 };
 
 template<TemplateStringLiteral S1, TemplateStringLiteral S2>
