@@ -41,9 +41,11 @@ struct TemplateStringLiteral
 {
   std::array<char, N> chars;
   consteval TemplateStringLiteral(std::array<char, N> str) : chars(str) { }
-  consteval TemplateStringLiteral(const char (&literal)[N]) { std::copy_n(literal, N, chars.begin()); }
+  consteval TemplateStringLiteral(char const (&literal)[N]) { std::copy_n(literal, N, chars.begin()); }
+  consteval TemplateStringLiteral(char const* data, std::size_t len) { std::copy_n(data, len, chars.begin()); }
 
-  operator std::string_view() const { return { chars.begin(), N }; }
+  // A TemplateStringLiteral must always be zero terminated. But when converting to a string_view we do not include that zero.
+  operator std::string_view() const { return { chars.begin(), N - 1 }; }
 };
 
 template<TemplateStringLiteral S1, TemplateStringLiteral S2>

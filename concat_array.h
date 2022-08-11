@@ -6,11 +6,11 @@
 namespace utils {
 namespace detail {
 
-template<typename T, std::size_t M, std::size_t N, std::size_t... MIndexes, std::size_t... NIndexes>
+template<typename T, std::size_t M, int MS, std::size_t N, std::size_t... MIndexes, std::size_t... NIndexes>
 constexpr auto concat_array_impl(std::array<T, M> const& m, std::array<T, N> const& n,
     std::index_sequence<MIndexes...>, std::index_sequence<NIndexes...>)
 {
-  return std::array<T, M + N>{m[MIndexes]..., n[NIndexes]...};
+  return std::array<T, M - MS + N>{m[MIndexes]..., n[NIndexes]...};
 }
 
 } // namespace detail
@@ -26,7 +26,7 @@ constexpr auto concat_array_impl(std::array<T, M> const& m, std::array<T, N> con
 template<typename T, std::size_t M, std::size_t N>
 constexpr auto concat_array(std::array<T, M> const& m, std::array<T, N> const& n)
 {
-  return detail::concat_array_impl(m, n, std::make_index_sequence<M>(), std::make_index_sequence<N>());
+  return detail::concat_array_impl<T, M, 0, N>(m, n, std::make_index_sequence<M>(), std::make_index_sequence<N>());
 }
 
 // Concatenate two zero terminated constexpr arrays of T.
@@ -44,7 +44,7 @@ constexpr auto concat_array(std::array<T, M> const& m, std::array<T, N> const& n
 template<typename T, std::size_t M, std::size_t N>
 constexpr auto zconcat_array(std::array<T, M> const& m, std::array<T, N> const& n)
 {
-  return detail::concat_array_impl(m, n, std::make_index_sequence<M - 1>(), std::make_index_sequence<N>());
+  return detail::concat_array_impl<T, M, 1, N>(m, n, std::make_index_sequence<M - 1>(), std::make_index_sequence<N>());
 }
 
 } // namespace utils
