@@ -2,6 +2,7 @@
 
 #include "concat_array.h"
 #include <algorithm>
+#include <cassert>
 
 namespace utils {
 
@@ -42,10 +43,16 @@ struct TemplateStringLiteral
   std::array<char, N> chars;
   consteval TemplateStringLiteral(std::array<char, N> str) : chars(str) { }
   consteval TemplateStringLiteral(char const (&literal)[N]) { std::copy_n(literal, N, chars.begin()); }
-  consteval TemplateStringLiteral(char const* data, std::size_t len) { std::copy_n(data, len, chars.begin()); }
+  consteval TemplateStringLiteral(char const* data, std::size_t len)
+  {
+    // The second argument is really just to make this constructor non-ambiguous.
+    assert(N == len && "The provided length must be equal to the length passed as template argument");
+    std::copy_n(data, N - 1, chars.begin());
+    chars[N - 1] = 0;
+  }
 
   // A TemplateStringLiteral must always be zero terminated. But when converting to a string_view we do not include that zero.
-  operator std::string_view() const { return { chars.begin(), N - 1 }; }
+  constexpr operator std::string_view() const { return { chars.begin(), N - 1 }; }
 };
 
 template<TemplateStringLiteral S1, TemplateStringLiteral S2>
