@@ -9,8 +9,9 @@ struct VectorCompare
 {
   static constexpr ElementCompare element_compare{};
 
-  template<typename T> requires requires(T e1, T e2) { bool r = element_compare(e1, e2); }
+  template<typename T>
   bool operator()(std::vector<T> const& lhs, std::vector<T> const& rhs) const
+      requires requires(T e1, T e2) { ElementCompare{}(e1, e2); }
   {
     if (lhs.size() != rhs.size())
       return lhs.size() < rhs.size();

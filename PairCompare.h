@@ -32,7 +32,7 @@ struct PairCompare
       return false;
 
     utils::VectorCompare<SecondCompare> vector_compare_second;
-    return vector_compare_second(lhs.second, rhs.second)
+    return vector_compare_second(lhs.second, rhs.second);
   }
 
   template<typename First, typename Second>
@@ -58,7 +58,7 @@ struct PairCompare
       return false;
 
     utils::VectorCompare<SecondCompare> vector_compare_second;
-    return vector_compare_second(lhs.second, rhs.second)
+    return vector_compare_second(lhs.second, rhs.second);
   }
 
   template<typename First, typename Second>
