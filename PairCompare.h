@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VectorCompare.h"
+#include "is_vector.h"
 
 namespace utils {
 
@@ -36,6 +37,49 @@ struct PairCompare
   }
 
   template<typename First, typename Second>
+  bool operator()(std::pair<std::vector<First>, utils::Vector<Second>> const& lhs,
+                  std::pair<std::vector<First>, utils::Vector<Second>> const& rhs) const
+  {
+    utils::VectorCompare<FirstCompare> vector_compare_first;
+    if (vector_compare_first(lhs.first, rhs.first))
+      return true;
+    else if (vector_compare_first(rhs.first, lhs.first))
+      return false;
+
+    utils::VectorCompare<SecondCompare> vector_compare_second;
+    return vector_compare_second(lhs.second, rhs.second);
+  }
+
+  template<typename First, typename Second>
+  bool operator()(std::pair<utils::Vector<First>, std::vector<Second>> const& lhs,
+                  std::pair<utils::Vector<First>, std::vector<Second>> const& rhs) const
+  {
+    utils::VectorCompare<FirstCompare> vector_compare_first;
+    if (vector_compare_first(lhs.first, rhs.first))
+      return true;
+    else if (vector_compare_first(rhs.first, lhs.first))
+      return false;
+
+    utils::VectorCompare<SecondCompare> vector_compare_second;
+    return vector_compare_second(lhs.second, rhs.second);
+  }
+
+  template<typename First, typename Second>
+  bool operator()(std::pair<utils::Vector<First>, utils::Vector<Second>> const& lhs,
+                  std::pair<utils::Vector<First>, utils::Vector<Second>> const& rhs) const
+  {
+    utils::VectorCompare<FirstCompare> vector_compare_first;
+    if (vector_compare_first(lhs.first, rhs.first))
+      return true;
+    else if (vector_compare_first(rhs.first, lhs.first))
+      return false;
+
+    utils::VectorCompare<SecondCompare> vector_compare_second;
+    return vector_compare_second(lhs.second, rhs.second);
+  }
+
+  template<typename First, typename Second>
+  requires (!utils::is_vector_v<Second>)
   bool operator()(std::pair<std::vector<First>, Second> const& lhs,
                   std::pair<std::vector<First>, Second> const& rhs) const
   {
@@ -49,6 +93,21 @@ struct PairCompare
   }
 
   template<typename First, typename Second>
+  requires (!utils::is_vector_v<Second>)
+  bool operator()(std::pair<utils::Vector<First>, Second> const& lhs,
+                  std::pair<utils::Vector<First>, Second> const& rhs) const
+  {
+    utils::VectorCompare<FirstCompare> vector_compare_first;
+    if (vector_compare_first(lhs.first, rhs.first))
+      return true;
+    else if (vector_compare_first(rhs.first, lhs.first))
+      return false;
+
+    return lhs.second < rhs.second;
+  }
+
+  template<typename First, typename Second>
+  requires (!utils::is_vector_v<First>)
   bool operator()(std::pair<First, std::vector<Second>> const& lhs,
                   std::pair<First, std::vector<Second>> const& rhs) const
   {
@@ -62,6 +121,21 @@ struct PairCompare
   }
 
   template<typename First, typename Second>
+  requires (!utils::is_vector_v<First>)
+  bool operator()(std::pair<First, utils::Vector<Second>> const& lhs,
+                  std::pair<First, utils::Vector<Second>> const& rhs) const
+  {
+    if (lhs.first < rhs.first)
+      return true;
+    if (rhs.first < lhs.first)
+      return false;
+
+    utils::VectorCompare<SecondCompare> vector_compare_second;
+    return vector_compare_second(lhs.second, rhs.second);
+  }
+
+  template<typename First, typename Second>
+  requires (!utils::is_vector_v<First> && !utils::is_vector_v<Second>)
   bool operator()(std::pair<First, Second> const& lhs,
                   std::pair<First, Second> const& rhs) const
   {
