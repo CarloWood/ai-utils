@@ -19,7 +19,7 @@ template<typename T>
 class UniqueID
 {
  private:
-  T const m_id;
+  T m_id;
 
  public:
   UniqueID(Badge<UniqueIDContext<T>>, T id) : m_id(std::move(id)) { }
