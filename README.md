@@ -109,7 +109,7 @@ with the content:
         "master"
       CMAKE_ARGS
         "-DEnableLibcwdAlloc:BOOL=OFF -DEnableLibcwdLocation:BOOL=ON"
-   )
+    )
 
 Add the variable ``GITACHE_ROOT`` to your environment,
 for example add to your ``~/.bashrc`` the line:
