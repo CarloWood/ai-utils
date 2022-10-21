@@ -556,7 +556,7 @@ template<typename T>
 BitSet<T> const_iterator<T>::operator*() const
 {
   // Return just the least significant bit.
-  return BitSet<T>{m_mask & -m_mask};
+  return BitSet<T>{static_cast<T>(m_mask & -m_mask)};
 }
 
 } // namespace bitset

@@ -55,11 +55,9 @@ constexpr int _ctz(unsigned long long n)
 // Returns the Count of Trailing Zeroes in n (the index of the least significant set bit).
 // Undefined when n == 0.
 //
-template<typename T>
+template<std::unsigned_integral T>
 constexpr int ctz(T n)
 {
-  static_assert(std::is_same<T, unsigned int>::value || std::is_same<T, unsigned long>::value || std::is_same<T, unsigned long long>::value,
-      "The type of the argument to ctz can only be unsigned int, unsigned long or unsigned long long.");
   return _ctz(n);
 }
 
