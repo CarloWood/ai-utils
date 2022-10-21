@@ -28,22 +28,26 @@
 #pragma once
 
 #include <type_traits>
+#include <concepts>
 
 namespace utils {
 
 namespace {
 
-constexpr int _ctz(unsigned int n)
+template<std::unsigned_integral T>
+constexpr int _ctz(T n)
 {
   return __builtin_ctz(n);
 }
 
-constexpr int _ctz(unsigned long n)
+template<>
+constexpr int _ctz<unsigned long>(unsigned long n)
 {
   return __builtin_ctzl(n);
 }
 
-constexpr int _ctz(unsigned long long n)
+template<>
+constexpr int _ctz<unsigned long long>(unsigned long long n)
 {
   return __builtin_ctzll(n);
 }

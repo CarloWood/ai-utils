@@ -94,9 +94,9 @@ class Index : protected IndexPOD
   // Construct an uninitialized Index.
   Index() { }
   // Copy-constructor.
-  Index(Index const& i1) { m_index = i1.m_index; }
+  constexpr Index(Index const& i1) { m_index = i1.m_index; }
   // Construct a Index from a constant.
-  Index(IndexPOD i1) { m_index = i1.m_index; }
+  constexpr Index(IndexPOD i1) { m_index = i1.m_index; }
 
   // Assignment operators.
 
@@ -107,25 +107,29 @@ class Index : protected IndexPOD
 
   // Comparision operators.
 
-  friend bool operator==(Index const& i1, Index const& i2) { return i1.m_index == i2.m_index; }
-  friend bool operator==(Index const& i1, IndexPOD i2) { return i1.m_index == i2.m_index; }
-  friend bool operator==(IndexPOD i1, Index const& i2) { return i1.m_index == i2.m_index; }
-  friend bool operator!=(Index const& i1, Index const& i2) { return i1.m_index != i2.m_index; }
-  friend bool operator!=(Index const& i1, IndexPOD i2) { return i1.m_index != i2.m_index; }
-  friend bool operator!=(IndexPOD i1, Index const& i2) { return i1.m_index != i2.m_index; }
+  friend auto operator<=>(Index const& i1, Index const& i2) { return i1.m_index <=> i2.m_index; }
+  friend auto operator<=>(Index const& i1, IndexPOD const& i2) { return i1.m_index <=> i2.m_index; }
+  friend auto operator<=>(IndexPOD const& i1, Index const& i2) { return i1.m_index <=> i2.m_index; }
 
-  friend bool operator<(Index const& i1, Index const& i2) { return i1.m_index < i2.m_index; }
-  friend bool operator<(Index const& i1, IndexPOD const& i2) { return i1.m_index < i2.m_index; }
-  friend bool operator<(IndexPOD const& i1, Index const& i2) { return i1.m_index < i2.m_index; }
-  friend bool operator<=(Index const& i1, Index const& i2) { return i1.m_index <= i2.m_index; }
-  friend bool operator<=(Index const& i1, IndexPOD const& i2) { return i1.m_index <= i2.m_index; }
-  friend bool operator<=(IndexPOD const& i1, Index const& i2) { return i1.m_index <= i2.m_index; }
-  friend bool operator>(Index const& i1, Index const& i2) { return i1.m_index > i2.m_index; }
-  friend bool operator>(Index const& i1, IndexPOD const& i2) { return i1.m_index > i2.m_index; }
-  friend bool operator>(IndexPOD const& i1, Index const& i2) { return i1.m_index > i2.m_index; }
-  friend bool operator>=(Index const& i1, Index const& i2) { return i1.m_index >= i2.m_index; }
-  friend bool operator>=(Index const& i1, IndexPOD const& i2) { return i1.m_index >= i2.m_index; }
-  friend bool operator>=(IndexPOD const& i1, Index const& i2) { return i1.m_index >= i2.m_index; }
+  friend constexpr bool operator==(Index const& i1, Index const& i2) { return i1.m_index == i2.m_index; }
+  friend constexpr bool operator==(Index const& i1, IndexPOD i2) { return i1.m_index == i2.m_index; }
+  friend constexpr bool operator==(IndexPOD i1, Index const& i2) { return i1.m_index == i2.m_index; }
+  friend constexpr bool operator!=(Index const& i1, Index const& i2) { return i1.m_index != i2.m_index; }
+  friend constexpr bool operator!=(Index const& i1, IndexPOD i2) { return i1.m_index != i2.m_index; }
+  friend constexpr bool operator!=(IndexPOD i1, Index const& i2) { return i1.m_index != i2.m_index; }
+
+  friend constexpr bool operator<(Index const& i1, Index const& i2) { return i1.m_index < i2.m_index; }
+  friend constexpr bool operator<(Index const& i1, IndexPOD const& i2) { return i1.m_index < i2.m_index; }
+  friend constexpr bool operator<(IndexPOD const& i1, Index const& i2) { return i1.m_index < i2.m_index; }
+  friend constexpr bool operator<=(Index const& i1, Index const& i2) { return i1.m_index <= i2.m_index; }
+  friend constexpr bool operator<=(Index const& i1, IndexPOD const& i2) { return i1.m_index <= i2.m_index; }
+  friend constexpr bool operator<=(IndexPOD const& i1, Index const& i2) { return i1.m_index <= i2.m_index; }
+  friend constexpr bool operator>(Index const& i1, Index const& i2) { return i1.m_index > i2.m_index; }
+  friend constexpr bool operator>(Index const& i1, IndexPOD const& i2) { return i1.m_index > i2.m_index; }
+  friend constexpr bool operator>(IndexPOD const& i1, Index const& i2) { return i1.m_index > i2.m_index; }
+  friend constexpr bool operator>=(Index const& i1, Index const& i2) { return i1.m_index >= i2.m_index; }
+  friend constexpr bool operator>=(Index const& i1, IndexPOD const& i2) { return i1.m_index >= i2.m_index; }
+  friend constexpr bool operator>=(IndexPOD const& i1, Index const& i2) { return i1.m_index >= i2.m_index; }
 
   // Manipulators.
 
@@ -144,7 +148,7 @@ class Index : protected IndexPOD
   // Accessor.
 
   // Return the unlaying integral value.
-  int8_t operator()() const { return m_index; }
+  constexpr int8_t operator()() const { return m_index; }
 
   // Special functions.
 
@@ -329,19 +333,19 @@ class BitSet : protected BitSetPOD<T>
   // Constructors.
 
   // Construct an uninitialized BitSet.
-  BitSet() { }
+  constexpr BitSet() { }
 
   // Copy-constructor.
-  BitSet(BitSet const& m1) : BitSetPOD<T>{m1.m_bitmask} { }
+  constexpr BitSet(BitSet const& m1) : BitSetPOD<T>{m1.m_bitmask} { }
 
   // Construct a BitSet with a single bit set at i1.
-  BitSet(Index const& i1) : BitSetPOD<T>{index2mask(i1)} { }
+  constexpr BitSet(Index const& i1) : BitSetPOD<T>{index2mask(i1)} { }
 
   // Construct a BitSet from a constant.
-  BitSet(BitSetPOD<T> m1) : BitSetPOD<T>{m1.m_bitmask} { }
+  constexpr BitSet(BitSetPOD<T> m1) : BitSetPOD<T>{m1.m_bitmask} { }
 
   // Construct a BitSet from a constant or mask (for internal use only).
-  explicit BitSet(mask_type bitmask) : BitSetPOD<T>{bitmask} { }
+  constexpr explicit BitSet(mask_type bitmask) : BitSetPOD<T>{bitmask} { }
 
   // Assignment operators.
 
@@ -353,12 +357,12 @@ class BitSet : protected BitSetPOD<T>
 
   // Comparison operators.
 
-  friend bool operator==(BitSet const& m1, BitSet const& m2) { return m1.m_bitmask == m2.m_bitmask; }
-  friend bool operator==(BitSet const& m1, BitSetPOD<T> m2) { return m1.m_bitmask == m2.m_bitmask; }
-  friend bool operator==(BitSetPOD<T> m1, BitSet const& m2) { return m1.m_bitmask == m2.m_bitmask; }
-  friend bool operator!=(BitSet const& m1, BitSet const& m2) { return m1.m_bitmask != m2.m_bitmask; }
-  friend bool operator!=(BitSet const& m1, BitSetPOD<T> m2) { return m1.m_bitmask != m2.m_bitmask; }
-  friend bool operator!=(BitSetPOD<T> m1, BitSet const& m2) { return m1.m_bitmask != m2.m_bitmask; }
+  friend constexpr bool operator==(BitSet const& m1, BitSet const& m2) { return m1.m_bitmask == m2.m_bitmask; }
+  friend constexpr bool operator==(BitSet const& m1, BitSetPOD<T> m2) { return m1.m_bitmask == m2.m_bitmask; }
+  friend constexpr bool operator==(BitSetPOD<T> m1, BitSet const& m2) { return m1.m_bitmask == m2.m_bitmask; }
+  friend constexpr bool operator!=(BitSet const& m1, BitSet const& m2) { return m1.m_bitmask != m2.m_bitmask; }
+  friend constexpr bool operator!=(BitSet const& m1, BitSetPOD<T> m2) { return m1.m_bitmask != m2.m_bitmask; }
+  friend constexpr bool operator!=(BitSetPOD<T> m1, BitSet const& m2) { return m1.m_bitmask != m2.m_bitmask; }
 
   // Initialization.
 
@@ -407,67 +411,67 @@ class BitSet : protected BitSetPOD<T>
   void flip(BitSet const& m1) { m_bitmask ^= m1.m_bitmask; }
 
   // Left shift by n positions.
-  BitSet& operator<<=(unsigned int n) { m_bitmask <<= n; return *this; }
-  friend BitSet operator<<(BitSet m1, unsigned int n) { m1 <<= n; return m1; }
+  constexpr BitSet& operator<<=(unsigned int n) { m_bitmask <<= n; return *this; }
+  friend constexpr BitSet operator<<(BitSet m1, unsigned int n) { m1 <<= n; return m1; }
 
   // Right shift by n positions.
-  BitSet& operator>>=(unsigned int n) { m_bitmask >>= n; return *this; }
-  friend BitSet operator>>(BitSet m1, unsigned int n) { m1 >>= n; return m1; }
+  constexpr BitSet& operator>>=(unsigned int n) { m_bitmask >>= n; return *this; }
+  friend constexpr BitSet operator>>(BitSet m1, unsigned int n) { m1 >>= n; return m1; }
 
   // Accessors.
 
   // Test if all, any or none of the bits are set.
-  bool all() const { return !~m_bitmask; }
-  bool any() const { return m_bitmask; }
-  bool none() const { return !m_bitmask; }
-  bool is_single_bit() const { return is_power_of_two(m_bitmask); }
+  constexpr bool all() const { return !~m_bitmask; }
+  constexpr bool any() const { return m_bitmask; }
+  constexpr bool none() const { return !m_bitmask; }
+  constexpr bool is_single_bit() const { return is_power_of_two(m_bitmask); }
 
   // Returns the number of bits that the bitset can hold.
   constexpr std::size_t size() const { return sizeof(T) * 8; }
 
   // Returns the number of bits set to 1.
-  std::size_t count() const { return ::utils::_popcount(m_bitmask); }
+  constexpr std::size_t count() const { return ::utils::_popcount(m_bitmask); }
 
   // Return a mask with just the least significant set bit.
-  BitSet lssb() const { return {m_bitmask & -m_bitmask}; }
+  constexpr BitSet lssb() const { return {m_bitmask & -m_bitmask}; }
 
   // Return a mask with just the most significant set bit.
-  BitSet mssb() const { return {::utils::mssb(m_bitmask)}; }
+  constexpr BitSet mssb() const { return {::utils::mssb(m_bitmask)}; }
 
   // Return the index to the least significant set bit.
   // Returns index_end<T> if the BitSet is zero.
-  Index lssbi() const { return {bitset::IndexPOD{static_cast<int8_t>(m_bitmask ? ctz(m_bitmask) : static_cast<int>(size()))}}; }
+  constexpr Index lssbi() const { return {bitset::IndexPOD{static_cast<int8_t>(m_bitmask ? ctz(m_bitmask) : static_cast<int>(size()))}}; }
 
   // Return the index to the most significant set bit.
   // Returns index_pre_begin if the BitSet is zero.
-  Index mssbi() const { return {bitset::IndexPOD{static_cast<int8_t>(log2(m_bitmask))}}; }
+  constexpr Index mssbi() const { return {bitset::IndexPOD{static_cast<int8_t>(log2(m_bitmask))}}; }
 
   // Test if any bit is set at all.
-  bool test() const { return m_bitmask; }
+  constexpr bool test() const { return m_bitmask; }
 
   // Test if the bit at i1 is set.
-  bool test(Index const& i1) const { return m_bitmask & index2mask(i1); }
+  constexpr bool test(Index const& i1) const { return m_bitmask & index2mask(i1); }
 
   // Test if any bit in bitmask is set.
-  bool test(mask_type bitmask) const { return m_bitmask & bitmask; }
+  constexpr bool test(mask_type bitmask) const { return m_bitmask & bitmask; }
 
   // Test if any bit in m1 is set.
-  bool test(BitSetPOD<T> m1) const { return m_bitmask & m1.m_bitmask; }
+  constexpr bool test(BitSetPOD<T> m1) const { return m_bitmask & m1.m_bitmask; }
 
   // Test if any bit in m1 is set.
-  bool test(BitSet const& m1) const { return m_bitmask & m1.m_bitmask; }
+  constexpr bool test(BitSet const& m1) const { return m_bitmask & m1.m_bitmask; }
 
   // Return the inverse of the BitSet.
-  BitSet operator~() const { return BitSet(~m_bitmask); }
+  constexpr BitSet operator~() const { return BitSet(~m_bitmask); }
 
   // Return the underlaying bitmask.
-  mask_type operator()() const { return m_bitmask; }
+  constexpr mask_type operator()() const { return m_bitmask; }
 
   // Return the underlaying bitmask as unsigned long.
-  unsigned long to_ulong() const { return static_cast<unsigned long>(m_bitmask); }
+  constexpr unsigned long to_ulong() const { return static_cast<unsigned long>(m_bitmask); }
 
   // Return the underlaying bitmask as unsigned long long.
-  unsigned long long to_ullong() const { return static_cast<unsigned long long>(m_bitmask); }
+  constexpr unsigned long long to_ullong() const { return static_cast<unsigned long long>(m_bitmask); }
 
   // Converts the contents of the bitset to a string. Uses zero to represent bits with value of false and one to represent bits with value of true.
   std::string to_string(char zero = '0', char one = '1') const;
@@ -476,32 +480,34 @@ class BitSet : protected BitSetPOD<T>
   BitSet& operator|=(BitSet const& m1) { m_bitmask |= m1.m_bitmask; return *this; }
   BitSet& operator|=(BitSetPOD<T> m1) { m_bitmask |= m1.m_bitmask; return *this; }
   BitSet& operator|=(mask_type bitmask) { m_bitmask |= bitmask; return *this; }
-  friend BitSet operator|(BitSet const& m1, BitSet const& m2) { return BitSet(m1.m_bitmask | m2.m_bitmask); }
-  friend BitSet operator|(BitSet const& m1, BitSetPOD<T> m2) { return BitSet(m1.m_bitmask | m2.m_bitmask); }
-  friend BitSet operator|(BitSetPOD<T> m1, BitSet const& m2) { return BitSet(m1.m_bitmask | m2.m_bitmask); }
+  friend constexpr BitSet operator|(BitSet const& m1, BitSet const& m2) { return BitSet(m1.m_bitmask | m2.m_bitmask); }
+  friend constexpr BitSet operator|(BitSet const& m1, BitSetPOD<T> m2) { return BitSet(m1.m_bitmask | m2.m_bitmask); }
+  friend constexpr BitSet operator|(BitSetPOD<T> m1, BitSet const& m2) { return BitSet(m1.m_bitmask | m2.m_bitmask); }
 
   // Bit-wise AND operators with another BitSet.
   BitSet& operator&=(BitSet const& m1) { m_bitmask &= m1.m_bitmask; return *this; }
   BitSet& operator&=(BitSetPOD<T> m1) { m_bitmask &= m1.m_bitmask; return *this; }
   BitSet& operator&=(mask_type bitmask) { m_bitmask &= bitmask; return *this; }
-  friend BitSet operator&(BitSet m1, BitSet m2) { return BitSet(m1.m_bitmask & m2.m_bitmask); }
-  friend BitSet operator&(BitSet m1, BitSetPOD<T> m2) { return BitSet(m1.m_bitmask & m2.m_bitmask); }
-  friend BitSet operator&(BitSetPOD<T> m1, BitSet m2) { return BitSet(m1.m_bitmask & m2.m_bitmask); }
+  friend constexpr BitSet operator&(BitSet m1, BitSet m2) { return BitSet(m1.m_bitmask & m2.m_bitmask); }
+  friend constexpr BitSet operator&(BitSet m1, BitSetPOD<T> m2) { return BitSet(m1.m_bitmask & m2.m_bitmask); }
+  friend constexpr BitSet operator&(BitSetPOD<T> m1, BitSet m2) { return BitSet(m1.m_bitmask & m2.m_bitmask); }
 
   // Bit-wise XOR operators with another BitSet.
   BitSet& operator^=(BitSet const& m1) { m_bitmask ^= m1.m_bitmask; return *this; }
   BitSet& operator^=(BitSetPOD<T> m1) { m_bitmask ^= m1.m_bitmask; return *this; }
   BitSet& operator^=(mask_type bitmask) { m_bitmask ^= bitmask; return *this; }
-  friend BitSet operator^(BitSet m1, BitSet m2) { return BitSet(m1.m_bitmask ^ m2.m_bitmask); }
-  friend BitSet operator^(BitSet m1, BitSetPOD<T> m2) { return BitSet(m1.m_bitmask ^ m2.m_bitmask); }
-  friend BitSet operator^(BitSetPOD<T> m1, BitSet m2) { return BitSet(m1.m_bitmask ^ m2.m_bitmask); }
+  friend constexpr BitSet operator^(BitSet m1, BitSet m2) { return BitSet(m1.m_bitmask ^ m2.m_bitmask); }
+  friend constexpr BitSet operator^(BitSet m1, BitSetPOD<T> m2) { return BitSet(m1.m_bitmask ^ m2.m_bitmask); }
+  friend constexpr BitSet operator^(BitSetPOD<T> m1, BitSet m2) { return BitSet(m1.m_bitmask ^ m2.m_bitmask); }
 
   // Comparing BitSets as unsigned integrals.
 
-  friend bool operator<(BitSet const& m1, BitSet const& m2) { return m1.m_bitmask < m2.m_bitmask; }
-  friend bool operator<=(BitSet const& m1, BitSet const& m2) { return m1.m_bitmask <= m2.m_bitmask; }
-  friend bool operator>(BitSet const& m1, BitSet const& m2) { return m1.m_bitmask > m2.m_bitmask; }
-  friend bool operator>=(BitSet const& m1, BitSet const& m2) { return m1.m_bitmask >= m2.m_bitmask; }
+  friend auto constexpr operator<=>(BitSet const& m1, BitSet const& m2) { return m1.m_bitmask <=> m2.m_bitmask; }
+
+  friend constexpr bool operator<(BitSet const& m1, BitSet const& m2) { return m1.m_bitmask < m2.m_bitmask; }
+  friend constexpr bool operator<=(BitSet const& m1, BitSet const& m2) { return m1.m_bitmask <= m2.m_bitmask; }
+  friend constexpr bool operator>(BitSet const& m1, BitSet const& m2) { return m1.m_bitmask > m2.m_bitmask; }
+  friend constexpr bool operator>=(BitSet const& m1, BitSet const& m2) { return m1.m_bitmask >= m2.m_bitmask; }
 
   // Arithemetic.
 
