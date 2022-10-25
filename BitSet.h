@@ -34,7 +34,9 @@
 #include "is_power_of_two.h"
 #include <cstdint>
 #include <type_traits>
+#include <compare>
 #include <iosfwd>
+#include <string>
 
 namespace utils {
 
@@ -107,9 +109,9 @@ class Index : protected IndexPOD
 
   // Comparision operators.
 
-  friend auto operator<=>(Index const& i1, Index const& i2) { return i1.m_index <=> i2.m_index; }
-  friend auto operator<=>(Index const& i1, IndexPOD const& i2) { return i1.m_index <=> i2.m_index; }
-  friend auto operator<=>(IndexPOD const& i1, Index const& i2) { return i1.m_index <=> i2.m_index; }
+  friend std::strong_ordering operator<=>(Index const& i1, Index const& i2) { return i1.m_index <=> i2.m_index; }
+  friend std::strong_ordering operator<=>(Index const& i1, IndexPOD const& i2) { return i1.m_index <=> i2.m_index; }
+  friend std::strong_ordering operator<=>(IndexPOD const& i1, Index const& i2) { return i1.m_index <=> i2.m_index; }
 
   friend constexpr bool operator==(Index const& i1, Index const& i2) { return i1.m_index == i2.m_index; }
   friend constexpr bool operator==(Index const& i1, IndexPOD i2) { return i1.m_index == i2.m_index; }
