@@ -105,6 +105,7 @@ target_sources(utils_ObjLib
     "GlobalObjectManager.cxx"
     "MemoryPagePool.cxx"
     "NodeMemoryPool.cxx"
+    "RandomNumber.cxx"
     "Register.cxx"
     "Signals.cxx"
     "UltraHash.cxx"
