@@ -330,7 +330,7 @@ class BitSet : protected BitSetPOD<T>
   // Convert Index to a mask_type.
   [[gnu::always_inline]] static T index2mask(Index i1) { return static_cast<T>(1) << i1(); }
   // Convert a mask_type to the index of its least significant set bit.
-  [[gnu::always_inline]] static Index mask2index(T mask) { return ctz(mask); }
+  [[gnu::always_inline]] static Index mask2index(T mask) { return bitset::IndexPOD{static_cast<int8_t>(ctz(mask))}; }
 
   // Constructors.
 
