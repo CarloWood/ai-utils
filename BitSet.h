@@ -34,7 +34,9 @@
 #include "is_power_of_two.h"
 #include <cstdint>
 #include <type_traits>
+#include <compare>
 #include <iosfwd>
+#include <string>
 
 namespace utils {
 
@@ -107,25 +109,29 @@ class Index : protected IndexPOD
 
   // Comparision operators.
 
-  friend bool operator==(Index const& i1, Index const& i2) { return i1.m_index == i2.m_index; }
-  friend bool operator==(Index const& i1, IndexPOD i2) { return i1.m_index == i2.m_index; }
-  friend bool operator==(IndexPOD i1, Index const& i2) { return i1.m_index == i2.m_index; }
-  friend bool operator!=(Index const& i1, Index const& i2) { return i1.m_index != i2.m_index; }
-  friend bool operator!=(Index const& i1, IndexPOD i2) { return i1.m_index != i2.m_index; }
-  friend bool operator!=(IndexPOD i1, Index const& i2) { return i1.m_index != i2.m_index; }
+  friend std::strong_ordering operator<=>(Index const& i1, Index const& i2) { return i1.m_index <=> i2.m_index; }
+  friend std::strong_ordering operator<=>(Index const& i1, IndexPOD const& i2) { return i1.m_index <=> i2.m_index; }
+  friend std::strong_ordering operator<=>(IndexPOD const& i1, Index const& i2) { return i1.m_index <=> i2.m_index; }
 
-  friend bool operator<(Index const& i1, Index const& i2) { return i1.m_index < i2.m_index; }
-  friend bool operator<(Index const& i1, IndexPOD const& i2) { return i1.m_index < i2.m_index; }
-  friend bool operator<(IndexPOD const& i1, Index const& i2) { return i1.m_index < i2.m_index; }
-  friend bool operator<=(Index const& i1, Index const& i2) { return i1.m_index <= i2.m_index; }
-  friend bool operator<=(Index const& i1, IndexPOD const& i2) { return i1.m_index <= i2.m_index; }
-  friend bool operator<=(IndexPOD const& i1, Index const& i2) { return i1.m_index <= i2.m_index; }
-  friend bool operator>(Index const& i1, Index const& i2) { return i1.m_index > i2.m_index; }
-  friend bool operator>(Index const& i1, IndexPOD const& i2) { return i1.m_index > i2.m_index; }
-  friend bool operator>(IndexPOD const& i1, Index const& i2) { return i1.m_index > i2.m_index; }
-  friend bool operator>=(Index const& i1, Index const& i2) { return i1.m_index >= i2.m_index; }
-  friend bool operator>=(Index const& i1, IndexPOD const& i2) { return i1.m_index >= i2.m_index; }
-  friend bool operator>=(IndexPOD const& i1, Index const& i2) { return i1.m_index >= i2.m_index; }
+  friend constexpr bool operator==(Index const& i1, Index const& i2) { return i1.m_index == i2.m_index; }
+  friend constexpr bool operator==(Index const& i1, IndexPOD i2) { return i1.m_index == i2.m_index; }
+  friend constexpr bool operator==(IndexPOD i1, Index const& i2) { return i1.m_index == i2.m_index; }
+  friend constexpr bool operator!=(Index const& i1, Index const& i2) { return i1.m_index != i2.m_index; }
+  friend constexpr bool operator!=(Index const& i1, IndexPOD i2) { return i1.m_index != i2.m_index; }
+  friend constexpr bool operator!=(IndexPOD i1, Index const& i2) { return i1.m_index != i2.m_index; }
+
+  friend constexpr bool operator<(Index const& i1, Index const& i2) { return i1.m_index < i2.m_index; }
+  friend constexpr bool operator<(Index const& i1, IndexPOD const& i2) { return i1.m_index < i2.m_index; }
+  friend constexpr bool operator<(IndexPOD const& i1, Index const& i2) { return i1.m_index < i2.m_index; }
+  friend constexpr bool operator<=(Index const& i1, Index const& i2) { return i1.m_index <= i2.m_index; }
+  friend constexpr bool operator<=(Index const& i1, IndexPOD const& i2) { return i1.m_index <= i2.m_index; }
+  friend constexpr bool operator<=(IndexPOD const& i1, Index const& i2) { return i1.m_index <= i2.m_index; }
+  friend constexpr bool operator>(Index const& i1, Index const& i2) { return i1.m_index > i2.m_index; }
+  friend constexpr bool operator>(Index const& i1, IndexPOD const& i2) { return i1.m_index > i2.m_index; }
+  friend constexpr bool operator>(IndexPOD const& i1, Index const& i2) { return i1.m_index > i2.m_index; }
+  friend constexpr bool operator>=(Index const& i1, Index const& i2) { return i1.m_index >= i2.m_index; }
+  friend constexpr bool operator>=(Index const& i1, IndexPOD const& i2) { return i1.m_index >= i2.m_index; }
+  friend constexpr bool operator>=(IndexPOD const& i1, Index const& i2) { return i1.m_index >= i2.m_index; }
 
   // Manipulators.
 
@@ -324,21 +330,21 @@ class BitSet : protected BitSetPOD<T>
   // Convert Index to a mask_type.
   [[gnu::always_inline]] static T index2mask(Index i1) { return static_cast<T>(1) << i1(); }
   // Convert a mask_type to the index of its least significant set bit.
-  [[gnu::always_inline]] static Index mask2index(T mask) { return ctz(mask); }
+  [[gnu::always_inline]] static Index mask2index(T mask) { return bitset::IndexPOD{static_cast<int8_t>(ctz(mask))}; }
 
   // Constructors.
 
   // Construct an uninitialized BitSet.
-  BitSet() = default;
+  constexpr BitSet() = default;
 
   // Copy-constructor.
   constexpr BitSet(BitSet const& m1) : BitSetPOD<T>{m1.m_bitmask} { }
 
   // Construct a BitSet with a single bit set at i1.
-  BitSet(Index const& i1) : BitSetPOD<T>{index2mask(i1)} { }
+  constexpr BitSet(Index const& i1) : BitSetPOD<T>{index2mask(i1)} { }
 
   // Construct a BitSet from a constant.
-  BitSet(BitSetPOD<T> m1) : BitSetPOD<T>{m1.m_bitmask} { }
+  constexpr BitSet(BitSetPOD<T> m1) : BitSetPOD<T>{m1.m_bitmask} { }
 
   // Construct a BitSet from a constant or mask (for internal use only).
   constexpr explicit BitSet(mask_type bitmask) : BitSetPOD<T>{bitmask} { }
@@ -407,11 +413,11 @@ class BitSet : protected BitSetPOD<T>
   void flip(BitSet const& m1) { m_bitmask ^= m1.m_bitmask; }
 
   // Left shift by n positions.
-  BitSet& operator<<=(unsigned int n) { m_bitmask <<= n; return *this; }
+  constexpr BitSet& operator<<=(unsigned int n) { m_bitmask <<= n; return *this; }
   friend constexpr BitSet operator<<(BitSet m1, unsigned int n) { m1 <<= n; return m1; }
 
   // Right shift by n positions.
-  BitSet& operator>>=(unsigned int n) { m_bitmask >>= n; return *this; }
+  constexpr BitSet& operator>>=(unsigned int n) { m_bitmask >>= n; return *this; }
   friend constexpr BitSet operator>>(BitSet m1, unsigned int n) { m1 >>= n; return m1; }
 
   // Accessors.
@@ -498,11 +504,12 @@ class BitSet : protected BitSetPOD<T>
 
   // Comparing BitSets as unsigned integrals.
 
+  friend auto constexpr operator<=>(BitSet const& m1, BitSet const& m2) { return m1.m_bitmask <=> m2.m_bitmask; }
+
   friend constexpr bool operator<(BitSet const& m1, BitSet const& m2) { return m1.m_bitmask < m2.m_bitmask; }
   friend constexpr bool operator<=(BitSet const& m1, BitSet const& m2) { return m1.m_bitmask <= m2.m_bitmask; }
   friend constexpr bool operator>(BitSet const& m1, BitSet const& m2) { return m1.m_bitmask > m2.m_bitmask; }
   friend constexpr bool operator>=(BitSet const& m1, BitSet const& m2) { return m1.m_bitmask >= m2.m_bitmask; }
-  friend constexpr auto operator<=>(BitSet const& m1, BitSet const& m2) { return m1.m_bitmask <=> m2.m_bitmask; }
 
   // Arithemetic.
 
@@ -557,7 +564,7 @@ template<typename T>
 BitSet<T> const_iterator<T>::operator*() const
 {
   // Return just the least significant bit.
-  return BitSet<T>{m_mask & -m_mask};
+  return BitSet<T>{static_cast<T>(m_mask & -m_mask)};
 }
 
 } // namespace bitset

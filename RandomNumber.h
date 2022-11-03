@@ -2,9 +2,9 @@
  * ai-utils -- C++ Core utilities
  *
  * @file
- * @brief Definition of ctz.
+ * @brief Definition of class RandomStreamBuf and RandomStream.
  *
- * @Copyright (C) 2019  Carlo Wood.
+ * @Copyright (C) 2022  Carlo Wood.
  *
  * pub   dsa3072/C155A4EEE4E527A2 2018-08-16 Carlo Wood (CarloWood on Libera) <carlo@alinoe.com>
  * fingerprint: 8020 B266 6305 EE2F D53E  6827 C155 A4EE E4E5 27A2
@@ -27,42 +27,50 @@
 
 #pragma once
 
-#include <type_traits>
+#include <random>
 #include <concepts>
 
 namespace utils {
 
-namespace {
-
-template<std::unsigned_integral T>
-constexpr int _ctz(T n)
+class RandomNumber
 {
-  return __builtin_ctz(n);
-}
+ public:
+  using result_type = std::mt19937_64::result_type;
 
-template<>
-constexpr int _ctz<unsigned long>(unsigned long n)
-{
-  return __builtin_ctzl(n);
-}
+ private:
+  std::mt19937_64 m_twister;
 
-template<>
-constexpr int _ctz<unsigned long long>(unsigned long long n)
-{
-  return __builtin_ctzll(n);
-}
+ public:
+  RandomNumber();
 
-} // namespace
+  template<class SeedSequence>
+  void seed(SeedSequence& seed_sequence)
+  {
+    m_twister.seed(seed_sequence);
+  }
 
-// Function utils::ctz(n)
-//
-// Returns the Count of Trailing Zeroes in n (the index of the least significant set bit).
-// Undefined when n == 0.
-//
-template<std::unsigned_integral T>
-constexpr int ctz(T n)
-{
-  return _ctz(n);
-}
+  void seed(result_type seed_in)
+  {
+    m_twister.seed(seed_in);
+  }
+
+  template<class SeedSequence>
+  RandomNumber(SeedSequence& seed_sequence)
+  {
+    seed(seed_sequence);
+  }
+
+  RandomNumber(result_type seed_in)
+  {
+    seed(seed_in);
+  }
+
+  template<std::integral INT>
+  INT generate(std::uniform_int_distribution<INT>& distribution)
+  {
+    return distribution(m_twister);
+  }
+};
+
 
 } // namespace utils

@@ -5,7 +5,7 @@
 // A class that has a print_on method needs to have the following
 // declared in its namespace:
 //
-//   using utils::catch_all_print_on::operator<<;
+//   using utils::has_print_on::operator<<;
 //
 // Credits for this brilliant idea go to Alipha from Libera/#C++.
 //
