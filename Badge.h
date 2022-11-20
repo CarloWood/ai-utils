@@ -19,4 +19,37 @@ class Badge
   Badge() {}
 };
 
+// Useful for passing the this pointer of the calling class.
+//
+// Usage:
+//
+// void A::f(utils::BadgeCaller<B> b)   // Can only be called by a member function of B.
+// {
+//   B* bp = b;                         // Pointer to the calling object.
+//   ...
+// }
+//
+// void B::f()
+// {
+//   a.f(this);                         // Pass this pointer of B from within a member function of B.
+// }
+//
+// If only const access to B is allowed use:
+//
+// void A::f(utils::BadgeCaller<B> const b);
+//
+template<typename Caller>
+class BadgeCaller
+{
+ private:
+  Caller* m_caller;
+
+  friend Caller;
+  BadgeCaller(Caller* caller) : m_caller(caller) { }
+
+ public:
+  operator Caller*() { return m_caller; }
+  operator Caller const*() const { return m_caller; }
+};
+
 } // namespace utils
