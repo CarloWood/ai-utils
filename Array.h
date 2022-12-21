@@ -46,7 +46,7 @@ class ArrayIndex
   int m_value;
 
  public:
-  ArrayIndex() : m_value(-1) { }
+  constexpr ArrayIndex() : m_value(-1) { }
   explicit constexpr ArrayIndex(int value) : m_value(value) { }
   constexpr int get_value() const { return m_value; }
   explicit constexpr operator std::size_t() const { return m_value; }
@@ -61,12 +61,12 @@ class ArrayIndex
   void set_to_undefined() { m_value = -1; }
   bool undefined() const { return m_value == -1; }
 
-  bool operator==(ArrayIndex const& index) const { return m_value == index.m_value; }
-  bool operator!=(ArrayIndex const& index) const { return m_value != index.m_value; }
-  bool operator<(ArrayIndex const& index) const { return m_value < index.m_value; }
-  bool operator>(ArrayIndex const& index) const { return m_value > index.m_value; }
-  bool operator<=(ArrayIndex const& index) const { return m_value <= index.m_value; }
-  bool operator>=(ArrayIndex const& index) const { return m_value >= index.m_value; }
+  constexpr bool operator==(ArrayIndex const& index) const { return m_value == index.m_value; }
+  constexpr bool operator!=(ArrayIndex const& index) const { return m_value != index.m_value; }
+  constexpr bool operator<(ArrayIndex const& index) const { return m_value < index.m_value; }
+  constexpr bool operator>(ArrayIndex const& index) const { return m_value > index.m_value; }
+  constexpr bool operator<=(ArrayIndex const& index) const { return m_value <= index.m_value; }
+  constexpr bool operator>=(ArrayIndex const& index) const { return m_value >= index.m_value; }
 
   ArrayIndex operator-(int n) const { return ArrayIndex{m_value - n}; }
   ArrayIndex operator+(int n) const { return ArrayIndex{m_value + n}; }
