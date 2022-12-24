@@ -84,8 +84,10 @@ std::ostream& operator<<(std::ostream& os, ArrayIndex<Category> const& index)
 template<typename T, std::size_t N, typename _Index = ArrayIndex<T>>
 class Array : public std::array<T, N>
 {
- public:
+ protected:
   using _Base = std::array<T, N>;
+
+ public:
   using reference = typename _Base::reference;
   using const_reference = typename _Base::const_reference;
   using index_type = _Index;
