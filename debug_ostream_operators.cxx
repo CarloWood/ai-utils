@@ -56,7 +56,7 @@ std::ostream& operator<<(std::ostream& os, AIAlert::Error const& error)
     if (line.is_prefix())
     {
       os << line.getXmlDesc();
-      if (line.is_function_name())
+      if (line.is_function_name() || line.is_filename_line())
         os << ": ";
     }
     else

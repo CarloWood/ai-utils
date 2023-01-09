@@ -73,8 +73,10 @@ Error::Error(Prefix const& prefix, modal_nt type,
              std::string const& xml_desc, AIArgs const& args) : mLines(alert.mLines), mModal(type), mErrorCode(false)
 {
   if (alert.mModal == modal) mModal = modal;
+  bool prepend_newline = false;
   if (prefix) mLines.push_back(Line(prefix, !mLines.empty()));
-  mLines.push_back(Line(xml_desc, args));
+  else prepend_newline = true;
+  mLines.push_back(Line(xml_desc, args, prepend_newline));
 }
 
 Error::Error(Prefix const& prefix, modal_nt type,

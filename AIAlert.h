@@ -70,6 +70,8 @@
 #define   THROW_ALERT_CLASS(Alert, ...) throw Alert(AIAlert::Prefix(),                                                     AIAlert::not_modal, __VA_ARGS__)
 /// Throw arbitrary class @a Alert - modal, no function prefix.
 #define  THROW_MALERT_CLASS(Alert, ...) throw Alert(AIAlert::Prefix(),                                                         AIAlert::modal, __VA_ARGS__)
+#define  THROW_LALERT_CLASS(Alert, ...) throw Alert(AIAlert::Prefix(__FILE__, __LINE__, AIAlert::filename_line_name_prefix), AIAlert::not_modal, __VA_ARGS__)
+#define  THROW_LMALERT_CLASS(Alert, ...) throw Alert(AIAlert::Prefix(__FILE__, __LINE__, AIAlert::filename_line_name_prefix), AIAlert::modal, __VA_ARGS__)
 #ifdef __GNUC__
 /// Throw arbitrary class @a Alert - modal, no function prefix.
 #define  THROW_FALERT_CLASS(Alert, ...) throw Alert(AIAlert::Prefix(__PRETTY_FUNCTION__, AIAlert::pretty_function_prefix), AIAlert::not_modal, __VA_ARGS__)
@@ -91,6 +93,10 @@
 #define  THROW_FALERT(...)  THROW_FALERT_CLASS(AIAlert::Error, __VA_ARGS__)
 /// Throw alert message (AIAlert::Error) - modal, with function prefix.
 #define THROW_FMALERT(...) THROW_FMALERT_CLASS(AIAlert::Error, __VA_ARGS__)
+/// Throw alert message (AIAlert::Error) - not modal, filename:line prefix.
+#define  THROW_LALERT(...) THROW_LALERT_CLASS(AIAlert::Error, __VA_ARGS__)
+/// Throw alert message (AIAlert::Error) - modal, filename:line prefix.
+#define  THROW_LMALERT(...) THROW_LMALERT_CLASS(AIAlert::Error, __VA_ARGS__)
 
 // Shortcut to throw AIAlert::ErrorCode.
 /// Throw alert message with error code (AIAlert::ErrorCode) - not modal, no function prefix.
@@ -101,6 +107,10 @@
 #define  THROW_FALERTC(...)  THROW_FALERT_CLASS(AIAlert::ErrorCode, __VA_ARGS__)
 /// Throw alert message with error code (AIAlert::ErrorCode) - modal, with function prefix.
 #define THROW_FMALERTC(...) THROW_FMALERT_CLASS(AIAlert::ErrorCode, __VA_ARGS__)
+/// Throw alert message with error code (AIAlert::ErrorCode) - not modal, filename:line prefix.
+#define  THROW_LALERTC(...) THROW_LALERT_CLASS(AIAlert::ErrorCode, __VA_ARGS__)
+/// Throw alert message with error code (AIAlert::ErrorCode) - modal, filename:line prefix.
+#define  THROW_LMALERTC(...) THROW_LMALERT_CLASS(AIAlert::ErrorCode, __VA_ARGS__)
 
 // Shortcut to throw AIAlert::ErrorCode with errno as code.
 /// Throw alert message (AIAlert::ErrorCode) with errno as error code - not modal, no function prefix.
@@ -111,6 +121,10 @@
 #define  THROW_FALERTE(...) do { int errn = errno;  THROW_FALERT_CLASS(AIAlert::ErrorCode, errn, __VA_ARGS__); } while(0)
 /// Throw alert message (AIAlert::ErrorCode) with errno as error code - modal, with function prefix.
 #define THROW_FMALERTE(...) do { int errn = errno; THROW_FMALERT_CLASS(AIAlert::ErrorCode, errn, __VA_ARGS__); } while(0)
+/// Throw alert message (AIAlert::ErrorCode) with errno as error code - not modal, with filename:line prefix.
+#define  THROW_LALERTE(...) do { int errn = errno;  THROW_LALERT_CLASS(AIAlert::ErrorCode, errn, __VA_ARGS__); } while(0)
+/// Throw alert message (AIAlert::ErrorCode) with errno as error code - modal, with filename:line prefix.
+#define THROW_LMALERTE(...) do { int errn = errno; THROW_LMALERT_CLASS(AIAlert::ErrorCode, errn, __VA_ARGS__); } while(0)
 
 // Examples
 
@@ -138,10 +152,10 @@
 
   THROW_ALERT("ExampleKey");                                                               // A) Lookup "ExampleKey" in strings.xml and show translation.
   THROW_ALERT("ExampleKey", AIArgs("[FIRST]", first)("[SECOND]", second)(...etc...));      // B) Same as A, but replace [FIRST] with first, [SECOND] with second, etc.
-  THROW_ALERT("ExampleKey", error);                                                        // C) As A, but followed by a colon and a newline, and then the text of 'error'.
-  THROW_ALERT(error, "ExampleKey");                                                        // D) The text of 'error', followed by a colon and a newline and then as A.
-  THROW_ALERT("ExampleKey", AIArgs("[FIRST]", first)("[SECOND]", second), error);          // E) As B, but followed by a colon and a newline, and then the text of 'error'.
-  THROW_ALERT(error, "ExampleKey", AIArgs("[FIRST]", first)("[SECOND]", second));          // F) The text of 'error', followed by a colon and a newline and then as B.
+  THROW_ALERT("ExampleKey", error);                                                        // C) As A, but followed by a newline and then the text of 'error'.
+  THROW_ALERT(error, "ExampleKey");                                                        // D) The text of 'error', followed by a newline and then as A.
+  THROW_ALERT("ExampleKey", AIArgs("[FIRST]", first)("[SECOND]", second), error);          // E) As B, but followed by a newline, and then the text of 'error'.
+  THROW_ALERT(error, "ExampleKey", AIArgs("[FIRST]", first)("[SECOND]", second));          // F) The text of 'error', followed by a newline and then as B.
   // where 'error' is a caught Error object (as above) in a rethrow.
   // Prepend ALERT with F and/or M to prepend the text with the current function name and/or make the alert box Modal.
   // For example,
@@ -213,8 +227,9 @@ enum alert_line_type_nt
 {
   normal = 0,			///< Empty mask, used for normal lines.
   empty_prefix = 1,		///< Mask bit for an empty prefix.
-  pretty_function_prefix = 2,	///< Mask bit for a function name prefix.
-  error_code = 4                ///< Mask bit for a error code message prefix.
+  filename_line_name_prefix = 2,///< Mask bit for a filename:line prefix.
+  pretty_function_prefix = 4,	///< Mask bit for a function name prefix.
+  error_code = 8                ///< Mask bit for a error code message prefix.
   // These must exist of single bits (a mask).
 };
 
@@ -223,8 +238,9 @@ enum alert_line_type_nt
  *
  * A Prefix currently comes only in two flavors:
  *
- *     empty_prefix           : An empty prefix.
- *     pretty_function_prefix : A function name prefix, this is the function from which the alert was thrown.
+ *     empty_prefix              : An empty prefix.
+ *     filename_line_name_prefix : A filename:line prefix, the location from which the alert was thrown.
+ *     pretty_function_prefix    : A function name prefix, this is the function from which the alert was thrown.
  */
 class Prefix
 {
@@ -235,6 +251,8 @@ class Prefix
     Prefix(char const* str, alert_line_type_nt type) : mStr(str), mType(type) { }
     /// Construct a prefix @a str of type @a type.
     Prefix(std::string str, alert_line_type_nt type) : mStr(std::move(str)), mType(type) { }
+    /// Construct a prefix @a filename : @a line of type @a type.
+    Prefix(char const* filename, int line, alert_line_type_nt type) : mStr(filename + std::string(":") + std::to_string(line)), mType(type) { }
 
     /// Return true if the prefix is not empty.
     explicit operator bool() const { return mType != empty_prefix; }
@@ -293,6 +311,8 @@ class Line
     bool is_prefix() const { return mType != normal; }
     /// Return true if this is a function name prefix.
     bool is_function_name() const { return mType == pretty_function_prefix; }
+    /// Return true if this is a filename:line prefix.
+    bool is_filename_line() const { return mType == filename_line_name_prefix; }
 };
 
 /**
