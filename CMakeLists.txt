@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12...3.16)
+cmake_minimum_required(VERSION 3.12...3.25)
 
 project(utils
   DESCRIPTION "C++ Core utilities"
@@ -187,9 +187,9 @@ target_include_directories(utils_ObjLib
     "${top_objdir}"                         # For utils/config.h.
 )
 
-# Require support for C++17.
+# Require support for C++20.
 target_compile_features(utils_ObjLib
-  PUBLIC cxx_std_17
+  PUBLIC cxx_std_20
 )
 
 # Add GCC_BMI2_COMPILE_FLAGS if supported.
