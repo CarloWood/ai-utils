@@ -532,8 +532,7 @@ class BitSet : protected BitSetPOD<T>
 
   // Writing to an ostream.
 
-  template<typename T1>
-  friend std::ostream& operator<<(std::ostream& os, BitSet<T1> m1)
+  friend std::ostream& operator<<(std::ostream& os, BitSet<T> m1)
   {
     return os << m1.to_string();
   }
