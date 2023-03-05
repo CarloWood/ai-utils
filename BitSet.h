@@ -224,6 +224,13 @@ class Index : protected IndexPOD
 
   // Return true iff Index is not index_pre_begin and also not index_begin.
   bool may_call_prev_bit_in() const { return m_index > 0; }
+
+  // Writing to an ostream.
+
+  friend std::ostream& operator<<(std::ostream& os, Index const& i1)
+  {
+    return os << static_cast<int>(i1.m_index);
+  }
 };
 
 } //namespace bitset
