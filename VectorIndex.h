@@ -67,9 +67,9 @@ class VectorIndex
   bool operator<=(VectorIndex index) const { return m_value <= index.m_value; }
   bool operator>=(VectorIndex index) const { return m_value >= index.m_value; }
 
-  VectorIndex operator-(int n) const { return VectorIndex{m_value - n}; }
-  VectorIndex operator+(int n) const { return VectorIndex{m_value + n}; }
-  VectorIndex operator%(VectorIndex m) const { return VectorIndex{m_value % m.m_value}; }
+  constexpr VectorIndex operator-(int n) const { return VectorIndex{m_value - n}; }
+  constexpr VectorIndex operator+(int n) const { return VectorIndex{m_value + n}; }
+  constexpr VectorIndex operator%(VectorIndex m) const { return VectorIndex{m_value % m.m_value}; }
 
   VectorIndex& operator<<=(int n) { m_value <<= n; return *this; }
   VectorIndex& operator>>=(int n) { m_value >>= n; return *this; }
