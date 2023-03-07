@@ -87,10 +87,24 @@ class Array : public std::array<T, N>
  protected:
   using _Base = std::array<T, N>;
 
+  template <std::size_t... Is>
+  Array(std::initializer_list<T> ilist, std::index_sequence<Is...>) : std::array<T, N>{T{*(ilist.begin() + Is)}...}
+  {
+  }
+
  public:
   using reference = typename _Base::reference;
   using const_reference = typename _Base::const_reference;
   using index_type = _Index;
+
+  Array() = default;
+  Array(std::initializer_list<T> ilist) : Array(ilist, std::make_index_sequence<N>{})
+  {
+    // The number of arguments must be equal the size of the array, because
+    // each is accessed in the above constructor. Unfortunately we can't pass
+    // std::make_index_sequence<ilist.size()>{}.
+    ASSERT(ilist.size() == N);
+  }
 
   reference operator[](index_type __n) _GLIBCXX_NOEXCEPT { return _Base::operator[](static_cast<size_t>(__n)); }
   const_reference operator[](index_type __n) const _GLIBCXX_NOEXCEPT { return _Base::operator[](static_cast<size_t>(__n)); }
