@@ -141,11 +141,16 @@ class Index : protected IndexPOD
   Index& operator-=(int offset) { m_index -= offset; return *this; }
   friend Index operator-(Index index, int offset) { Index result(index); return result -= offset; }
   friend Index operator-(int offset, Index index) { Index result(index); return result -= offset; }
+  friend int operator-(Index index1, Index index2) { return index1.m_index - index2.m_index; }
 
   Index& operator++() { ++m_index; return *this; }
   Index operator++(int) { Index result(*this); operator++(); return result; }
   Index& operator--() { --m_index; return *this; }
   Index operator--(int) { Index result(*this); operator--(); return result; }
+
+  Index& operator*=(int factor) { m_index *= factor; return *this; }
+  friend Index operator*(Index index, int factor) { Index result(index); return result *= factor; }
+  friend Index operator*(int factor, Index index) { Index result(index); return result *= factor; }
 
   // Accessor.
 
