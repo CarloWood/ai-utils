@@ -12,7 +12,7 @@ class Index
 
  public:
   constexpr explicit Index(INT index) : m_index(index) { }
-  INT get_value() const { return m_index; }
+  constexpr INT get_value() const { return m_index; }
   Index& operator++()    { ++m_index; return *this; }
   Index& operator--()    { --m_index; return *this; }
   Index  operator++(int) { Index prev(m_index); ++m_index; return prev; }

@@ -72,5 +72,4 @@ class RandomNumber
   }
 };
 
-
 } // namespace utils
