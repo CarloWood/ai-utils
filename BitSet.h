@@ -35,8 +35,8 @@
 #include <cstdint>
 #include <type_traits>
 #include <compare>
-#include <iosfwd>
 #include <string>
+#include <iostream>
 
 namespace utils {
 
