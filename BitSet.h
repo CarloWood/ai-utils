@@ -135,22 +135,30 @@ class Index : protected IndexPOD
 
   // Manipulators.
 
-  Index& operator+=(int offset) { m_index += offset; return *this; }
-  friend Index operator+(Index index, int offset) { Index result(index); return result += offset; }
-  friend Index operator+(int offset, Index index) { Index result(index); return result += offset; }
-  Index& operator-=(int offset) { m_index -= offset; return *this; }
-  friend Index operator-(Index index, int offset) { Index result(index); return result -= offset; }
-  friend Index operator-(int offset, Index index) { Index result(index); return result -= offset; }
-  friend int operator-(Index index1, Index index2) { return index1.m_index - index2.m_index; }
+  constexpr Index& operator+=(int offset) { m_index += offset; return *this; }
+  friend constexpr Index operator+(Index index, int offset) { Index result(index); return result += offset; }
+  friend constexpr Index operator+(int offset, Index index) { Index result(index); return result += offset; }
+  constexpr Index& operator-=(int offset) { m_index -= offset; return *this; }
+  friend constexpr Index operator-(Index index, int offset) { Index result(index); return result -= offset; }
+  friend constexpr Index operator-(int offset, Index index) { Index result(index); return result -= offset; }
+  friend constexpr int operator-(Index index1, Index index2) { return index1.m_index - index2.m_index; }
 
   Index& operator++() { ++m_index; return *this; }
   Index operator++(int) { Index result(*this); operator++(); return result; }
   Index& operator--() { --m_index; return *this; }
   Index operator--(int) { Index result(*this); operator--(); return result; }
 
-  Index& operator*=(int factor) { m_index *= factor; return *this; }
-  friend Index operator*(Index index, int factor) { Index result(index); return result *= factor; }
-  friend Index operator*(int factor, Index index) { Index result(index); return result *= factor; }
+  constexpr Index& operator*=(int factor) { m_index *= factor; return *this; }
+  friend constexpr Index operator*(Index index, int factor) { Index result(index); return result *= factor; }
+  friend constexpr Index operator*(int factor, Index index) { Index result(index); return result *= factor; }
+
+  constexpr Index& operator/=(int divisor) { m_index /= divisor; return *this; }
+  friend constexpr Index operator/(Index index, int divisor) { Index result(index); return result /= divisor; }
+  friend constexpr Index operator/(int divisor, Index index) { Index result(index); return result /= divisor; }
+
+  constexpr Index& operator%=(int modulo) { m_index %= modulo; return *this; }
+  friend constexpr Index operator%(Index index, int modulo) { Index result(index); return result %= modulo; }
+  friend constexpr Index operator%(int modulo, Index index) { Index result(index); return result %= modulo; }
 
   // Accessor.
 
@@ -340,9 +348,9 @@ class BitSet : protected BitSetPOD<T>
   using BitSetPOD<T>::m_bitmask;
 
   // Convert Index to a mask_type.
-  [[gnu::always_inline]] static T index2mask(Index i1) { return static_cast<T>(1) << i1(); }
+  [[gnu::always_inline]] static constexpr T index2mask(Index i1) { return static_cast<T>(1) << i1(); }
   // Convert a mask_type to the index of its least significant set bit.
-  [[gnu::always_inline]] static Index mask2index(T mask) { return bitset::IndexPOD{static_cast<int8_t>(ctz(mask))}; }
+  [[gnu::always_inline]] static constexpr Index mask2index(T mask) { return bitset::IndexPOD{static_cast<int8_t>(ctz(mask))}; }
 
   // Constructors.
 
@@ -537,10 +545,10 @@ class BitSet : protected BitSetPOD<T>
   BitSet operator++(int) const { BitSet prev_value(m_bitmask); ++m_bitmask; return prev_value; }
 
   // Add and subtract.
-  BitSet& operator+=(mask_type n) { m_bitmask += n; return *this; }
-  BitSet& operator-=(mask_type n) { m_bitmask -= n; return *this; }
-  BitSet operator+(mask_type n) const { return BitSet(m_bitmask + n); }
-  BitSet operator-(mask_type n) const { return BitSet(m_bitmask - n); }
+  constexpr BitSet& operator+=(mask_type n) { m_bitmask += n; return *this; }
+  constexpr BitSet& operator-=(mask_type n) { m_bitmask -= n; return *this; }
+  constexpr BitSet operator+(mask_type n) const { return BitSet(m_bitmask + n); }
+  constexpr BitSet operator-(mask_type n) const { return BitSet(m_bitmask - n); }
 
   // Writing to an ostream.
 
