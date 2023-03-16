@@ -88,7 +88,7 @@ class Array : public std::array<T, N>
   using _Base = std::array<T, N>;
 
   template <std::size_t... Is>
-  Array(std::initializer_list<T> ilist, std::index_sequence<Is...>) : std::array<T, N>{T{*(ilist.begin() + Is)}...}
+  constexpr Array(std::initializer_list<T> ilist, std::index_sequence<Is...>) : std::array<T, N>{T{*(ilist.begin() + Is)}...}
   {
   }
 
@@ -98,7 +98,7 @@ class Array : public std::array<T, N>
   using index_type = _Index;
 
   Array() = default;
-  Array(std::initializer_list<T> ilist) : Array(ilist, std::make_index_sequence<N>{})
+  constexpr Array(std::initializer_list<T> ilist) : Array(ilist, std::make_index_sequence<N>{})
   {
     // The number of arguments must be equal the size of the array, because
     // each is accessed in the above constructor. Unfortunately we can't pass
