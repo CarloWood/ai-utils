@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 namespace utils {
 
 // See https://stackoverflow.com/a/37931904/1487069
