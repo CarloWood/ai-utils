@@ -44,8 +44,6 @@ endif ()
 #
 
 include(CW_CHECK_REQUIRED_INCLUDE_FILE_CXX)
-CW_CHECK_REQUIRED_INCLUDE_FILE_CXX("sparsehash/dense_hash_map" "Please install the libsparsehash-dev package.")
-
 if (OptionEnableDebugGlobal)
   CW_CHECK_REQUIRED_INCLUDE_FILE_CXX("execinfo.h"
     "Sorry, Option EnableDebugGlobal requires execinfo.h for the backtrace(3) function.\nPlease specify -DEnableDebugGlobal:BOOL=OFF as configure option or fix this problem.")

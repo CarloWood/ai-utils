@@ -39,14 +39,6 @@ CW_SYS_MALLOC_OVERHEAD
 AC_LANG_SAVE
 AC_LANG([C++])
 
-# Check if the mandatory sparsehash/dense_hash_map exists.
-AC_CHECK_HEADER([sparsehash/dense_hash_map], [],
-[AC_MSG_ERROR([
-
-Please install the libsparsehash-dev package.
-])
-])
-
 if test "$cw_config_debug_global" = yes; then
 # Check if the mandatory exec_info.h exists.
 AC_CHECK_HEADER([execinfo.h], [],
