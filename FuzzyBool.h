@@ -28,6 +28,7 @@
 #pragma once
 
 #include "has_print_on.h"
+#include <cstdint>
 #include "debug.h"
 
 namespace utils {
