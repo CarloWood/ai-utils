@@ -1,12 +1,6 @@
 AM_CPPFLAGS = -iquote $(top_builddir) -iquote $(top_srcdir) -iquote $(top_srcdir)/cwds
 
-noinst_LTLIBRARIES =
-if CW_NON_THREADED
-noinst_LTLIBRARIES += libutils.la
-endif
-if CW_THREADED
-noinst_LTLIBRARIES += libutils_r.la
-endif
+noinst_LTLIBRARIES = libutils_r.la
 
 # In order to compile this, add -DDEBUGGLOBAL to CXXFLAGS and recompile everything.
 #bin_PROGRAMS = singleton_test
@@ -68,18 +62,14 @@ SOURCES = \
 	threading/StartingGate.h \
 	threading/aithreadid.h
 
-libutils_la_SOURCES = ${SOURCES}
-libutils_la_CXXFLAGS = @LIBCWD_FLAGS@
-libutils_la_LIBADD = @LIBCWD_LIBS@
-
 libutils_r_la_SOURCES = ${SOURCES}
 libutils_r_la_CXXFLAGS = @LIBCWD_R_FLAGS@
 libutils_r_la_LIBADD = @LIBCWD_R_LIBS@
 
 #singleton_test_SOURCES = Singleton_tst.cxx
 
-#singleton_test_CXXFLAGS = @LIBCWD_FLAGS@
-#singleton_test_LDADD = libutils.la $(top_builddir)/cwds/libcwds.la
+#singleton_test_CXXFLAGS = @LIBCWD_R_FLAGS@
+#singleton_test_LDADD = libutils_r.la $(top_builddir)/cwds/libcwds_r.la
 
 # --------------- Maintainer's Section
 
