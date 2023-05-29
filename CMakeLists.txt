@@ -135,6 +135,7 @@ target_sources(utils_ObjLib
     "MemoryPagePool.h"
     "NodeMemoryPool.h"
     "NodeMemoryResource.h"
+    "ObjectTracker.h"
     "Register.h"
     "Signals.h"
     "SimpleSegregatedStorage.h"
