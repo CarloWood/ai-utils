@@ -79,14 +79,18 @@ class ObjectTracker
   }
 
   // Accessors.
-  Tracked const* operator->() const { return tracked_object_ptr_; }
-  Tracked* operator->() { return tracked_object_ptr_; }
+  Tracked const& tracked_object() const { return *tracked_object_ptr_; }
+  Tracked& tracked_object() { return *tracked_object_ptr_; }
+
+  // Automatic conversation to a Tracked reference.
+  operator Tracked const&() const { return *tracked_object_ptr_; }
+  operator Tracked&() { return *tracked_object_ptr_; }
 };
 
 template<typename Tracker>
 class TrackedObject
 {
- private:
+ protected:
   std::shared_ptr<Tracker> tracker_;
 
  public:
@@ -96,7 +100,11 @@ class TrackedObject
     tracker_->set_tracked_object(static_cast<typename Tracker::tracked_type*>(this));
   }
 
+  // Accessor.
   std::shared_ptr<Tracker> get_tracker() const { return tracker_; }
+
+  // Automatic conversion to a weak_ptr.
+  operator std::weak_ptr<Tracker>() const { return tracker_; }
 };
 
 } // namespace utils
