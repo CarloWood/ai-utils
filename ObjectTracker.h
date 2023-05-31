@@ -95,6 +95,11 @@ class TrackedObject
   {
     tracker_->set_tracked_object(static_cast<typename Tracker::tracked_type*>(this));
   }
+  ~TrackedObject()
+  {
+    if (tracker_) // This is null if the tracked object was moved.
+      tracker_->set_tracked_object(nullptr);
+  }
 
   // Accessor for the Tracker object. Make sure to keep the TrackedObject alive while using this.
   Tracker const& tracker() const { return *tracker_; }
