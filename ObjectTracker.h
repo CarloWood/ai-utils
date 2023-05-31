@@ -1,6 +1,5 @@
 #pragma once
 
-#include <concepts>
 #include <memory>
 
 // ObjectTracker
@@ -12,7 +11,7 @@
 // to worry if the tracked object is moved in memory.
 //
 // Usage:
-#ifdef EXAMPLE_CODE
+#if -0 // EXAMPLE_CODE
 
 // Forward declare the to-be-tracked object.
 class Node;
@@ -45,19 +44,16 @@ int main()
   // Now one can construct a Node object:
   Node node("hello");
   // And obtain the tracker at any moment (also after it was moved):
-  auto tracker = node.get_tracker();
+  std::weak_ptr<NodeTracker> tracker = node;
 
   // If node is moved:
   Node node2(std::move(node));
   // then tracker will point to node2.
-  std::cout << "s = " << (*tracker)->s() << std::endl;  // Prints "hello".
+  std::cout << "s = " << (*tracker.lock())->s() << std::endl;  // Prints "hello".
 }
 #endif // EXAMPLE_CODE
-//
-namespace utils {
 
-template<typename Tracker>
-class TrackedObject;
+namespace utils {
 
 template<typename Tracked>
 class ObjectTracker
@@ -100,8 +96,9 @@ class TrackedObject
     tracker_->set_tracked_object(static_cast<typename Tracker::tracked_type*>(this));
   }
 
-  // Accessor.
-  std::shared_ptr<Tracker> get_tracker() const { return tracker_; }
+  // Accessor for the Tracker object. Make sure to keep the TrackedObject alive while using this.
+  Tracker const& tracker() const { return *tracker_; }
+  Tracker& tracker() { return *tracker_; }
 
   // Automatic conversion to a weak_ptr.
   operator std::weak_ptr<Tracker>() const { return tracker_; }
