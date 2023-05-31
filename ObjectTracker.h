@@ -49,7 +49,7 @@ int main()
   // If node is moved:
   Node node2(std::move(node));
   // then tracker will point to node2.
-  std::cout << "s = " << (*tracker.lock())->s() << std::endl;  // Prints "hello".
+  std::cout << "s = " << node_tracker.lock()->tracked_object().s() << std::endl;  // Prints "hello".
 }
 #endif // EXAMPLE_CODE
 
