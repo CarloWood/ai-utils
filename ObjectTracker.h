@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include "debug.h"
 
 // ObjectTracker
 //
@@ -90,11 +91,15 @@ class TrackedObject
   std::shared_ptr<Tracker> tracker_;
 
  public:
-  TrackedObject() : tracker_(std::make_shared<Tracker>(static_cast<typename Tracker::tracked_type*>(this))) { }
+  TrackedObject() : tracker_(std::make_shared<Tracker>(static_cast<typename Tracker::tracked_type*>(this)))
+  {
+  }
+
   TrackedObject(TrackedObject&& orig) : tracker_(std::move(orig.tracker_))
   {
     tracker_->set_tracked_object(static_cast<typename Tracker::tracked_type*>(this));
   }
+
   ~TrackedObject()
   {
     if (tracker_) // This is null if the tracked object was moved.
@@ -102,8 +107,20 @@ class TrackedObject
   }
 
   // Accessor for the Tracker object. Make sure to keep the TrackedObject alive while using this.
-  Tracker const& tracker() const { return *tracker_; }
-  Tracker& tracker() { return *tracker_; }
+  Tracker const& tracker() const
+  {
+    // Note that tracker_ can only be null when the Tracker was moved.
+    // Do not call this function (or any other member function except the destructor) on a moved object!
+    ASSERT(tracker_);
+    return *tracker_;
+  }
+
+  Tracker& tracker()
+  {
+    // See above.
+    ASSERT(tracker_);
+    return *tracker_;
+  }
 
   // Automatic conversion to a weak_ptr.
   operator std::weak_ptr<Tracker>() const { return tracker_; }
