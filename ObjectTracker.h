@@ -97,6 +97,8 @@ class TrackedObject
 
   TrackedObject(TrackedObject&& orig) : tracker_(std::move(orig.tracker_))
   {
+    // External synchronization is required: it is not allowed to move a TrackedObject
+    // while concurrently accessing the same object. No synchronization is performed here.
     tracker_->set_tracked_object(static_cast<typename Tracker::tracked_type*>(this));
   }
 
