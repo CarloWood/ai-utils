@@ -83,7 +83,7 @@ template<typename T>
 class InstanceCollection : public InstanceCollectionTracker
 {
  public:
-  using collection_t = threadsafe::Wrapper<std::set<T*>, threadsafe::policy::Primitive<std::mutex>>;
+  using collection_t = threadsafe::Unlocked<std::set<T*>, threadsafe::policy::Primitive<std::mutex>>;
 
  private:
   collection_t m_collection;
