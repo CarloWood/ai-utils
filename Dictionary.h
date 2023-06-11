@@ -76,15 +76,15 @@ class DictionaryBase
 // ASSERT(i2 > static_cast<index_type>(baz));
 //
 //
-// Usage (using aithreadsafe):
+// Usage (using threadsafe):
 //
 // If the dictionary can be used by multiple threads, for example because it is
-// a static member of a template class, then it should be wrapped by aithreadsafe
+// a static member of a template class, then it should be wrapped by threadsafe
 // using a read/write lock:
 //
 // template<typename T>
 // struct Example {
-//   using dictionary_type = aithreadsafe::Wrapper<utils::Dictionary<typename T::enum_type, index_type>, aithreadsafe::policy::ReadWrite<AIReadWriteMutex>>;
+//   using dictionary_type = threadsafe::Wrapper<utils::Dictionary<typename T::enum_type, index_type>, threadsafe::policy::ReadWrite<AIReadWriteMutex>>;
 //   static dictionary_type s_dictionary;
 //   ...
 // };
