@@ -62,7 +62,7 @@ When using [GNU autotools](https://en.wikipedia.org/wiki/GNU_Autotools) you shou
 not set ``AUTOGEN_CMAKE_ONLY``. Also, you probably want to use ``--enable-mainainer-mode``
 as option to the generated ``configure`` script.
 
-In order to use ``cmake`` configure as usual, for example to build with 8 cores a debug build:
+In order to use ``cmake`` configure as usual, for example to build with 16 cores a debug build:
 
     mkdir build_debug
     cmake -S . -B build_debug -DCMAKE_MESSAGE_LOG_LEVEL=DEBUG -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=ON -DEnableDebugGlobal:BOOL=OFF
