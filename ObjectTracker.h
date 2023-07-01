@@ -1,12 +1,13 @@
 #pragma once
 
 #include <memory>
+#include "utils/Badge.h"
 #include "debug.h"
 
 // ObjectTracker
 //
-// Allows object to have a non-moving tracker object, allocated on the heap,
-// that manages a pointer that point back to them.
+// Allows objects to have a non-moving tracker object, allocated on the heap,
+// that manages a pointer that points back to them.
 //
 // This allows other objects to point to the tracker object without having
 // to worry if the tracked object is moved in memory.
@@ -21,8 +22,12 @@ class Node;
 class NodeTracker : public utils::ObjectTracker<Node>
 {
  public:
-  // This class must be constructable from a Node* and pass that the to base class.
-  NodeTracker(Node* tracked) : utils::ObjectTracker<Node>(tracked) { }
+  // All trackers must take a Badge as first argument that allows utils::TrackedObject to construct them.
+  // The second argument must be a Node* which is passed to ObjectTracker base class.
+  NodeTracker(
+      utils::Badge<utils::TrackedObject<NodeTracker>>,
+      Node* tracked) :
+    utils::ObjectTracker<Node>(tracked) { }
 };
 
 // Or simply use:
@@ -45,16 +50,19 @@ int main()
   // Now one can construct a Node object:
   Node node("hello");
   // And obtain the tracker at any moment (also after it was moved):
-  std::weak_ptr<NodeTracker> tracker = node;
+  std::weak_ptr<NodeTracker> node_tracker = node;
 
-  // If node is moved:
+  // Even if node is moved,
   Node node2(std::move(node));
-  // then tracker will point to node2.
+  // node_tracker will point to node2:
   std::cout << "s = " << node_tracker.lock()->tracked_object().s() << std::endl;  // Prints "hello".
 }
 #endif // EXAMPLE_CODE
 
 namespace utils {
+
+template<typename Tracker>
+class TrackedObject;
 
 template<typename Tracked>
 class ObjectTracker
@@ -65,9 +73,12 @@ class ObjectTracker
  protected:
   Tracked* tracked_object_ptr_;
 
+  // Used by trackers that are derived from ObjectTracker.
+  ObjectTracker(Tracked* tracked_object_ptr) : tracked_object_ptr_(tracked_object_ptr) { }
+
  public:
   // Construct a new ObjectTracker that tracks the object pointed to by tracked_object_ptr.
-  ObjectTracker(Tracked* tracked_object_ptr) : tracked_object_ptr_(tracked_object_ptr) { }
+  ObjectTracker(utils::Badge<TrackedObject<ObjectTracker>>, Tracked* tracked_object_ptr) : tracked_object_ptr_(tracked_object_ptr) { }
 
   // This is called when the object is moved in memory, see below.
   void set_tracked_object(Tracked* tracked_object_ptr)
@@ -90,8 +101,7 @@ class TrackedObject
  protected:
   std::shared_ptr<Tracker> tracker_;
 
- public:
-  TrackedObject() : tracker_(std::make_shared<Tracker>(static_cast<typename Tracker::tracked_type*>(this)))
+  TrackedObject() : tracker_(std::make_shared<Tracker>(utils::Badge<TrackedObject>{}, static_cast<typename Tracker::tracked_type*>(this)))
   {
   }
 
@@ -108,6 +118,7 @@ class TrackedObject
       tracker_->set_tracked_object(nullptr);
   }
 
+ public:
   // Accessor for the Tracker object. Make sure to keep the TrackedObject alive while using this.
   Tracker const& tracker() const
   {
