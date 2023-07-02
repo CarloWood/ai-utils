@@ -63,54 +63,65 @@ int main()
 
 namespace utils::threading {
 
-template<typename Tracker>
+template<typename TrackedType, typename TrackedUnlocked>
+requires utils::is_specialization_of_v<TrackedUnlocked, threadsafe::Unlocked>
+class ObjectTracker;
+
+template<typename TrackedType, typename Tracker>
+requires utils::is_specialization_of_v<Tracker, ObjectTracker>
 class TrackedObject;
 
-template<typename TrackedUnlocked>
+template<typename TrackedType, typename TrackedUnlocked>
 requires utils::is_specialization_of_v<TrackedUnlocked, threadsafe::Unlocked>
 class ObjectTracker
 {
  public:
+  using tracked_type = TrackedType;
   using tracked_unlocked_type = TrackedUnlocked;
-  using tracked_type = typename tracked_unlocked_type::data_type;
+  using tracked_locked_type = typename tracked_unlocked_type::data_type;
   using policy_type = typename tracked_unlocked_type::policy_type;
+  using tracked_unlocked_base_type = threadsafe::UnlockedBase<tracked_locked_type, policy_type>;
+
+  using crat = typename tracked_unlocked_base_type::crat;
+  using rat = typename tracked_unlocked_base_type::crat;
+  using wat = typename tracked_unlocked_base_type::crat;
+  using w2rCarry = typename tracked_unlocked_base_type::w2rCarry;
 
  protected:
-  std::atomic<tracked_unlocked_type*> tracked_unlocked_ptr_;
+  tracked_unlocked_base_type tracked_unlocked_ptr_;
 
   // Used by trackers that are derived from ObjectTracker.
-  ObjectTracker(TrackedUnlocked* tracked_unlocked_ptr) : tracked_unlocked_ptr_(tracked_unlocked_ptr) { }
+  ObjectTracker(tracked_unlocked_type const& tracked_unlocked) : tracked_unlocked_ptr_(tracked_unlocked) { }
 
  public:
-  // Construct a new ObjectTracker that tracks the object pointed to by tracked_unlocked_ptr.
-  ObjectTracker(utils::Badge<TrackedObject<ObjectTracker>>, TrackedUnlocked* tracked_unlocked_ptr) :
-    tracked_unlocked_ptr_(tracked_unlocked_ptr) { }
+  // Construct a new ObjectTracker that tracks tracked_unlocked.
+  ObjectTracker(utils::Badge<TrackedObject<tracked_type, ObjectTracker>>, tracked_unlocked_type const& tracked_unlocked) :
+    tracked_unlocked_ptr_(tracked_unlocked) { }
 
   // This is called when the object is moved in memory, see below.
-  void set_tracked_unlocked(utils::Badge<TrackedObject<ObjectTracker>>, tracked_unlocked_type* tracked_unlocked_ptr)
+  void set_tracked_unlocked(utils::Badge<TrackedObject<tracked_type, ObjectTracker>>, tracked_unlocked_type* tracked_unlocked_ptr)
   {
     // The tracked_unlocked_type object that tracked_unlocked_ptr points to must be write-locked (blocking all readers (and writers))!
     // Note that we can use relaxed memory order because we are inside the critical area of *tracked_unlocked_ptr anyway.
-    tracked_unlocked_ptr_.store(tracked_unlocked_ptr, std::memory_order::relaxed);
+//FIXME    tracked_unlocked_ptr_.store(tracked_unlocked_ptr, std::memory_order::relaxed);
   }
 
   // Accessors.
-  tracked_unlocked_type const& tracked_unlocked() const { return *tracked_unlocked_ptr_; }
-  tracked_unlocked_type& tracked_unlocked() { return *tracked_unlocked_ptr_; }
-
-  // Automatic conversion to a tracked_unlocked_type reference.
-  operator tracked_unlocked_type const&() const { return *tracked_unlocked_ptr_; }
-  operator tracked_unlocked_type&() { return *tracked_unlocked_ptr_; }
+  rat tracked_rat() const { return tracked_unlocked_ptr_; }
+  wat tracked_wat() { return tracked_unlocked_ptr_; }
 };
 
-template<typename Tracker>
+template<typename TrackedType, typename Tracker>
 requires utils::is_specialization_of_v<Tracker, ObjectTracker>
 class TrackedObject
 {
+ public:
+  using tracked_type = TrackedType;
+
  protected:
   std::shared_ptr<Tracker> tracker_;
 
-  TrackedObject() : tracker_(std::make_shared<Tracker>(utils::Badge<TrackedObject>{}, static_cast<typename Tracker::tracked_unlocked_type*>(this)))
+  TrackedObject() : tracker_(std::make_shared<Tracker>(utils::Badge<TrackedObject>{}, *static_cast<tracked_type*>(this)))
   {
   }
 
@@ -121,7 +132,7 @@ class TrackedObject
     // Typically one should work with a threadsafe::Unlocked<Foo, ...> where Foo is derived
     // from this utils::threading::TrackedObject<FooTracker> and where FooTracker is derived
     // from utils::threading::ObjectTracker<threadsafe::Unlocked<Foo, ...>>.
-    tracker_->set_tracked_unlocked({}, static_cast<typename Tracker::tracked_unlocked_type*>(this));
+    tracker_->set_tracked_unlocked({}, static_cast<typename Tracker::tracked_type*>(this));
   }
 
   ~TrackedObject()
