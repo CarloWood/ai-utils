@@ -15,8 +15,8 @@ namespace utils {
 template<class, template<class...> class>
 inline constexpr bool is_specialization_of = false;
 
-template<template<class...> class T, class... Args>
-inline constexpr bool is_specialization_of<T<Args...>, T> = true;
+template<template<class...> class U, class... Args>
+inline constexpr bool is_specialization_of<U<Args...>, U> = true;
 
 template<typename T, template<typename...> typename U>
 inline constexpr bool is_specialization_of_v = is_specialization_of<T, U>;
