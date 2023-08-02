@@ -72,7 +72,7 @@
   _Pragma("GCC diagnostic push")
 #endif
 
-#define PRAGMA_DIAGNOSTIC_PUSH_IGNORED(warn_option) \
+#define PRAGMA_DIAGNOSTIC_PUSH_IGNORE(warn_option) \
   _Pragma("GCC diagnostic push") \
   _Pragma(BOOST_PP_STRINGIZE(GCC diagnostic ignored BOOST_PP_EXPAND(warn_option)))
 
