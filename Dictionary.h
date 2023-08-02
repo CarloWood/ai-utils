@@ -84,7 +84,7 @@ class DictionaryBase
 //
 // template<typename T>
 // struct Example {
-//   using dictionary_type = threadsafe::Wrapper<utils::Dictionary<typename T::enum_type, index_type>, threadsafe::policy::ReadWrite<AIReadWriteMutex>>;
+//   using dictionary_type = threadsafe::Unlocked<utils::Dictionary<typename T::enum_type, index_type>, threadsafe::policy::ReadWrite<AIReadWriteMutex>>;
 //   static dictionary_type s_dictionary;
 //   ...
 // };
