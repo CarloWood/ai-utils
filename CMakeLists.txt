@@ -39,6 +39,12 @@ if (OptionEnableDebugGlobal)
   set(DEBUGGLOBAL 1)
 endif ()
 
+# Set a default value for OptionPrimesCompression.
+set(OptionPrimesCompression "6" CACHE STRING "Compession level of Primes (3 - 6). Default: 6")
+
+message(DEBUG "OptionPrimesCompression is ${OptionPrimesCompression}")
+set(CW_PRIMES_COMPRESSION ${OptionPrimesCompression})
+
 #==============================================================================
 # PLATFORM SPECIFIC CHECKS
 #
@@ -103,6 +109,7 @@ target_sources(utils_ObjLib
     "GlobalObjectManager.cxx"
     "MemoryPagePool.cxx"
     "NodeMemoryPool.cxx"
+    "Primes.cxx"
     "RandomNumber.cxx"
     "Register.cxx"
     "Signals.cxx"
@@ -136,6 +143,7 @@ target_sources(utils_ObjLib
     "NodeMemoryPool.h"
     "NodeMemoryResource.h"
     "ObjectTracker.h"
+    "Primes.h"
     "Register.h"
     "Signals.h"
     "SimpleSegregatedStorage.h"
