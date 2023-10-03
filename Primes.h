@@ -83,7 +83,13 @@ class Primes
 
   static integer_t calc_upper_bound_number_of_primes(integer_t n);
 
-  static std::array<uint16_t, compression_primorial / 3> const row0_to_column;          // Needed for is_prime.
+  static constexpr int n_to_row0_to_column_index(integer_t n)
+  {
+    return ((n - compression_first_prime) % compression_primorial + (compression_first_prime % 3)) / 3;
+  }
+
+  static constexpr int row0_to_column_size = compression_primorial / 3 + 1;
+  static std::array<uint16_t, row0_to_column_size> const row0_to_column;   // Needed for is_prime.
 
  private:
   sieve_word_t* sieve_;
@@ -118,7 +124,7 @@ class Primes
       return false;
     // n is not divisible by any of the skipped primes. Do a sieve look-up.
     int row    = (n - compression_first_prime) / compression_primorial;
-    int column = row0_to_column[((n - compression_first_prime) % compression_primorial) / 3];
+    int column = row0_to_column[(n % compression_primorial) / 3];
     unsigned int col_word_offset =                     column / primes::sieve_word_bits;
     sieve_word_t col_mask        = sieve_word_t{1} << (column % primes::sieve_word_bits);
     unsigned int wi = row + col_word_offset * sieve_rows_;

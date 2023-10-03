@@ -111,11 +111,19 @@ size_t const loopsize = 1000;
 size_t const minimum_of = 3;
 #endif
 
-std::array<uint16_t, Primes::compression_primorial / 3> calc_row0_to_column()
+std::array<uint16_t, Primes::row0_to_column_size> calc_row0_to_column()
 {
-  std::array<uint16_t, Primes::compression_primorial / 3> result;
-  for (int i = 0; i < (int)row0.size(); ++i)
-    result[(row0[i] - row0[0]) / 3] = i;
+  std::array<uint16_t, Primes::row0_to_column_size> result;
+#if CW_DEBUG
+  std::memset(result.data(), 0, sizeof(result));
+#endif
+  ASSERT(row0.size() <= std::numeric_limits<uint16_t>::max());
+  for (uint16_t i = 0; i < row0.size(); ++i)
+  {
+    int ri = Primes::n_to_row0_to_column_index(row0[i]);
+    ASSERT(result[ri] == 0);
+    result[ri] = i;
+  }
   return result;
 }
 
@@ -565,7 +573,7 @@ prime_t Primes::next_prime()
   static constexpr int words_per_row = compression_repeat / sieve_word_bits;
   int column = index_ % compression_repeat;
   int row    = index_ / compression_repeat;
-  int col_mask = sieve_word_t{1} << (column % sieve_word_bits);
+  sieve_word_t col_mask = sieve_word_t{1} << (column % sieve_word_bits);
   integer_t word_col = column / sieve_word_bits;
   sieve_word_t word = sieve_[row + word_col * sieve_rows_];
   word &= ~(col_mask - 1);      // Remove all bits that represent integers less than the current one.
@@ -612,6 +620,6 @@ std::vector<Primes::prime_t> Primes::make_vector()
 }
 
 //static
-std::array<uint16_t, Primes::compression_primorial / 3> const Primes::row0_to_column = calc_row0_to_column();
+std::array<uint16_t, Primes::row0_to_column_size> const Primes::row0_to_column = calc_row0_to_column();
 
 } // namespace utils
