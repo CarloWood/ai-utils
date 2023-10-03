@@ -37,12 +37,4 @@ static constexpr size_t malloc_overhead_c = @CW_MALLOC_OVERHEAD@;
 
 static constexpr int cacheline_size_c = @CW_CACHELINE_SIZE@;
 
-//
-//
-// primes_compression_c
-//
-// The number primes that are skipped in the sieve of Primes.
-
-static constexpr int primes_compression_c = @CW_PRIMES_COMPRESSION@;
-
 } // namespace config
