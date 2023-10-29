@@ -45,7 +45,7 @@ providing C++ utilities for larger projects, including:
 The root project should be using
 [cmake](https://cmake.org/overview/)
 [cwm4](https://github.com/CarloWood/cwm4) and
-[libcwd](https://github.com/CarloWood/libcwd).
+[cwds](https://github.com/CarloWood/cwds).
 
 ## Checking out a project that uses the ai-utils submodule.
 
@@ -60,9 +60,9 @@ it when you forgot it.
 
 When using [GNU autotools](https://en.wikipedia.org/wiki/GNU_Autotools) you should of course
 not set ``AUTOGEN_CMAKE_ONLY``. Also, you probably want to use ``--enable-mainainer-mode``
-as option to the generated ``configure`` script.
+as option to the generated ``configure`` script. ***WARNING: autotools are no longer tested (supported) by the author***
 
-In order to use ``cmake`` configure as usual, for example to build with 16 cores a debug build:
+In order to use ``cmake`` configure as usual, for example to do a debug build with 16 cores:
 
     mkdir build_debug
     cmake -S . -B build_debug -DCMAKE_MESSAGE_LOG_LEVEL=DEBUG -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=ON -DEnableDebugGlobal:BOOL=OFF
