@@ -115,7 +115,7 @@ class Signal : public Singleton<Signal>
 // so when you unblock a signal and then create a thread, then that signal is also
 // unblocked in the new thread.
 //
-// Signal are handled by a random thread of the threads that have that signal unblocked.
+// Signals are handled by a random thread of the threads that have that signal unblocked.
 //
 // Also note that handlers are per process. You can not set a different handler in
 // different threads.
