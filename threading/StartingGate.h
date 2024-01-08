@@ -41,7 +41,7 @@ class StartingGate
   Gate m_gate;
 
  public:
-  StartingBarrier(int stalls) : m_stalls(stalls) { }
+  StartingGate(int stalls) : m_stalls(stalls) { }
 
   void wait()
   {
