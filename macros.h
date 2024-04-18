@@ -75,7 +75,7 @@
 #if defined(__GNUC__) && !defined(__clang__) // clang doesn't have a -Wnon-template-friend warning.
 #define PRAGMA_DIAGNOSTIC_PUSH_IGNORE_non_template_friend \
   _Pragma("GCC diagnostic push") \
-  _Pragma("GCC diagnostic ignored \"-Wnon-template-friend\")
+  _Pragma("GCC diagnostic ignored \"-Wnon-template-friend\"")
 #else
 #define PRAGMA_DIAGNOSTIC_PUSH_IGNORE_non_template_friend \
   _Pragma("GCC diagnostic push")

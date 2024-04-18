@@ -86,12 +86,6 @@ target_compile_definitions(utils_ObjLib
     HAVE_UTILS_CONFIG_H
 )
 
-# Set SOURCE_DIR to the current directory.
-set_property(
-  TARGET utils_ObjLib
-  PROPERTY SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}"
-)
-
 # The list of source files.
 target_sources(utils_ObjLib
   PRIVATE

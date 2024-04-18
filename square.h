@@ -24,6 +24,13 @@ T square(T const& arg)
   return result;
 }
 
+template<typename T>
+requires (!ConceptMultiplicableAssignable<T>) && (!ConceptBuiltin<T>)
+consteval auto square(T const& arg)
+{
+  return arg * arg;
+}
+
 template<ConceptBuiltin T>
 T square(T arg)
 {
