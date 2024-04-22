@@ -23,6 +23,16 @@ namespace config {
 
 //
 //
+// HAVE_BOOST_FILESYSTEM
+//
+// This defined when the CMakeLists.txt in the root of the project
+// included `find_package(Boost COMPONENTS filesystem)` and boost
+// filesystem was found.
+
+#cmakedefine HAVE_BOOST_FILESYSTEM 1
+
+//
+//
 // malloc_overhead_c
 //
 // The number of bytes extra allocated by a call to malloc.

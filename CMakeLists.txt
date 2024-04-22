@@ -23,6 +23,11 @@ find_package(Threads REQUIRED)
 # StreamHasher.h: #include <boost/functional/hash.hpp>
 find_package(Boost REQUIRED)
 
+# Test if the root of the project used `find_package(Boost COMPONENTS filesystem)`.
+if (Boost_FILESYSTEM_FOUND)
+  set(HAVE_BOOST_FILESYSTEM 1)
+endif ()
+
 #==============================================================================
 # OPTIONS
 
@@ -169,6 +174,18 @@ target_sources(utils_ObjLib
   PRIVATE
     "InstanceTracker.cxx"
     "InstanceTracker.h"
+)
+endif ()
+
+if (Boost_FILESYSTEM_FOUND)
+target_sources(utils_ObjLib
+  PRIVATE
+    "generate_unique_filename.cxx"
+)
+
+target_link_libraries(utils_ObjLib
+  PUBLIC
+    Boost::filesystem
 )
 endif ()
 
