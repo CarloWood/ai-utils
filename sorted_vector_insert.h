@@ -15,7 +15,7 @@ typename std::vector<T>::iterator sorted_vector_insert(std::vector<T>& vec, T co
 template<typename T, typename Compare>
 typename std::vector<T>::iterator sorted_vector_insert(std::vector<T>& vec, T const& item, Compare compare)
 {
-  return vec.insert(std::upper_bound( vec.begin(), vec.end(), item, compare), item);
+  return vec.insert(std::upper_bound(vec.begin(), vec.end(), item, compare), item);
 }
 
 } // namespace utils
