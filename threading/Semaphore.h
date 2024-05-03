@@ -75,14 +75,14 @@ class Semaphore : public Futex<uint64_t>
   // of the available tokens.
   void post(uint32_t n = 1) noexcept
   {
-    DoutEntering(dc::notice, "Semaphore::post(" << n << ")");
+    DoutEntering(dc::semaphore, "Semaphore::post(" << n << ")");
     // Add n tokens.
     // A sem_wait needs to synchronize with the sem_post that provided the token, so that whatever
     // lead to the sem_post happens before the code after sem_wait.
     uint64_t prev_word = m_word.fetch_add(n, std::memory_order_release);
 #if CW_DEBUG
     uint64_t prev_tokens = prev_word & tokens_mask;
-    Dout(dc::notice, "tokens " << prev_tokens << " --> " << (prev_tokens + n));
+    Dout(dc::semaphore, "tokens " << prev_tokens << " --> " << (prev_tokens + n));
     // Check for possible overflow.
     ASSERT(prev_tokens + n <= tokens_mask);
 #endif
@@ -90,9 +90,9 @@ class Semaphore : public Futex<uint64_t>
     // Are there potential waiters that need to be woken up?
     if (nwaiters > 0)
     {
-      Dout(dc::notice, "Calling Futex<uint64_t>::wake(" << n << ") because there were waiters (" << nwaiters << ").");
+      Dout(dc::semaphore, "Calling Futex<uint64_t>::wake(" << n << ") because there were waiters (" << nwaiters << ").");
       DEBUG_ONLY(uint32_t woken_up =) Futex<uint64_t>::wake(n);
-      Dout(dc::notice, "Woke up " << woken_up << " threads.");
+      Dout(dc::semaphore, "Woke up " << woken_up << " threads.");
       ASSERT(woken_up <= n);
     }
   }
@@ -113,7 +113,7 @@ class Semaphore : public Futex<uint64_t>
     do
     {
       uint64_t ntokens = word & tokens_mask;
-      Dout(dc::notice, "tokens = " << ntokens << "; waiters = " << (word >> nwaiters_shift));
+      Dout(dc::semaphore, "tokens = " << ntokens << "; waiters = " << (word >> nwaiters_shift));
       // Are there any tokens to grab?
       if (ntokens == 0)
         return word;            // No debug output needed: if the above line prints tokens = 0 then return false is implied.
@@ -121,7 +121,7 @@ class Semaphore : public Futex<uint64_t>
     }
     while (!m_word.compare_exchange_weak(word, word - 1, std::memory_order_acquire));
     // Token successfully grabbed.
-    Dout(dc::notice, "Success, now " << ((word & tokens_mask) - 1) << " tokens left.");
+    Dout(dc::semaphore, "Success, now " << ((word & tokens_mask) - 1) << " tokens left.");
     return word;
   }
 
@@ -131,7 +131,7 @@ class Semaphore : public Futex<uint64_t>
   // to grab a new token added with post(n).
   void wait() noexcept
   {
-    DoutEntering(dc::notice, "Semaphore::wait()");
+    DoutEntering(dc::semaphore, "Semaphore::wait()");
     uint64_t word = fast_try_wait();
     if ((word & tokens_mask) == 0)
       slow_wait();
@@ -139,7 +139,7 @@ class Semaphore : public Futex<uint64_t>
 
   bool try_wait() noexcept
   {
-    DoutEntering(dc::notice, "Semaphore::try_wait()");
+    DoutEntering(dc::semaphore, "Semaphore::try_wait()");
     return (fast_try_wait() & tokens_mask);
   }
 };
