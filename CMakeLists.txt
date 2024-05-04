@@ -31,10 +31,35 @@ endif ()
 #==============================================================================
 # OPTIONS
 
+# Detect if libcwd was found and if it was configured with CWDEBUG_ALLOC and CWDEBUG_LOCATION.
+if (libcwd_r_ROOT AND EXISTS "${libcwd_r_ROOT}/include/libcwd/config.h")
+  file(WRITE "${CMAKE_BINARY_DIR}/test.cpp"
+    "#include \"include/libcwd/config.h\"\n"
+    "#if CWDEBUG_ALLOC && CWDEBUG_LOCATION\n"
+    "True\n"
+    "#else\n"
+    "False\n"
+    "#endif\n"
+  )
+  execute_process(
+    COMMAND ${CMAKE_CXX_COMPILER} -I "${libcwd_r_ROOT}" -E "${CMAKE_BINARY_DIR}/test.cpp"
+    OUTPUT_VARIABLE PREPROCESSOR_OUTPUT
+  )
+  string(REGEX MATCH "\n(True|False)\n" LIBCWD_R_CONFIG_RESULT ${PREPROCESSOR_OUTPUT})
+  string(REGEX REPLACE "\n" "" REPLACE_OUTPUT ${LIBCWD_R_CONFIG_RESULT})
+  message(DEBUG "${libcwd_r_ROOT}/include/libcwd/config.h has both CWDEBUG_ALLOC and CWDEBUG_LOCATION set: ${REPLACE_OUTPUT}")
+  set(libcwd_r_CWDEBUG_ALLOC_and_CWDEBUG_LOCATION_found ${REPLACE_OUTPUT})
+  unset(REPLACE_OUTPUT)
+  unset(PREPROCESSOR_OUTPUT)
+  unset(LIBCWD_R_CONFIG_RESULT)
+else()
+  set(libcwd_r_CWDEBUG_ALLOC_and_CWDEBUG_LOCATION_found False)
+endif()
+
 # Option 'EnableDebugGlobal' is available when OptionEnableLibcwd is ON (otherwise OFF).
 cw_option(EnableDebugGlobal
           "Enable debug code that checks the correct usage of Global<> and Singleton<>" ON
-          "OptionEnableLibcwd" OFF
+          "OptionEnableLibcwd;libcwd_r_CWDEBUG_ALLOC_and_CWDEBUG_LOCATION_found" OFF
 )
 
 if (OptionEnableLibcwd)
