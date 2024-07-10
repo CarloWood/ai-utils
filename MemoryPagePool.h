@@ -31,6 +31,7 @@
 #include "SimpleSegregatedStorage.h"
 #include "debug.h"
 #include <mutex>
+#include <algorithm>
 #include <unistd.h>
 
 namespace utils {
