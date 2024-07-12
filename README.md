@@ -13,6 +13,7 @@ providing C++ utilities for larger projects, including:
 * ``ColorPool`` : Allows to hand out a "color" (just a small int, an index), from a pool, that wasn't used for the longest period. Intended to color debug output of threads and used by [threadpool](https://github.com/CarloWood/threadpool).
 * ``DelayLoopCalibration`` : Determine the required loop size for a given lambda to delay the code a given amount of milliseconds.
 * ``DequeAllocator`` : The perfect allocator for your deque's.
+* ``DEVector`` : Double-Ended Vector. Contiguous storage, but sacrifices memory to be as cheap with push_front as push_back.
 * ``Dictionary`` : Map known words to known enum values, and unknown words to new (different) values.
 * ``EnumIterator`` : Iterate over (contiguous) enum values.
 * ``FunctionView`` : Cheap, lightweight Callable (like std::function) suitable for passing arbitrary functions as argument.
