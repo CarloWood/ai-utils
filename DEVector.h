@@ -52,6 +52,15 @@ class DEVector
   constexpr DEVector() = default;
   constexpr ~DEVector() { std::free(buffer_); }
 
+  constexpr DEVector(DEVector&& orig)
+  {
+    std::memcpy(this, &orig, sizeof(*this));
+    orig.buffer_ = nullptr;     // Allow destruction.
+    orig.capacity_ = 0;         // Alloc calling clear(), which then results in a state equal to being default constructed.
+  }
+
+  constexpr DEVector(DEVector const&);
+
   constexpr size_t size() const { return size_; }
 
   constexpr void clear() { size_ = 0; zero_index_ = capacity_ / 2; }
@@ -147,12 +156,22 @@ class DEVector
 };
 
 template<typename T, size_t initial_size>
+constexpr DEVector<T, initial_size>::DEVector(DEVector const& orig) :
+  buffer_{allocate_buffer(capacity_)},
+  capacity_{orig.capacity_},
+  size_{orig.size_},
+  zero_index_{orig.zero_index_}
+{
+  std::copy(orig.begin(), orig.end(), begin());
+}
+
+template<typename T, size_t initial_size>
 constexpr T* DEVector<T, initial_size>::allocate_buffer(size_t min_capacity)
 {
   // Add +1 to min_capacity and then subtract sizeof(T) to account for a possible overhead of std::aligned_alloc.
-  size_t bytes_to_allocated = utils::malloc_size((min_capacity + 1) * sizeof(T)) - sizeof(T);
-  capacity_ = bytes_to_allocated / sizeof(T);
-  return static_cast<T*>(std::aligned_alloc(alignof(T), bytes_to_allocated));
+  size_t bytes_to_allocate = utils::malloc_size((min_capacity + 1) * sizeof(T)) - sizeof(T);
+  capacity_ = bytes_to_allocate / sizeof(T);
+  return static_cast<T*>(std::aligned_alloc(alignof(T), bytes_to_allocate));
 }
 
 template<typename T, size_t initial_size>
