@@ -59,7 +59,16 @@ class DEVector
     orig.capacity_ = 0;         // Alloc calling clear(), which then results in a state equal to being default constructed.
   }
 
+  constexpr DEVector& operator=(DEVector&& orig)
+  {
+    std::memcpy(this, &orig, sizeof(*this));
+    orig.buffer_ = nullptr;     // Allow destruction.
+    orig.capacity_ = 0;         // Alloc calling clear(), which then results in a state equal to being default constructed.
+    return *this;
+  }
+
   constexpr DEVector(DEVector const&);
+  constexpr DEVector& operator=(DEVector const& rhs);
 
   constexpr size_t size() const { return size_; }
 
@@ -157,12 +166,23 @@ class DEVector
 
 template<typename T, size_t initial_size>
 constexpr DEVector<T, initial_size>::DEVector(DEVector const& orig) :
-  buffer_{allocate_buffer(capacity_)},
+  buffer_{allocate_buffer(orig.capacity_)},
   capacity_{orig.capacity_},
   size_{orig.size_},
   zero_index_{orig.zero_index_}
 {
   std::copy(orig.begin(), orig.end(), begin());
+}
+
+template<typename T, size_t initial_size>
+constexpr DEVector<T, initial_size>& DEVector<T, initial_size>::operator=(DEVector const& rhs)
+{
+  buffer_ = allocate_buffer(rhs.capacity_);
+  capacity_ = rhs.capacity_;
+  size_ = rhs.size_;
+  zero_index_ = rhs.zero_index_;
+  std::copy(rhs.begin(), rhs.end(), begin());
+  return *this;
 }
 
 template<typename T, size_t initial_size>
