@@ -22,6 +22,7 @@ providing C++ utilities for larger projects, including:
 * ``InstanceTracker`` : Base class to keep track of all existing objects of a given type.
 * ``iomanip`` : Custom io manipulators.
 * ``itoa`` : Maximum speed integer to string converter.
+* ``List`` : Drop-in for std::list - slightly faster - and with extra features: you can test if an iterator is_end() or is_begin() without access to the list, and you can go to the next previous element, having a value_type, without access to the list (next(), prev()).
 * ``MemoryPagePool`` : A memory pool that returns fixed-size memory blocks allocated with ``std::aligned_alloc`` and aligned to ``memory_page_size``.
 * ``MultiLoop`` : A variable number of nested for loops.
 * ``NodeMemoryPool`` : A memory pool intended for fixed size allocations, one object at a time, where the size and type of the object are not known until the first allocation. Intended to be used with ``std::allocate_shared`` or ``std::list``.
