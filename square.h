@@ -32,7 +32,7 @@ consteval auto square(T const& arg)
 }
 
 template<ConceptBuiltin T>
-T square(T arg)
+[[gnu::always_inline]] inline T square(T arg)
 {
   return arg * arg;
 }
