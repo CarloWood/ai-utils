@@ -11,7 +11,9 @@
 #endif
 
 namespace utils {
+#ifdef CWDEBUG
 using utils::has_print_on::operator<<;
+#endif
 
 // DEVector
 //
