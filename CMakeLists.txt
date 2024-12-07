@@ -30,9 +30,9 @@ find_package(Threads REQUIRED)
 # macros.h:       #include <boost/preprocessor/stringize.hpp>
 #                 #include <boost/preprocessor/expand.hpp>
 # StreamHasher.h: #include <boost/functional/hash.hpp>
-find_package(Boost REQUIRED)
+find_package(Boost CONFIG REQUIRED)
 
-# Test if the root of the project used `find_package(Boost COMPONENTS filesystem)`.
+# Test if the root of the project used `find_package(Boost CONFIG COMPONENTS filesystem)`.
 if (Boost_FILESYSTEM_FOUND)
   set(HAVE_BOOST_FILESYSTEM 1)
 endif ()
