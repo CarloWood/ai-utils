@@ -26,13 +26,13 @@ T square(T const& arg)
 
 template<typename T>
 requires (!ConceptMultiplicableAssignable<T>) && (!ConceptBuiltin<T>)
-consteval auto square(T const& arg)
+constexpr auto square(T const& arg)
 {
   return arg * arg;
 }
 
 template<ConceptBuiltin T>
-[[gnu::always_inline]] inline T square(T arg)
+[[gnu::always_inline]] inline constexpr T square(T arg)
 {
   return arg * arg;
 }
