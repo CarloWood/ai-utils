@@ -81,6 +81,15 @@
   _Pragma("GCC diagnostic push")
 #endif
 
+#if defined(__GNUC__) && defined(__clang__) // gcc doesn't have a -Wnullability-completeness.
+#define PRAGMA_DIAGNOSTIC_PUSH_IGNORE_nullability_completeness \
+  _Pragma("GCC diagnostic push") \
+  _Pragma("GCC diagnostic ignored \"-Wnullability-completeness\"")
+#else
+#define PRAGMA_DIAGNOSTIC_PUSH_IGNORE_nullability_completeness \
+  _Pragma("GCC diagnostic push")
+#endif
+
 #define PRAGMA_DIAGNOSTIC_PUSH_IGNORE(warn_option) \
   _Pragma("GCC diagnostic push") \
   _Pragma(BOOST_PP_STRINGIZE(GCC diagnostic ignored BOOST_PP_EXPAND(warn_option)))
