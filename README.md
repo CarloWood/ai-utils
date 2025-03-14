@@ -29,6 +29,7 @@ providing C++ utilities for larger projects, including:
 * ``NodeMemoryResource`` : A fixed size memory resource that uses a ``MemoryPagePool`` as upstream.
 * ``ObjectTracker`` : Keeps track of where your object is (even if it is moved). Can be used as a pointer to objects that might move in memory.
 * ``pointer_hash`` : The ideal hash function for pointers returned by new or malloc (or any pointer really).
+* ``print_pointer`` : Write ``print_pointer(ptr)`` to ostreams to print not just the pointer value but also the contents of the object that it points to.
 * ``PairCompare`` : Function to compare two pairs pair<First, Second>. First and Second are allowed to be vectors.
 * ``QuotedList`` : Use together with utils::print_using to print elements of a container.
 * ``RandomNumber`` : Wrapper around a std::mt19937_64 to more intuitively generate uniformly distributed integers.
