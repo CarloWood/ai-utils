@@ -48,6 +48,7 @@ providing C++ utilities for larger projects, including:
 
 * Several utilities like
 * ``almost_equal`` : compare two floating point types.
+* ``arrow_type`` : type trait to obtain the pointer type of an object.
 * ``at_scope_end`` : exception safe execute code when the current scope is left.
 * ``c_escape`` : write char range (string, string_view, vector<char>) to an ostream, escaping unprintable characters (e.g. \n, \e, \0, \xAC).
 * ``clz / ctz / mssb / parity / popcount`` : wrappers around __builtin functions.
