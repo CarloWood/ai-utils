@@ -33,10 +33,10 @@
 namespace utils {
 
 template<typename T> using dereferencable_type = decltype(*std::declval<T>());
-template<typename T> using arrow_type = decltype(std::declval<T>().operator->());
+template<typename T> using operator_arrow_type = decltype(std::declval<T>().operator->());
 
 template<typename T> using is_dereferencable = std::experimental::is_detected<dereferencable_type, T>;
-template<typename T> using has_arrow = std::experimental::is_detected<arrow_type, T>;
+template<typename T> using has_arrow = std::experimental::is_detected<operator_arrow_type, T>;
 template<typename T> using is_pointer_like_dereferencable = is_dereferencable<T>;
 
 template<typename T> using is_pointer_like_arrow_dereferencable = std::disjunction<std::is_pointer<T>, has_arrow<T>>;
