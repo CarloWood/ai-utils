@@ -3,6 +3,9 @@
 #include "utils/iomanip.h"
 #include <boost/intrusive_ptr.hpp>
 #include <memory>
+#ifdef __cpp_concepts
+#include <type_traits>
+#endif
 
 namespace utils {
 
@@ -53,9 +56,19 @@ std::ostream& operator<<(std::ostream& os, PrintPointer<T> ptr)
   {
     if (!PrintingPointer<T>::get_iword_value(os))
     {
-      os << '&';
-      os << PrintingPointer<T>(1L) << *ptr.m_ptr;
-      os << '@';
+#ifdef __cpp_concepts
+      // If we have __cpp_concepts - then only attempt to write the dereferenced
+      // pointer to the ostream if that type supports writing to an ostream.
+      if constexpr (requires { std::declval<std::ostream&>() << *ptr.m_ptr; })
+#endif
+      {
+        os << '&';
+        if constexpr (std::is_same_v<char, std::remove_cv_t<T>>)
+          os << '"' << *ptr.m_ptr << '"';
+        else
+          os << PrintingPointer<T>(1L) << *ptr.m_ptr;
+        os << '@';
+      }
     }
     os << (void*)ptr.m_ptr;
   }
