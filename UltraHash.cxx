@@ -679,9 +679,10 @@ int UltraHash::initialize(std::vector<uint64_t> const& keys)
             unsigned int si = set_index(key);
             // Paranoia check; should never fail.
             ASSERT(si < (unsigned int)number_of_sets);
+            ASSERT(ki[si] < key_sets[si].size());
             key_sets[si][ki[si]++] = key;
             // More than 64 keys can never be linear independent so we don't even try.
-            if ((too_many_keys_in_one_set = ki[si] > size_t{64}))
+            if ((too_many_keys_in_one_set = ki[si] >= size_t{64}))
               break;
           }
           //========================================================================================
