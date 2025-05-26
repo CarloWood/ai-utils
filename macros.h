@@ -63,21 +63,21 @@
   _Pragma("GCC diagnostic push")
 #endif
 
-#if defined(__GNUC__) && !defined(__clang__) // clang doesn't have a -Wdeprecated_declarations warning.
-#define PRAGMA_DIAGNOSTIC_PUSH_IGNORE_deprecated_declarations \
-  _Pragma("GCC diagnostic push") \
-  _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
-#else
-#define PRAGMA_DIAGNOSTIC_PUSH_IGNORE_deprecated_declarations \
-  _Pragma("GCC diagnostic push")
-#endif
-
 #if defined(__GNUC__) && !defined(__clang__) // clang doesn't have a -Wnon-template-friend warning.
 #define PRAGMA_DIAGNOSTIC_PUSH_IGNORE_non_template_friend \
   _Pragma("GCC diagnostic push") \
   _Pragma("GCC diagnostic ignored \"-Wnon-template-friend\"")
 #else
 #define PRAGMA_DIAGNOSTIC_PUSH_IGNORE_non_template_friend \
+  _Pragma("GCC diagnostic push")
+#endif
+
+#if defined(__GNUC__) && defined(__clang__) // gcc doesn't have a -Wnullability-completeness.
+#define PRAGMA_DIAGNOSTIC_PUSH_IGNORE_nullability_completeness \
+  _Pragma("GCC diagnostic push") \
+  _Pragma("GCC diagnostic ignored \"-Wnullability-completeness\"")
+#else
+#define PRAGMA_DIAGNOSTIC_PUSH_IGNORE_nullability_completeness \
   _Pragma("GCC diagnostic push")
 #endif
 

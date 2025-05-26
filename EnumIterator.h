@@ -34,7 +34,7 @@ class EnumIterator
   constexpr EnumIterator() : m_val(static_cast<val_t>(Begin)) { }
   constexpr EnumIterator(T const begin, int increment = 0) : m_val(static_cast<val_t>(begin) + increment) { }
 
-  static constexpr EnumIterator s_end{Last, 1};
+  static EnumIterator s_end;
 
   EnumIterator& operator++()
   {
@@ -95,5 +95,9 @@ class EnumIterator
 
   bool operator!=(EnumIterator iter) const { return m_val != iter.m_val; }
 };
+
+//static
+template<typename T, T Begin, T Last>
+EnumIterator<T, Begin, Last> EnumIterator<T, Begin, Last>::s_end{Last, 1};
 
 } // namespace utils

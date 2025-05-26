@@ -30,9 +30,9 @@ find_package(Threads REQUIRED)
 # macros.h:       #include <boost/preprocessor/stringize.hpp>
 #                 #include <boost/preprocessor/expand.hpp>
 # StreamHasher.h: #include <boost/functional/hash.hpp>
-find_package(Boost REQUIRED)
+find_package(Boost CONFIG REQUIRED)
 
-# Test if the root of the project used `find_package(Boost COMPONENTS filesystem)`.
+# Test if the root of the project used `find_package(Boost CONFIG COMPONENTS filesystem)`.
 if (Boost_FILESYSTEM_FOUND)
   set(HAVE_BOOST_FILESYSTEM 1)
 endif ()
@@ -149,6 +149,7 @@ target_sources(utils_ObjLib
     "translate.cxx"
     "u8string_to_filename.cxx"
     "utf8_glyph_length.cxx"
+    "to_digits_string.cxx"
 
     "threading/aithreadid.cxx"
     "threading/Semaphore.cxx"
@@ -192,6 +193,7 @@ target_sources(utils_ObjLib
     "u8string_to_filename.h"
     "ulong_to_base.h"
     "utf8_glyph_length.h"
+    "to_digits_string.h"
 
     "threading/aithreadid.h"
     "threading/FIFOBuffer.h"

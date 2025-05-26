@@ -29,7 +29,7 @@
 //      For example,
 //        list_type::value_type first_element = my_list.front();
 //        list_type::iterator second_element_iter = first_element.next();    // Doesn't need my_list.
-//        if (!second_element.is_end())
+//        if (!second_element_iter.is_end())
 //        {
 //          list_type::value_type second_element = *second_element_iter;
 //

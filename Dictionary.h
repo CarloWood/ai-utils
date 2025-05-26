@@ -46,7 +46,11 @@ class DictionaryBase
 
 // Usage (using utils::VectorIndex):
 //
-// enum enum_type {
+// Note that clang++ requires that you specify `unsigned char` as underlying type
+// if the enum is used together with magic_enum. Otherwise the allowed values are
+// restricted to the range [0, 63], which gives problems with how magic_enum works.
+//
+// enum enum_type : unsigned char {
 //   foo,
 //   bar,
 //   baz
