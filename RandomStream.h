@@ -49,7 +49,7 @@ class RandomStreamBuf : public std::streambuf
       return EOF;
 
     size_t size = std::min(m_size, m_buffer.size());
-    setg(&m_buffer[0], &m_buffer[0], &m_buffer[size]);
+    setg(&m_buffer[0], &m_buffer[0], m_buffer.data() + size);
     for (size_t i = 0; i < size; ++i)
       m_buffer[i] = m_dist(m_twister);
     m_size -= size;

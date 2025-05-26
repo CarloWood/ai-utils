@@ -55,7 +55,7 @@ class HasherStreamBuf : public std::streambuf
   {
     if (pptr() > pbase())
       boost::hash_combine(m_hash, boost::hash_range(pbase(), pptr()));
-    setp(&m_buf[0], &m_buf[bufsize]);
+    setp(&m_buf[0], m_buf.data() + bufsize);
   }
 
  protected:
@@ -72,7 +72,7 @@ class HasherStreamBuf : public std::streambuf
   }
 
  public:
-  HasherStreamBuf() : m_hash(0) { setp(&m_buf[0], &m_buf[bufsize]); }
+  HasherStreamBuf() : m_hash(0) { setp(&m_buf[0], m_buf.data() + bufsize); }
 
   size_t hash()
   {
@@ -86,16 +86,17 @@ class HasherStreamBuf : public std::streambuf
   };
 
   // For streams with characters in the range ['A', 'Z'].
+  // These hashes correspond with boost version 1.88.0.
   static constexpr std::array<size_hash_pair_t, 9> size_hash_pairs = {{
-    { 1, 0xaedc04cfa2e5b999 },
-    { 10, 0xa32fa7216c0d9b4b },
-    { 100, 0xd82a1e09aeb1383 },
-    { 1000, 0xf373022bdeab5158 },
-    { 10000, 0x345360b3a8fa2b73 },
-    { 100000, 0x4755f0873f1b649 },
-    { 1000000, 0x1e6fca364672c0d },
-    { 10000000, 0xd8ef85366ad39522 },
-    { 100000000, 0x737dddb5f390f1aa }
+    { 1, 0x59b6c7886c0aac05 },
+    { 10, 0x3886ca52d4567a76 },
+    { 100, 0xda7559ed38282f2b },
+    { 1000, 0xf8654124c32cbce3 },
+    { 10000, 0xef11f1d322998371 },
+    { 100000, 0xa756fdb74970eae8 },
+    { 1000000, 0x5690483fc4413fb5 },
+    { 10000000, 0x1e31aa56afb5d78b },
+    { 100000000, 0x4f406899b456059a }
   }};
 };
 

@@ -49,10 +49,12 @@ char const* itoa(std::array<char, sz>& buf, T n)
   // 2.40824 == ln(256) / ln(10), converting from byte length to digits.
   static_assert(sz > constexpr_ceil(2.40824 * (sizeof(T) - 0.125 * is_signed)) + is_signed,
       "The size of the array is not large enough to hold the maximum value of T.");
+
+  char* ptr = buf.data() + sz;
   if constexpr (is_signed)
-    return backwards_itoa_signed(&buf[sz], n, 10);
+    return backwards_itoa_signed(ptr, n, 10);
   else
-    return backwards_itoa_unsigned(&buf[sz], n, 10);
+    return backwards_itoa_unsigned(ptr, n, 10);
 }
 
 #pragma GCC diagnostic pop
