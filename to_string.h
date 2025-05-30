@@ -21,17 +21,11 @@
 //
 // Usage:
 //
-// An enum defined in a namespace (including global namespace) that wants to
-// use `to_string(e)` must add the following inside its namespace in order for
-// ADL to work:
-//
 #ifdef EXAMPLE_CODE
 
   #include "utils/to_string.h"
 
   namespace N {
-  // In order to use to_string with E.
-  using utils::enums::to_string;
 
   enum E {
     val1,
@@ -58,15 +52,15 @@
 
 #include "enchantum/enchantum.hpp"
 
-namespace utils::enums {
-
-template<typename E>
-requires std::is_enum_v<E>
-inline std::string_view to_string(E e)
-{
-  return enchantum::to_string(e);
-}
-
-} // namespace utils::enums
+struct {
+  template<class E>
+  requires std::is_enum_v<E>
+  constexpr auto operator()(E e) const
+  {
+    using enchantum::to_string;
+    // Uses ADL to find a to_string in the namespace of E, or else falls back to enchantum::to_string.
+    return to_string(e);
+  }
+} inline constexpr to_string;
 
 #endif // USE_ENCHANTUM
