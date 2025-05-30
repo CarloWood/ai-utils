@@ -78,6 +78,19 @@ if (OptionEnableDebugGlobal)
   set(DEBUGGLOBAL 1)
 endif ()
 
+# Only check for enchantum if we're using at least C++20.
+if (DEFINED CMAKE_CXX_STANDARD AND CMAKE_CXX_STANDARD GREATER_EQUAL 20)
+  # Do we have an enchantum submodule?
+  # To use this, add https://github.com/CarloWood/enchantum.git as git submodule to the root of the project
+  # and add `add_subdirectory(enchantum)` to the root CMakeLists.txt file.
+  if (EXISTS "${CMAKE_SOURCE_DIR}/enchantum/enchantum/include/enchantum/enchantum.hpp")
+    set(OptionUseEnchantum True)
+    message(STATUS "Enchantum enabled")
+  else ()
+    message(STATUS "Enchantum submodule not found: enchantum disabled")
+  endif ()
+endif ()
+
 #==============================================================================
 # PLATFORM SPECIFIC CHECKS
 #
@@ -100,6 +113,10 @@ CW_SYS_CACHELINE_SIZE()                 # Find the cacheline size.
 #include(CW_CHECK_BMI2_SUPPORT)
 #CW_CHECK_BMI2_SUPPORT()                 # Test for bmi2 support.
 #set(GCC_BMI2_COMPILE_FLAGS "-mbmi2")    # Will be added if support was detected, see below.
+
+if (OptionUseEnchantum)
+  set(USE_ENCHANTUM 1)
+endif ()
 
 # Specify utils specific configure file.
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in
