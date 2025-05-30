@@ -10,7 +10,7 @@
 
 #ifdef EXAMPLE_CODE
 
-  #include "utils/to_string.h"
+  #include "utils/has_to_string.h"
 
   namespace N {
   // This class defines a to_string method.
