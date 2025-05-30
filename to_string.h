@@ -39,8 +39,11 @@
 
   void foo(N::E e)
   {
-    std::string_view sv = to_string(e);
+    std::string_view sv = utils::to_string(e);
     ...
+
+  // This will call N::to_string(e) if that exists (found by ADL)
+  // or else enchanted::to_string(e).
 
 #endif // EXAMPLE_CODE
 
@@ -52,6 +55,8 @@
 
 #include "enchantum/enchantum.hpp"
 
+namespace utils {
+
 struct {
   template<class E>
   requires std::is_enum_v<E>
@@ -62,5 +67,7 @@ struct {
     return to_string(e);
   }
 } inline constexpr to_string;
+
+} // namespace utils
 
 #endif // USE_ENCHANTUM
