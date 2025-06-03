@@ -83,9 +83,13 @@ class PrintUsing2
     //Dout(dc::notice, "Using " << type_info_of<PrintUsing2>().demangled_name());
     if constexpr (utils::is_pointer_like_dereferencable_v<T>)
     {
-      if constexpr (((std::is_member_function_pointer_v<print_on_type> &&
-                        std::is_same_v<std::decay_t<decltype(*std::declval<T>())>, typename member_function_traits<print_on_type>::instance_type>) ||
-                      !std::is_member_function_pointer_v<print_on_type>))
+      if constexpr (
+          (std::is_member_function_pointer_v<print_on_type> &&
+           // If m_print_on is a member function pointer, then only dereference m_obj if the result is the class type of that member function.
+           std::is_same_v<std::decay_t<decltype(*std::declval<T>())>, typename member_function_traits<print_on_type>::instance_type>) ||
+          (!std::is_member_function_pointer_v<print_on_type> &&
+           // If m_print_on(os, m_obj) compiles, then do not attempt to dereference m_obj just because we can.
+           !requires(std::ostream& os_p, print_on_type print_on_p, T obj_p) { print_on_p(os_p, obj_p); }))
       {
         os << '*';
         if constexpr (std::is_member_function_pointer_v<print_on_type>)
