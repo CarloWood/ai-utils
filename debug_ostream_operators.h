@@ -28,6 +28,7 @@
 #pragma once
 
 #include <iosfwd>                       // std::ostream&
+#include <string_view>
 
 namespace AIAlert {
 
@@ -37,3 +38,17 @@ class Error;
 std::ostream& operator<<(std::ostream& os, Error const& error);
 
 } // namespace AIAlert
+
+namespace utils {
+
+struct PrintCEscaped
+{
+  std::string_view data_;
+};
+
+inline PrintCEscaped print_c_escaped(std::string_view str) { return {str}; }
+inline PrintCEscaped print_c_escaped(char const* str) { return {str}; }
+
+std::ostream& operator<<(std::ostream& os, PrintCEscaped str);
+
+} // namespace utils
