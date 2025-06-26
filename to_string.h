@@ -57,12 +57,17 @@
 
 namespace utils {
 
+namespace adl {
+template<enchantum::Enum E>
+constexpr auto to_string(E e) { return enchantum::to_string(e);}
+} // namespace adl
+
 struct {
   template<class E>
   requires std::is_enum_v<E>
   constexpr auto operator()(E e) const
   {
-    using enchantum::to_string;
+    using adl::to_string;
     // Uses ADL to find a to_string in the namespace of E, or else falls back to enchantum::to_string.
     return to_string(e);
   }

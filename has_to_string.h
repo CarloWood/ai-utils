@@ -100,4 +100,4 @@ std::string to_string(E e)
   return T::to_string(e);
 }
 
-} // namespace utils::has_to_strings
+} // namespace utils::has_to_string
