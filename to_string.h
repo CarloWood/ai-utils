@@ -1,6 +1,6 @@
 #pragma once
 
-// Adds support for print enums by ADL.
+// Adds support for printing enums by ADL.
 // For this to work you need to add https://github.com/ZXShady/enchantum.git
 // (or the fork https://github.com/CarloWood/enchantum.git) to the root of
 // your project:
@@ -43,7 +43,7 @@
     ...
 
   // This will call N::to_string(e) if that exists (found by ADL)
-  // or else enchanted::to_string(e).
+  // or else enchantum::to_string(e).
 
 #endif // EXAMPLE_CODE
 

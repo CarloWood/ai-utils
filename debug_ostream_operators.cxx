@@ -28,6 +28,8 @@
 #include "sys.h"        // Put this outside the #ifdef CWDEBUG .. #endif in order
                         // to force recompilation after the configuration changed.
 
+#include "debug_ostream_operators.h"
+#include "c_escape.h"
 #include "translate.h"
 #include "AIAlert.h"
 
@@ -66,3 +68,13 @@ std::ostream& operator<<(std::ostream& os, AIAlert::Error const& error)
 }
 
 } // namespace AIAlert
+
+namespace utils {
+
+std::ostream& operator<<(std::ostream& os, PrintCEscaped str)
+{
+  c_escape(os, str.data_);
+  return os;
+}
+
+} // namespace utils
