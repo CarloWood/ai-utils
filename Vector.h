@@ -32,6 +32,39 @@
 
 namespace utils {
 
+// This vector only accepts a certain type as index for Vector::operator[] and Vector::at, as opposed to size_t.
+//
+// Usage
+// =====
+//
+// Declaration
+// -----------
+//
+// For a certain category, which can be any type (even an incomplete one), define an index type:
+//
+//   struct FooBarCategory;
+//   using FooBarIndex = utils::VectorIndex<FooBarCategory>;
+//
+// Then define one or more Vector types that will accept this index type; e.g.
+//
+//   using foos_type = utils::Vector<Foo, FooBarIndex> foos;
+//   using bars_type = utils::Vector<Bar, FooBarIndex> bars;
+//
+// If no index type is specified then category used is utils::VectorIndex<T>, where T is the first
+// template parameter of the utils::Vector<T> (aka, the type of the elements stored in the Vector).
+// Hence, there is only really a need for a separate index type if you want to use the same index
+// for more than one Vector type.
+//
+// Either way, the index type is available from the vector type as utils::Vector<T>::index_type.
+//
+// Looping
+// -------
+//
+// The run over elements of the vector by index, you can do
+//
+//   for (auto i = foos.ibegin(); i != foos.iend(); ++i)
+//     // Use foos[i];
+
 template <typename T, typename _Index = VectorIndex<T>, typename _Alloc = std::allocator<T>>
 class Vector : public std::vector<T, _Alloc>
 {
