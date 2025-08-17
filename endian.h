@@ -165,8 +165,8 @@ template<typename T> std::enable_if_t<sizeof(T) == 4, T> ntoh(T v) { return be_t
 template<typename T> std::enable_if_t<sizeof(T) == 8, T> ntoh(T v) { return be_to_uint64(reinterpret_cast<char const*>(&v)); }
 
 template<typename T> std::enable_if_t<sizeof(T) == 1, T> hton(T v) { return v; }
-template<typename T> std::enable_if_t<sizeof(T) == 2, T> hton(T v) { T result; uint16_to_be(v, &result); return result; }
-template<typename T> std::enable_if_t<sizeof(T) == 4, T> hton(T v) { T result; uint32_to_be(v, &result); return result; }
-template<typename T> std::enable_if_t<sizeof(T) == 8, T> hton(T v) { T result; uint64_to_be(v, &result); return result; }
+template<typename T> std::enable_if_t<sizeof(T) == 2, T> hton(T v) { T result; uint16_to_be(v, reinterpret_cast<char*>(&result)); return result; }
+template<typename T> std::enable_if_t<sizeof(T) == 4, T> hton(T v) { T result; uint32_to_be(v, reinterpret_cast<char*>(&result)); return result; }
+template<typename T> std::enable_if_t<sizeof(T) == 8, T> hton(T v) { T result; uint64_to_be(v, reinterpret_cast<char*>(&result)); return result; }
 
 } // namespace utils
