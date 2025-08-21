@@ -67,19 +67,44 @@ class VectorIndex
   bool operator<=(VectorIndex index) const { return m_value <= index.m_value; }
   bool operator>=(VectorIndex index) const { return m_value >= index.m_value; }
 
-  constexpr VectorIndex operator-(int n) const { return VectorIndex{m_value - n}; }
-  constexpr VectorIndex operator+(int n) const { return VectorIndex{m_value + n}; }
-  constexpr VectorIndex operator%(VectorIndex m) const { return VectorIndex{m_value % m.m_value}; }
+  constexpr VectorIndex operator<<(int n) const { return VectorIndex{m_value << n}; }
+  constexpr VectorIndex operator>>(int n) const { return VectorIndex{m_value >> n}; }
+  friend constexpr VectorIndex operator+(VectorIndex lhs, ssize_t n) { return VectorIndex{lhs.m_value + n}; }
+  friend constexpr VectorIndex operator-(VectorIndex lhs, ssize_t n) { return VectorIndex{lhs.m_value - n}; }
+  friend constexpr VectorIndex operator+(VectorIndex lhs, size_t n) { return VectorIndex{lhs.m_value + n}; }
+  friend constexpr VectorIndex operator-(VectorIndex lhs, size_t n) { return VectorIndex{lhs.m_value - n}; }
+  friend constexpr VectorIndex operator+(ssize_t n, VectorIndex rhs) { return VectorIndex{n + rhs.m_value}; }
+  friend constexpr VectorIndex operator-(ssize_t n, VectorIndex rhs) { return VectorIndex{n - rhs.m_value}; }
+  friend constexpr VectorIndex operator+(size_t n, VectorIndex rhs) { return VectorIndex{n + rhs.m_value}; }
+  friend constexpr VectorIndex operator-(size_t n, VectorIndex rhs) { return VectorIndex{n - rhs.m_value}; }
+  friend constexpr ssize_t operator-(VectorIndex lhs, VectorIndex rhs) { return lhs.m_value - rhs.m_value; }
+  constexpr VectorIndex operator%(size_t n) const { return VectorIndex{m_value % n}; }
+  constexpr VectorIndex operator%(VectorIndex index) const { return VectorIndex{m_value % index.m_value}; }
+  friend constexpr VectorIndex operator*(VectorIndex lhs, size_t n) { return VectorIndex{lhs.m_value * n}; }
+  friend constexpr VectorIndex operator*(size_t n, VectorIndex rhs) { return VectorIndex{n * rhs.m_value}; }
+  constexpr VectorIndex operator/(size_t n) const { return VectorIndex{m_value / n}; }
+  friend constexpr VectorIndex operator|(VectorIndex lhs, VectorIndex rhs) { return VectorIndex{lhs.m_value | rhs.m_value}; }
+  friend constexpr VectorIndex operator&(VectorIndex lhs, VectorIndex rhs) { return VectorIndex{lhs.m_value & rhs.m_value}; }
+  friend constexpr VectorIndex operator|(VectorIndex lhs, size_t n) { return VectorIndex{lhs.m_value | n}; }
+  friend constexpr VectorIndex operator&(VectorIndex lhs, size_t n) { return VectorIndex{lhs.m_value & n}; }
+  friend constexpr VectorIndex operator|(size_t n, VectorIndex rhs) { return VectorIndex{n | rhs.m_value}; }
+  friend constexpr VectorIndex operator&(size_t n, VectorIndex rhs) { return VectorIndex{n & rhs.m_value}; }
 
   VectorIndex& operator<<=(int n) { m_value <<= n; return *this; }
   VectorIndex& operator>>=(int n) { m_value >>= n; return *this; }
-  VectorIndex& operator+=(int n) { m_value += n; return *this; }
-  VectorIndex& operator-=(int n) { m_value -= n; return *this; }
+  VectorIndex& operator+=(ssize_t n) { m_value += n; return *this; }
+  VectorIndex& operator-=(ssize_t n) { m_value -= n; return *this; }
+  VectorIndex& operator+=(size_t n) { m_value += n; return *this; }
+  VectorIndex& operator-=(size_t n) { m_value -= n; return *this; }
+  VectorIndex& operator-=(VectorIndex index) { ASSERT(m_value >= index.m_value); m_value -= index.m_value; return *this; }
+  VectorIndex& operator%=(size_t n) { m_value %= n; return *this; }
   VectorIndex& operator%=(VectorIndex index) { m_value %= index.m_value; return *this; }
-  VectorIndex& operator*=(int n) { m_value *= n; return *this; }
-  VectorIndex& operator/=(int n) { m_value /= n; return *this; }
+  VectorIndex& operator*=(size_t n) { m_value *= n; return *this; }
+  VectorIndex& operator/=(size_t n) { m_value /= n; return *this; }
   VectorIndex& operator|=(VectorIndex index) { m_value |= index.m_value; return *this; }
   VectorIndex& operator&=(VectorIndex index) { m_value &= index.m_value; return *this; }
+  VectorIndex& operator|=(size_t n) { m_value |= n; return *this; }
+  VectorIndex& operator&=(size_t n) { m_value &= n; return *this; }
 
   friend std::ostream& operator<<<>(std::ostream& os, VectorIndex<Category> const& index);
 };
