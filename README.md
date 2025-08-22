@@ -183,7 +183,7 @@ For example,
     add_executable(register_test register_test.cxx)
     target_link_libraries(register_test PRIVATE ${AICXX_OBJECTS_LIST})
 
-See this [MakeLists.txt](https://github.com/CarloWood/ai-utils-testsuite/blob/master/src/CMakeLists.txt)
+See this [CMakeLists.txt](https://github.com/CarloWood/ai-utils-testsuite/blob/master/src/CMakeLists.txt)
 of ai-utils-testsuite for a complete example.
 
 ### Using GNU autotools
