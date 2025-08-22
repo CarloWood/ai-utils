@@ -171,7 +171,7 @@ root of the project (directly under the ``project`` line):
 
 ``add_subdirectory`` is not necessary for ``cwds``, ``cwm4`` or ``utils``.
 
-See for example the root [MakeLists.txt](https://github.com/CarloWood/ai-utils-testsuite/blob/master/CMakeLists.txt) of ai-utils-testsuite.
+See for example the root [CMakeLists.txt](https://github.com/CarloWood/ai-utils-testsuite/blob/master/CMakeLists.txt) of ai-utils-testsuite.
 
 Finally, linking is done by adding ``${AICXX_OBJECTS_LIST}`` to
 the appropriate ``target_link_libraries``.
