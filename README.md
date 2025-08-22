@@ -61,12 +61,14 @@ providing C++ utilities for larger projects, including:
 * ``generate_unique_filename`` : return non-existing filename from hint (e.g. "foo.txt --> foo (1).txt" if foo.txt already exists).
 * ``get_Nth_type`` : return the Nth type of a template parameter pack.
 * ``has_print_on`` : never write ostream operator<< again! Use a member function to print a class.
+* ``is_between`` : `is_between_le_lt` and `is_between_lt_le`: efficient way to check if a given value is in a given range where one doesn't know which of the range values is the upper/lower bound.
 * ``is_complete`` : test if a template parameter was already completely defined.
 * ``is_pointer_like`` : type traits to detect if a type can be derefenced like a pointer.
 * ``is_power_of_two`` : (constexpr) test if integral value is a power of two.
 * ``is_specialization_of`` : type trait to test if a type is a specialization of a given template type.
 * ``is_vector`` : type trait to test if a type is std::vector or utils::Vector.
 * ``log2 / ceil_log2`` : (constexpr) return floor or ceil log2 of integral value.
+* ``macros.h`` : convenience macros: `AI_LIKELY`, `AI_UNLIKELY`, `AI_CASE_RETURN`, `PRAGMA_DIAGNOSTIC_*`, `ssizeof`.
 * ``malloc_size`` : calculate the optimal size to allocate, given a required minimum.
 * ``nearest_multiple_of_power_of_two`` : returns the smallest possible value N * power_of_two that is greater than or equal to n.
 * ``nearest_power_of_two`` : round the positive integer n up to the nearest power of 2.
@@ -82,7 +84,6 @@ providing C++ utilities for larger projects, including:
 * ``ulong_to_base`` : convert ulong to base 26.
 * ``unstable_remove`` : for fast removal of elements from a vector.
 * ``utf8_glyph_length`` : return length of multichar char8_t glyph.
-* ``macros.h`` : convenience macros.
 
 The root project should be using
 [cmake](https://cmake.org/overview/)
