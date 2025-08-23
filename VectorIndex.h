@@ -29,6 +29,8 @@
 
 #include "itoa.h"
 #include <iostream>
+#include <concepts>
+#include "debug.h"
 
 namespace utils {
 
@@ -69,10 +71,8 @@ class VectorIndex
 
   constexpr VectorIndex operator<<(int n) const { return VectorIndex{m_value << n}; }
   constexpr VectorIndex operator>>(int n) const { return VectorIndex{m_value >> n}; }
-  friend constexpr VectorIndex operator+(VectorIndex lhs, ssize_t n) { return VectorIndex{lhs.m_value + n}; }
-  friend constexpr VectorIndex operator-(VectorIndex lhs, ssize_t n) { return VectorIndex{lhs.m_value - n}; }
-  friend constexpr VectorIndex operator+(VectorIndex lhs, size_t n) { return VectorIndex{lhs.m_value + n}; }
-  friend constexpr VectorIndex operator-(VectorIndex lhs, size_t n) { return VectorIndex{lhs.m_value - n}; }
+  friend constexpr VectorIndex operator+(VectorIndex lhs, std::integral auto n) { return VectorIndex{lhs.m_value + n}; }
+  friend constexpr VectorIndex operator-(VectorIndex lhs, std::integral auto n) { return VectorIndex{lhs.m_value - n}; }
   friend constexpr VectorIndex operator+(ssize_t n, VectorIndex rhs) { return VectorIndex{n + rhs.m_value}; }
   friend constexpr VectorIndex operator-(ssize_t n, VectorIndex rhs) { return VectorIndex{n - rhs.m_value}; }
   friend constexpr VectorIndex operator+(size_t n, VectorIndex rhs) { return VectorIndex{n + rhs.m_value}; }
@@ -106,7 +106,7 @@ class VectorIndex
   VectorIndex& operator|=(size_t n) { m_value |= n; return *this; }
   VectorIndex& operator&=(size_t n) { m_value &= n; return *this; }
 
-  friend std::ostream& operator<<<>(std::ostream& os, VectorIndex<Category> const& index);
+  friend std::ostream& utils::operator<<<>(std::ostream& os, VectorIndex<Category> const& index);
 };
 
 template<typename Category>

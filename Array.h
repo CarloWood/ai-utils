@@ -29,6 +29,7 @@
 
 #include <array>
 #include <iostream>
+#include <concepts>
 #include "debug.h"
 
 namespace utils {
@@ -69,10 +70,8 @@ class ArrayIndex
   constexpr bool operator>=(ArrayIndex const& index) const { return m_value >= index.m_value; }
 
   constexpr ssize_t operator-(ArrayIndex n) const { return m_value - n.m_value; }
-  ArrayIndex operator-(ssize_t n) const { return ArrayIndex{m_value - n}; }
-  ArrayIndex operator+(ssize_t n) const { return ArrayIndex{m_value + n}; }
-  ArrayIndex operator-(size_t n) const { return ArrayIndex{m_value - n}; }
-  ArrayIndex operator+(size_t n) const { return ArrayIndex{m_value + n}; }
+  ArrayIndex operator-(std::integral auto n) const { return ArrayIndex{m_value - n}; }
+  ArrayIndex operator+(std::integral auto n) const { return ArrayIndex{m_value + n}; }
 
   friend std::ostream& operator<<<>(std::ostream& os, ArrayIndex<Category> const& index);
 };
