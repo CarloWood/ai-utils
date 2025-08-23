@@ -22,6 +22,9 @@
 // #include "memory/NodeMemoryResource.h"
 // #include "memory/SimpleSegregatedStorage.h"
 //
+// Regular expression for your convenience:
+// utils/(DequeAllocator|DequeMemoryResource|MemoryPagePool|NodeMemoryPool|NodeMemoryResource|SimpleSegregatedStorage)\.h
+//
 // Change all usage of namespace utils into memory for the following classes:
 //
 // memory::DequeAllocator
@@ -32,5 +35,7 @@
 // memory::NodeMemoryResource
 // memory::SimpleSegregatedStorage
 //
+// Regular expression for your convenience:
+// utils::(DequeAllocator|DequeMemoryResource|MemoryPagePool|NodeMemoryPool|Allocator|NodeMemoryResource|SimpleSegregatedStorage)
 
 #error "This header was moved to git submodule 'memory'. See the comment in the file containing this error for more information."
