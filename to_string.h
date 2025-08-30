@@ -50,6 +50,17 @@
 #include "config.h"
 
 #ifndef USE_ENCHANTUM
+// Add the submodule enchantum to the root of the project with:
+//   $ git submodule add https://github.com/ZXShady/enchantum.git
+// and add:
+//   # We use utils/to_string.h
+//   add_subdirectory(enchantum)
+// to the CMakeLists.txt file in the root of the project.
+//
+// If you already have the submodule enchantum then it is also
+// possible that you forgot to add `AICxx::utils` as dependency
+// to the target that the TU that results in this error is a part
+// of (aka at AICxx::utils to the target_link_libraries of that target).
 #error "Please add the enchantum submodule to the root of the project."
 #else
 
