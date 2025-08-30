@@ -67,6 +67,9 @@ class AtScopeEnd
     // Execute lambda iff neither now() nor once() were called before.
     void once() const { if (!m_executed) m_lambda(); m_executed = true; }
 
+    // Prevent execution by the destructor or once().
+    void disarm() const { m_executed = true; }
+
     // Execute lambda an additional time, regardless of calls to now() or once().
     void extra() const { m_lambda(); }
 };
