@@ -1,5 +1,7 @@
 #pragma once
 
+#include "debug.h"
+
 // Adds support for printing enums by ADL.
 // For this to work you need to add https://github.com/ZXShady/enchantum.git
 // (or the fork https://github.com/CarloWood/enchantum.git) to the root of
@@ -68,21 +70,34 @@
 
 namespace utils {
 
-namespace adl {
-template<enchantum::Enum E>
-constexpr auto to_string(E e) { return enchantum::to_string(e);}
-} // namespace adl
+namespace adl_decls {
+void to_string();
 
-//struct {
-  template<class E>
-  requires std::is_enum_v<E>
-  constexpr auto /*operator()*/to_string(E e) /*const*/
+template<class T>
+concept adl_to_stringable = requires(T t)
+{
+  to_string(t);
+};
+} // namespace adl_decls
+
+template<typename T>
+auto to_string(T const& t)
+{
+  if constexpr (requires { t.to_string(); })
+    return t.to_string();
+  else if constexpr (requires { T::to_string(t); })
+    return T::to_string(t);
+  else if constexpr (adl_decls::adl_to_stringable<T>)
+    return to_string(t);
+  else if constexpr (std::is_enum_v<T>)
+    return enchantum::to_string(t);
+  else
   {
-    using adl::to_string;
-    // Uses ADL to find a to_string in the namespace of E, or else falls back to enchantum::to_string.
-    return to_string(e);
+    static_assert(false, "utils::string can not find a candidate");
+    // Return something that can be written to an ostream, to avoid unnecessary compile errors.
+    return std::string_view{""};
   }
-//} inline constexpr to_string;
+}
 
 } // namespace utils
 
