@@ -62,7 +62,7 @@
 // If you already have the submodule enchantum then it is also
 // possible that you forgot to add `AICxx::utils` as dependency
 // to the target that the TU that results in this error is a part
-// of (aka at AICxx::utils to the target_link_libraries of that target).
+// of (aka add AICxx::utils to the target_link_libraries of that target).
 #error "Please add the enchantum submodule to the root of the project."
 #else
 
