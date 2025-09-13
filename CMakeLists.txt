@@ -233,6 +233,13 @@ target_link_libraries(utils_ObjLib
 )
 endif ()
 
+if (OptionUseEnchantum)
+target_link_libraries(utils_ObjLib
+  INTERFACE
+    enchantum::enchantum
+)
+endif ()
+
 # Required include search-paths.
 get_target_property(CWDS_INTERFACE_INCLUDE_DIRECTORIES AICxx::cwds INTERFACE_INCLUDE_DIRECTORIES)
 target_include_directories(utils_ObjLib
