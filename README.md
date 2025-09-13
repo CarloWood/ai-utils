@@ -12,7 +12,6 @@ providing C++ utilities for larger projects, including:
 * ``BitSet<T>`` : A wrapper around unsigned integral types T that allows fast bit-level manipulation, including iterating in a loop over all set bits.
 * ``ColorPool`` : Allows to hand out a "color" (just a small int, an index), from a pool, that wasn't used for the longest period. Intended to color debug output of threads and used by [threadpool](https://github.com/CarloWood/threadpool).
 * ``DelayLoopCalibration`` : Determine the required loop size for a given lambda to delay the code a given amount of milliseconds.
-* ``DequeAllocator`` : The perfect allocator for your deque's.
 * ``DEVector`` : Double-Ended Vector. Contiguous storage, but sacrifices memory to be as cheap with push_front as push_back.
 * ``Dictionary`` : Map known words to known enum values, and unknown words to new (different) values.
 * ``EnumIterator`` : Iterate over (contiguous) enum values.
@@ -23,10 +22,7 @@ providing C++ utilities for larger projects, including:
 * ``iomanip`` : Custom io manipulators.
 * ``itoa`` : Maximum speed integer to string converter.
 * ``List`` : Drop-in for std::list - slightly faster - and with extra features: you can test if an iterator is_end() or is_begin() without access to the list, and you can go to the next previous element, having a value_type, without access to the list (next(), prev()).
-* ``MemoryPagePool`` : A memory pool that returns fixed-size memory blocks allocated with ``std::aligned_alloc`` and aligned to ``memory_page_size``.
 * ``MultiLoop`` : A variable number of nested for loops.
-* ``NodeMemoryPool`` : A memory pool intended for fixed size allocations, one object at a time, where the size and type of the object are not known until the first allocation. Intended to be used with ``std::allocate_shared`` or ``std::list``.
-* ``NodeMemoryResource`` : A fixed size memory resource that uses a ``MemoryPagePool`` as upstream.
 * ``ObjectTracker`` : Keeps track of where your object is (even if it is moved). Can be used as a pointer to objects that might move in memory.
 * ``pointer_hash`` : The ideal hash function for pointers returned by new or malloc (or any pointer really).
 * ``print_pointer`` : Write ``print_pointer(ptr)`` to ostreams to print not just the pointer value but also the contents of the object that it points to.
@@ -36,7 +32,6 @@ providing C++ utilities for larger projects, including:
 * ``RandomStream`` : Stream producing random characters.
 * ``Register`` : Register callbacks for global objects, to be called once main() is entered.
 * ``REMOVE_TRAILING_COMMA`` : Macro that removes the last (possibly empty) argument.
-* ``SimpleSegregatedStorage`` : Maintains an unordered free list of blocks (used by NodeMemoryResource and MemoryPagePool).
 * ``Signals`` : Finally get your POSIX signals working the Right Way(tm).
 * ``StreamHasher`` : Calculate a digest of input written using operator<<.
 * ``TemplateStringLiteral`` : Pass a string literal as template parameter.
