@@ -243,9 +243,8 @@ endif ()
 # Required include search-paths.
 get_target_property(CWDS_INTERFACE_INCLUDE_DIRECTORIES AICxx::cwds INTERFACE_INCLUDE_DIRECTORIES)
 target_include_directories(utils_ObjLib
-  PUBLIC
-    "${CWDS_INTERFACE_INCLUDE_DIRECTORIES}" # For sys.h and debug.h.
-    "${top_objdir}"                         # For utils/config.h.
+  PRIVATE
+   "${CWDS_INTERFACE_INCLUDE_DIRECTORIES}"
 )
 
 # Require support for C++20.
