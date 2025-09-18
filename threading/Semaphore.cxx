@@ -54,14 +54,14 @@ void Semaphore::slow_wait() noexcept
       // EAGAIN happens when the number of tokens was changed in the meantime.
       // We (supuriously?) woke up or failed to go to sleep because the number of tokens changed.
       // It is therefore not sure that there is a token for us. Refresh word and try again.
-      word = m_word.load(std::memory_order_relaxed);
+      word = m_word.load(make_load_order(success_order));
       Dout(dc::semaphore(res == 0), "Woke up! tokens = " << (word & tokens_mask) << "; waiters = " << (word >> nwaiters_shift));
       // We woke up, try to again to get a token.
     }
     else
     {
       // (Try to) atomically grab a token and stop being a waiter.
-      if (m_word.compare_exchange_weak(word, word - one_waiter - 1, std::memory_order_acquire, std::memory_order_acquire))
+      if (m_word.compare_exchange_weak(word, word - one_waiter - 1, success_order))
       {
         Dout(dc::semaphore, "Successfully obtained a token. Now " << (ntokens - 1) << " tokens and " << ((word - one_waiter) >> nwaiters_shift) << " waiters left.");
         break;

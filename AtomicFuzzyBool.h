@@ -28,6 +28,7 @@
 #pragma once
 
 #include "FuzzyBool.h"
+#include "threading/make_load_order.h"
 #include <atomic>
 
 namespace utils {
@@ -68,34 +69,34 @@ class AtomicFuzzyBool
     return FuzzyBool{static_cast<FuzzyBoolEnum>(m_aval.fetch_xor(fuzzy_true, order))};  // Returns the old value.
   }
 
-  FuzzyBool fetch_AND(FuzzyBoolPOD const& val, std::memory_order order = std::memory_order_seq_cst)
+  FuzzyBool fetch_AND(FuzzyBoolPOD const& val, std::memory_order success_order = std::memory_order_seq_cst)
   {
-    int expected = m_aval.load(std::memory_order_relaxed);
-    while (!m_aval.compare_exchange_weak(expected, (AND_table >> (4 * expected + val.m_val)) & 0xc, order))
+    int expected = m_aval.load(threading::make_load_order(success_order));
+    while (!m_aval.compare_exchange_weak(expected, (AND_table >> (4 * expected + val.m_val)) & 0xc, success_order))
       ;  // The body of this loop is empty.
     return FuzzyBool{static_cast<FuzzyBoolEnum>(expected)};
   }
 
-  FuzzyBool fetch_OR(FuzzyBoolPOD const& val, std::memory_order order = std::memory_order_seq_cst)
+  FuzzyBool fetch_OR(FuzzyBoolPOD const& val, std::memory_order success_order = std::memory_order_seq_cst)
   {
-    int expected = m_aval.load(std::memory_order_relaxed);
-    while (!m_aval.compare_exchange_weak(expected, (OR_table >> (4 * expected + val.m_val)) & 0xc, order))
+    int expected = m_aval.load(threading::make_load_order(success_order));
+    while (!m_aval.compare_exchange_weak(expected, (OR_table >> (4 * expected + val.m_val)) & 0xc, success_order))
       ;  // The body of this loop is empty.
     return FuzzyBool{static_cast<FuzzyBoolEnum>(expected)};
   }
 
-  FuzzyBool fetch_XOR(FuzzyBoolPOD const& val, std::memory_order order = std::memory_order_seq_cst)
+  FuzzyBool fetch_XOR(FuzzyBoolPOD const& val, std::memory_order success_order = std::memory_order_seq_cst)
   {
-    int expected = m_aval.load(std::memory_order_relaxed);
-    while (!m_aval.compare_exchange_weak(expected, (XOR_table >> (4 * expected + val.m_val)) & 0xc, order))
+    int expected = m_aval.load(threading::make_load_order(success_order));
+    while (!m_aval.compare_exchange_weak(expected, (XOR_table >> (4 * expected + val.m_val)) & 0xc, success_order))
       ;  // The body of this loop is empty.
     return FuzzyBool{static_cast<FuzzyBoolEnum>(expected)};
   }
 
-  FuzzyBool fetch_NOT_XOR(FuzzyBoolPOD const& val, std::memory_order order = std::memory_order_seq_cst)
+  FuzzyBool fetch_NOT_XOR(FuzzyBoolPOD const& val, std::memory_order success_order = std::memory_order_seq_cst)
   {
-    int expected = m_aval.load(std::memory_order_relaxed);
-    while (!m_aval.compare_exchange_weak(expected, (NOT_XOR_table >> (4 * expected + val.m_val)) & 0xc, order))
+    int expected = m_aval.load(threading::make_load_order(success_order));
+    while (!m_aval.compare_exchange_weak(expected, (NOT_XOR_table >> (4 * expected + val.m_val)) & 0xc, success_order))
       ;  // The body of this loop is empty.
     return FuzzyBool{static_cast<FuzzyBoolEnum>(expected)};
   }

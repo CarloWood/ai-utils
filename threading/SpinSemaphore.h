@@ -28,6 +28,7 @@
 #pragma once
 
 #include "Futex.h"
+#include "make_load_order.h"
 #include "utils/cpu_relax.h"
 #include "utils/log2.h"
 #include "utils/macros.h"
@@ -107,6 +108,9 @@ class SpinSemaphore : public Futex<uint64_t>
   static constexpr uint64_t spinner_mask = one_waiter >> 1;
   static constexpr uint64_t tokens_mask = spinner_mask - 1;
   static_assert(utils::log2(tokens_mask) < 32, "Must fit in a futex (32 bit).");
+
+  // The memory order that we use to read-modify-write Futex<uint64_t>::m_word upon a successful compare_exchange_weak.
+  static constexpr std::memory_order success_order = std::memory_order_acquire;
 
  protected:
   struct DelayLoop
@@ -228,11 +232,13 @@ class SpinSemaphore : public Futex<uint64_t>
   //
   // Returns a recently read value of m_word.
   // m_word was not changed by this function when (word & tokens_mask) == 0,
-  // otherwise the number of tokens were decremented by one and the returned
+  // otherwise the number of tokens were decremented by one and returned
   // is the value of m_word immediately before this decrement.
+  //
+  // The returned value was loaded with std::memory_order_acquire.
   uint64_t fast_try_wait() noexcept
   {
-    uint64_t word = m_word.load(std::memory_order_relaxed);
+    uint64_t word = m_word.load(make_load_order(success_order));
     do
     {
       uint64_t ntokens = word & tokens_mask;
@@ -242,7 +248,7 @@ class SpinSemaphore : public Futex<uint64_t>
         return word;           // No debug output needed: if the above line prints tokens = 0 then this return is implied.
       // We seem to have a token, try to grab it.
     }
-    while (!m_word.compare_exchange_weak(word, word - 1, std::memory_order_acquire));
+    while (!m_word.compare_exchange_weak(word, word - 1, success_order));
     // Token successfully grabbed.
     Dout(dc::semaphore, "Success, now " << ((word & tokens_mask) - 1) << " tokens left.");
     return word;

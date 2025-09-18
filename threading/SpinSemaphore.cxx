@@ -57,7 +57,7 @@ void SpinSemaphore::slow_wait(uint64_t word) noexcept
                           | spinner_mask              // Also, if there isn't already a spinner, grab the spinner bit.
                         : word - 1;                   // Someone added a new token before we even could go to sleep. Try to grab it!
   }
-  while (!m_word.compare_exchange_weak(word, new_word, std::memory_order_acquire));
+  while (!m_word.compare_exchange_weak(word, new_word, success_order));
   bool we_are_spinner = false;
 
   // Wait for a token to be available. Retry until we can grab one.
@@ -94,7 +94,7 @@ futex_sleep:
       // EAGAIN happens when the number of tokens was changed in the meantime.
       // We (supuriously?) woke up or failed to go to sleep because the number of tokens changed.
       // It is therefore not sure that there is a token for us. Refresh word and try again.
-      word = m_word.load(std::memory_order_relaxed);
+      word = m_word.load(make_load_order(success_order));
       Dout(dc::semaphore(res == 0), "Woke up! tokens = " << (word & tokens_mask) << "; waiters = " << (word >> nwaiters_shift));
       // We woke up, try again to get a token.
       do
@@ -113,7 +113,7 @@ futex_sleep:
         if (!ntokens && already_had_spinner)
           break;
       }
-      while (!m_word.compare_exchange_weak(word, new_word, std::memory_order_acquire));
+      while (!m_word.compare_exchange_weak(word, new_word, success_order));
       // If ntokens > 0 here then we successfully grabbed one, otherwise
       // if already_had_spinner is false then we successfully became the spinner ourselves.
       // Go to the top of the loop to handle both situations...
@@ -167,7 +167,7 @@ futex_sleep:
             new_word += futex_wake_bit;                                                 // Mark that we are going to call Futex::wake.
 #endif
         }
-        while (!m_word.compare_exchange_weak(word, new_word, std::memory_order_acquire) &&
+        while (!m_word.compare_exchange_weak(word, new_word, success_order) &&
                (ntokens = (word & tokens_mask)) > 0);
 #ifdef CWDEBUG
         if (ntokens > 0)
