@@ -25,7 +25,7 @@
 //
 #ifdef EXAMPLE_CODE
 
-  #include "utils/to_string.h"
+  #include <utils/to_string.h>
 
   namespace N {
 
@@ -49,7 +49,9 @@
 
 #endif // EXAMPLE_CODE
 
-#include "config.h"
+// This relies on the build directory root to be an added include directory,
+// which should always be the case.
+#include <utils/config.h>
 
 #ifndef USE_ENCHANTUM
 // Add the submodule enchantum to the root of the project with:
@@ -66,7 +68,7 @@
 #error "Please add the enchantum submodule to the root of the project."
 #else
 
-#include "enchantum/enchantum.hpp"
+#include <enchantum/enchantum.hpp>
 
 namespace utils {
 
