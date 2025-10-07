@@ -54,16 +54,18 @@ class DEVector
   constexpr DEVector() = default;
   constexpr ~DEVector() { std::free(buffer_); }
 
-  constexpr DEVector(DEVector&& orig)
+  constexpr DEVector(DEVector&& orig) : buffer_(orig.buffer_), capacity_(orig.capacity_), size_(orig.size_), zero_index_(orig.zero_index_)
   {
-    std::memcpy(this, &orig, sizeof(*this));
     orig.buffer_ = nullptr;     // Allow destruction.
     orig.capacity_ = 0;         // Alloc calling clear(), which then results in a state equal to being default constructed.
   }
 
   constexpr DEVector& operator=(DEVector&& orig)
   {
-    std::memcpy(this, &orig, sizeof(*this));
+    buffer_ = orig.buffer_;
+    capacity_ = orig.capacity_;
+    size_ = orig.size_;
+    zero_index_ = orig.zero_index_;
     orig.buffer_ = nullptr;     // Allow destruction.
     orig.capacity_ = 0;         // Alloc calling clear(), which then results in a state equal to being default constructed.
     return *this;

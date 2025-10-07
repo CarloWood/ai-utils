@@ -31,6 +31,7 @@
 #include <iostream>
 #include <memory>
 #include <functional>
+#include "debug.h"
 
 namespace utils {
 
@@ -175,6 +176,23 @@ template<typename T>
 PrintUsingPtr_by_std_function<T> print_using(T const& obj, std::function<void(std::ostream&, DereferencedType_t<T> const&)> print_on)
 {
   return { obj, print_on };
+}
+
+// Concept for classes that are invokable passing (std::ostream&, T const&).
+// For example,
+//
+// struct MyPrinter {
+//   void operator()(std::ostream&, T const&);
+// };
+template<typename Printer, typename T>
+concept ConceptPrinter =
+  std::invocable<Printer&, std::ostream&, T const&> &&
+  std::same_as<std::invoke_result_t<Printer&, std::ostream&, T const&>, void>;
+
+template<typename T, ConceptPrinter<T> print_on_type>
+PrintUsing2<T const&, print_on_type const&> print_using(T const& obj, print_on_type const& printer)
+{
+  return { obj, printer };
 }
 
 } // namespace utils
