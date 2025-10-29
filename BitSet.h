@@ -538,11 +538,11 @@ class BitSet : protected BitSetPOD<T>
   // Pre decrement.
   BitSet& operator--() { --m_bitmask; return *this; }
   // Post decrement.
-  BitSet operator--(int) const { BitSet prev_value(m_bitmask); --m_bitmask; return prev_value; }
+  BitSet operator--(int) { BitSet prev_value(m_bitmask); --m_bitmask; return prev_value; }
   // Pre increment.
   BitSet& operator++() { ++m_bitmask; return *this; }
   // Post increment.
-  BitSet operator++(int) const { BitSet prev_value(m_bitmask); ++m_bitmask; return prev_value; }
+  BitSet operator++(int) { BitSet prev_value(m_bitmask); ++m_bitmask; return prev_value; }
 
   // Add and subtract.
   constexpr BitSet& operator+=(mask_type n) { m_bitmask += n; return *this; }
