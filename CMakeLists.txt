@@ -190,6 +190,7 @@ target_sources(utils_ObjLib
     "debug_ostream_operators.h"
     "double_to_str_precision.h"
     "for_each_until.h"
+    "generate_unique_filename.cxx"
     "is_pointer_like.h"
     "is_power_of_two.h"
     "itoa.h"
@@ -218,18 +219,6 @@ target_sources(utils_ObjLib
   PRIVATE
     "InstanceTracker.cxx"
     "InstanceTracker.h"
-)
-endif ()
-
-if (Boost_FILESYSTEM_FOUND)
-target_sources(utils_ObjLib
-  PRIVATE
-    "generate_unique_filename.cxx"
-)
-
-target_link_libraries(utils_ObjLib
-  PUBLIC
-    Boost::filesystem
 )
 endif ()
 
@@ -267,7 +256,6 @@ target_compile_features(utils_ObjLib
 # Set link dependencies.
 target_link_libraries(utils_ObjLib
   PUBLIC
-    Boost::boost
     Threads::Threads
 )
 

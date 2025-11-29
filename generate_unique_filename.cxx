@@ -1,10 +1,11 @@
 #include "sys.h"
-#include <boost/filesystem.hpp>
-#include <boost/regex.hpp>
+#include <filesystem>
+#include <regex>
+#include <string>
 
 namespace utils {
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 // Returns the same filename as passed, unless it already exists;
 // in that case a number between parenthesis is added to make it unique
@@ -22,12 +23,12 @@ std::string generate_unique_filename(std::string const& filename)
   fs::path dirPath      = filePath.parent_path();
 
   // Regular expression pattern to match the base name with count number.
-  boost::regex pattern("(.*)\\s\\(([0-9]+)\\)$");
+  std::regex pattern("(.*)\\s\\(([0-9]+)\\)$");
 
   // Extract the base name without the existing count number.
-  boost::smatch match;
-  if (boost::regex_match(baseName, match, pattern))
-    baseName = match[1];
+  std::smatch match;
+  if (std::regex_match(baseName, match, pattern))
+    baseName = match[1].str();
 
   // Generate unique filename by appending a number before the extension.
   int count = 1;

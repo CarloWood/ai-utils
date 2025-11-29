@@ -25,7 +25,7 @@ namespace config {
 //
 // HAVE_BOOST_FILESYSTEM
 //
-// This defined when the CMakeLists.txt in the root of the project
+// This is defined when the CMakeLists.txt in the root of the project
 // included `find_package(Boost COMPONENTS filesystem)` and boost
 // filesystem was found.
 
