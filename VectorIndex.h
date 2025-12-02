@@ -83,12 +83,16 @@ class VectorIndex
   friend constexpr VectorIndex operator*(VectorIndex lhs, size_t n) { return VectorIndex{lhs.m_value * n}; }
   friend constexpr VectorIndex operator*(size_t n, VectorIndex rhs) { return VectorIndex{n * rhs.m_value}; }
   constexpr VectorIndex operator/(size_t n) const { return VectorIndex{m_value / n}; }
+  // Bit-wise operators.
   friend constexpr VectorIndex operator|(VectorIndex lhs, VectorIndex rhs) { return VectorIndex{lhs.m_value | rhs.m_value}; }
   friend constexpr VectorIndex operator&(VectorIndex lhs, VectorIndex rhs) { return VectorIndex{lhs.m_value & rhs.m_value}; }
+  friend constexpr VectorIndex operator^(VectorIndex lhs, VectorIndex rhs) { return VectorIndex{lhs.m_value ^ rhs.m_value}; }
   friend constexpr VectorIndex operator|(VectorIndex lhs, size_t n) { return VectorIndex{lhs.m_value | n}; }
   friend constexpr VectorIndex operator&(VectorIndex lhs, size_t n) { return VectorIndex{lhs.m_value & n}; }
+  friend constexpr VectorIndex operator^(VectorIndex lhs, size_t n) { return VectorIndex{lhs.m_value ^ n}; }
   friend constexpr VectorIndex operator|(size_t n, VectorIndex rhs) { return VectorIndex{n | rhs.m_value}; }
   friend constexpr VectorIndex operator&(size_t n, VectorIndex rhs) { return VectorIndex{n & rhs.m_value}; }
+  friend constexpr VectorIndex operator^(size_t n, VectorIndex rhs) { return VectorIndex{n ^ rhs.m_value}; }
 
   VectorIndex& operator<<=(int n) { m_value <<= n; return *this; }
   VectorIndex& operator>>=(int n) { m_value >>= n; return *this; }
