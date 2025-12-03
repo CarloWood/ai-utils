@@ -32,6 +32,26 @@
 
 namespace utils {
 
+// Usage:
+//
+// std::random_device rd;          // High-entropy source (on Linux).
+// utils::RandomNumber rng(rd());  // Seed with a 64-bit random value.
+//
+// or call seed after default construction:
+//
+// utils::RandomNumber rng;
+// rng.seed(rd());
+//
+// Draw a uniformly distributed integer from the closed range [0, 99].
+//
+// std::uniform_int_distribution<int> dist(0, 99);
+// int value = rng.generate(dist);
+//
+// Draw a random number from the interval [1, 2):
+//
+// std::uniform_real_distribution<double> dist(1.0, 2.0);
+// double value = rng.generate(dist);
+//
 class RandomNumber
 {
  public:
@@ -67,6 +87,12 @@ class RandomNumber
 
   template<std::integral INT>
   INT generate(std::uniform_int_distribution<INT>& distribution)
+  {
+    return distribution(m_twister);
+  }
+
+  template<std::floating_point REAL>
+  REAL generate(std::uniform_real_distribution<REAL>& distribution)
   {
     return distribution(m_twister);
   }
