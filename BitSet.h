@@ -88,6 +88,14 @@ template<typename T> constexpr IndexPOD index_end = { 8 * sizeof(T) };
 constexpr bool operator==(IndexPOD i1, IndexPOD i2) { return i1.m_index == i2.m_index; }
 constexpr bool operator!=(IndexPOD i1, IndexPOD i2) { return i1.m_index != i2.m_index; }
 
+// Usage:
+//
+// To loop over all indexes in the range [0, n), one would do:
+//
+//  using namespace utils::bitset;
+//  IndexPOD const index_end{n};
+//  for (Index i = index_begin; i != index_end; ++i)
+//
 class Index : protected IndexPOD
 {
  public:
@@ -452,7 +460,13 @@ class BitSet : protected BitSetPOD<T>
   constexpr std::size_t size() const { return sizeof(T) * 8; }
 
   // Returns the number of bits set to 1.
-  constexpr std::size_t count() const { return ::utils::_popcount(m_bitmask); }
+  constexpr std::size_t count() const
+  {
+    if constexpr (sizeof(T) <= sizeof(unsigned int))
+      return ::utils::_popcount(static_cast<unsigned int>(m_bitmask));
+    else
+      return ::utils::_popcount(m_bitmask);
+  }
 
   // Return a mask with just the least significant set bit.
   constexpr BitSet lssb() const { return {m_bitmask & -m_bitmask}; }
