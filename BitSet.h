@@ -353,8 +353,14 @@ class BitSet : protected BitSetPOD<T>
   static_assert(std::is_unsigned<T>::value, "utils::BitSet<> template parameter must be an unsigned integral type.");
   using mask_type = T;
   using Index = bitset::Index;
+  using pod_type = BitSetPOD<T>;
+  static constexpr pod_type zero{0};
+
+ protected:
+  // Allow access without having to add the base class scope.
   using BitSetPOD<T>::m_bitmask;
 
+ public:
   // Convert Index to a mask_type.
   [[gnu::always_inline]] static constexpr T index2mask(Index i1) { return static_cast<T>(1) << i1(); }
   // Convert a mask_type to the index of its least significant set bit.
