@@ -87,20 +87,32 @@ uint64_t _pext<uint64_t>(uint64_t value, uint64_t mask)
 //   Thus
 //            offset += (mask & out_bit) == 0
 //
-template<std::unsigned_integral T>
+template<std::unsigned_integral T1, std::unsigned_integral T2>
 #ifdef __BMI2__
 inline
 #endif
-T deposit_bits(T value, T mask)
+auto deposit_bits(T1 value, T2 mask)
 {
-  T result;
+  // Use the smallest of the two types if they differ.
+  using result_type = std::conditional_t<sizeof(T1) <= sizeof(T2), T1, T2>;
+  result_type result;
+
+#if CW_DEBUG
+  if constexpr (sizeof(T1) != sizeof(T2))
+  {
+    using larger_type = std::conditional_t<(sizeof(T1) >= sizeof(T2)), T1, T2>;
+    larger_type large_value = std::same_as<larger_type, T1> ? value : mask;
+    // The smaller type defines the number of bits that are allowed to be used.
+    ASSERT(static_cast<result_type>(large_value) == large_value);
+  }
+#endif
 
 #ifdef __BMI2__
-  result = _pdep(value, mask);
+  result = _pdep(static_cast<result_type>(value), static_cast<result_type>(mask));
 #else
   int offset = 0;
   result = 0;
-  for (T out_bit = 1; AI_LIKELY(out_bit != 0); out_bit <<= 1)
+  for (result_type out_bit = 1; AI_LIKELY(out_bit != 0); out_bit <<= 1)
   {
     result |= (value << offset) & out_bit;
     offset += (mask & out_bit) == 0;
@@ -134,21 +146,33 @@ T deposit_bits(T value, T mask)
 //   Thus
 //            offset += (mask & out_bit) == 0
 //
-template<std::unsigned_integral T>
+template<std::unsigned_integral T1, std::unsigned_integral T2>
 #ifdef __BMI2__
 inline
 #endif
-T extract_bits(T value, T mask)
+auto extract_bits(T1 value, T2 mask)
 {
-  T result;
+  // Use the smallest of the two types if they differ.
+  using result_type = std::conditional_t<sizeof(T1) <= sizeof(T2), T1, T2>;
+  result_type result;
+
+#if CW_DEBUG
+  if constexpr (sizeof(T1) != sizeof(T2))
+  {
+    using larger_type = std::conditional_t<(sizeof(T1) >= sizeof(T2)), T1, T2>;
+    larger_type large_value = std::same_as<larger_type, T1> ? value : mask;
+    // The smaller type defines the number of bits that are allowed to be used.
+    ASSERT(static_cast<result_type>(large_value) == large_value);
+  }
+#endif
 
 #ifdef __BMI2__
-  result = _pext(value, mask);
+  result = _pext(static_cast<result_type>(value), static_cast<result_type>(mask));
 #else
   value &= mask;
   int offset = 0;
   result = 0;
-  for (T in_bit = 1; AI_LIKELY(in_bit != 0); in_bit <<= 1)
+  for (result_type in_bit = 1; AI_LIKELY(in_bit != 0); in_bit <<= 1)
   {
     result |= (value & in_bit) >> offset;
     offset += (mask & in_bit) == 0;
