@@ -43,7 +43,7 @@ std::ostream& operator<<(std::ostream& os, ArrayIndex<Category> const& index);
 template <typename Category>
 class ArrayIndex
 {
- private:
+ protected:
   int m_value;
 
  public:

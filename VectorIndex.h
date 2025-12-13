@@ -43,7 +43,7 @@ std::ostream& operator<<(std::ostream& os, VectorIndex<Category> const& index);
 template <typename Category>
 class VectorIndex
 {
- private:
+ protected:
   std::size_t m_value;
 
  public:
