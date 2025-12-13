@@ -16,7 +16,7 @@
 namespace utils
 {
 
-// Index_sequence is useful for variadic expansion of tuple indices.
+// Index_sequence is useful for variadic expansion of tuple indexes.
 template <std::size_t... SEQ> struct index_sequence { static constexpr std::size_t size() { return sizeof...(SEQ); } };
 
 // Index_sequence_generator creates an index_sequence and maps it to Index_sequence_generator<N>::type.
@@ -36,8 +36,8 @@ auto dispatch_function(Func f, std::tuple<Args...>& args, index_sequence<IDX...>
 template <typename Func, typename ...Args>
 auto apply_function(Func f, std::tuple<Args...>& args) -> typename std::result_of<Func(Args&...)>::type
 {
-  typename index_sequence_generator<sizeof...(Args)>::type indices;
-  return dispatch_function(f, args, indices);
+  typename index_sequence_generator<sizeof...(Args)>::type indexes;
+  return dispatch_function(f, args, indexes);
 }
 
 } // namespace utils
