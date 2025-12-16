@@ -114,8 +114,8 @@ class Array : public std::array<T, N>
   reference at(index_type __n) { return _Base::at(static_cast<size_t>(__n)); }
   const_reference at(index_type __n) const { return _Base::at(static_cast<size_t>(__n)); }
 
-  index_type ibegin() const { return index_type(0); }
-  index_type iend() const { return index_type((int)N); }
+  index_type ibegin() const { return index_type(size_t{0}); }
+  index_type iend() const { return index_type{N}; }
 };
 
 } // namespace utils
