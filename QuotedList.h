@@ -17,7 +17,7 @@ struct QuotedList
   char const* close = " }";
 
   template<typename Container>
-  void operator()(std::ostream& os, Container const& container)
+  void operator()(std::ostream& os, Container const& container) const
   {
     os << open;
     char const* prefix = "";
