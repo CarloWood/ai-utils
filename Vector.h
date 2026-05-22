@@ -42,7 +42,7 @@ namespace utils {
 //
 // For a certain category, which can be any type (even an incomplete one), define an index type:
 //
-//   struct FooBarCategory;
+//   struct FooBarCategory { };
 //   using FooBarIndex = utils::VectorIndex<FooBarCategory>;
 //
 // Then define one or more Vector types that will accept this index type; e.g.

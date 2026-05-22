@@ -110,7 +110,7 @@ class VectorIndex
   VectorIndex& operator|=(size_t n) { m_value |= n; return *this; }
   VectorIndex& operator&=(size_t n) { m_value &= n; return *this; }
 
-  friend std::ostream& utils::operator<<<>(std::ostream& os, VectorIndex<Category> const& index);
+  friend std::ostream& utils::operator<<<Category>(std::ostream& os, VectorIndex<Category> const& index);
 };
 
 template<typename Category>

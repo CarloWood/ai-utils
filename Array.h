@@ -73,7 +73,7 @@ class ArrayIndex
   ArrayIndex operator-(std::integral auto n) const { return ArrayIndex{m_value - n}; }
   ArrayIndex operator+(std::integral auto n) const { return ArrayIndex{m_value + n}; }
 
-  friend std::ostream& operator<<<>(std::ostream& os, ArrayIndex<Category> const& index);
+  friend std::ostream& operator<<<Category>(std::ostream& os, ArrayIndex<Category> const& index);
 };
 
 template<typename Category>
