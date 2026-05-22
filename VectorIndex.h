@@ -27,6 +27,7 @@
 
 #pragma once
 
+#include "is_complete.h"
 #include "itoa.h"
 #include <iostream>
 #include <concepts>
@@ -43,6 +44,8 @@ std::ostream& operator<<(std::ostream& os, VectorIndex<Category> const& index);
 template <typename Category>
 class VectorIndex
 {
+  static_assert(is_complete_v<Category>, "Category must be a complete type at the time of instantiation of VectorIndex<Category>.");
+
  protected:
   std::size_t m_value;
 

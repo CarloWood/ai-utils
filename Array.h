@@ -27,6 +27,7 @@
 
 #pragma once
 
+#include "is_complete.h"
 #include <array>
 #include <iostream>
 #include <concepts>
@@ -43,6 +44,8 @@ std::ostream& operator<<(std::ostream& os, ArrayIndex<Category> const& index);
 template <typename Category>
 class ArrayIndex
 {
+  static_assert(is_complete_v<Category>, "Category must be a complete type at the time of instantiation of ArrayIndex<Category>.");
+
  protected:
   int m_value;
 
