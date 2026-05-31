@@ -27,11 +27,9 @@
 
 #pragma once
 
-//#include "AIMutex.h"
 #include <condition_variable>
 
-namespace utils::threading
-{
+namespace utils::threading {
 
 // Block (multiple) thread(s) until open() is called.
 //
