@@ -25,6 +25,7 @@
  * along with ai-utils.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "sys.h"
 #include "double_to_str_precision.h"
 
 #include <sstream>

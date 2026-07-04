@@ -50,6 +50,7 @@
  *   - Updated GPG key with newer version (from 2018).
  */
 
+#include "sys.h"
 #include "AIAlert.h"
 
 namespace AIAlert {
@@ -109,4 +110,3 @@ void ErrorCode::finish_init()
 }
 
 } // namespace AIAlert
-
