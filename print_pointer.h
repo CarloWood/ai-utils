@@ -66,7 +66,10 @@ std::ostream& operator<<(std::ostream& os, PrintPointer<T> ptr)
         if constexpr (std::is_same_v<char, std::remove_cv_t<T>>)
           os << '"' << *ptr.m_ptr << '"';
         else
-          os << PrintingPointer<T>(1L) << *ptr.m_ptr;
+        {
+          LIBCWD_USING_OSTREAM_PRELUDE
+          os << PrintingPointer<T>(1L) << *ptr.m_ptr << PrintingPointer<T>(0L);
+        }
         os << '@';
       }
     }
