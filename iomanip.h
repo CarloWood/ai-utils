@@ -30,7 +30,7 @@
 #include <iostream>
 #include <cstring>      // std::memset
 #include <utility>      // std::move
-#include "debug.h"
+#include <libcwd/LIBCWD_ASSERT.h>
 
 namespace utils {
 namespace iomanip {
@@ -209,8 +209,10 @@ class Unsticky : public Sticky
         break;
       ++stream;
     }
+#ifdef CWDEBUG
     // You can not use this Unsticky IO manipulator on more than max_number_of_streams streams at a time.
-    ASSERT(stream < max_number_of_streams);
+    LIBCWD_ASSERT(stream < max_number_of_streams);
+#endif
     io_manipulator.m_os[stream] = &os;
 
     // Only remember the old values the first time this manipulator object is used.
