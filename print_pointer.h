@@ -44,6 +44,12 @@ PrintPointer<T> print_pointer(std::unique_ptr<T> const& ptr)
 }
 
 template<typename T>
+PrintPointer<T> print_pointer(std::shared_ptr<T> const& ptr)
+{
+  return { ptr.get() };
+}
+
+template<typename T>
 PrintPointer<T> print_pointer(boost::intrusive_ptr<T> const& ptr)
 {
   return { ptr.get() };
