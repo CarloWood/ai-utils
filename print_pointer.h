@@ -67,8 +67,8 @@ std::ostream& operator<<(std::ostream& os, PrintPointer<T> ptr)
           os << '"' << *ptr.m_ptr << '"';
         else
         {
-          LIBCWD_USING_OSTREAM_PRELUDE
-          os << PrintingPointer<T>(1L) << *ptr.m_ptr << PrintingPointer<T>(0L);
+          LIBCWD_USING_OSTREAM_PRELUDE;
+          os << std::boolalpha << PrintingPointer<T>(1L) << *ptr.m_ptr << PrintingPointer<T>(0L);
         }
         os << '@';
       }
