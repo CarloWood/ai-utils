@@ -30,7 +30,7 @@
 #include <boost/preprocessor/stringize.hpp>
 #include <boost/preprocessor/expand.hpp>
 
-#if defined(CWDEBUG) && !defined(LIBCWD_SYS_H)
+#if defined(CWDEBUG) && !defined(__CWDS_DEBUG_H_INCLUDED)
 // We need sys.h included because that includes config.h, which defines HAVE_BUILTIN_EXPECT.
 #error #include "sys.h" at the top of every source file!
 #endif

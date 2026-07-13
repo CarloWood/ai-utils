@@ -15,7 +15,7 @@ void add(detail::InstanceCollectionTracker* instance_collection)
   // All calls to add() should be happening before main() is reached (which is why we can't use aithreadid::in_main_thread).
   ASSERT(aithreadid::is_single_threaded(g_id));
   if (!g_collection)
-    g_collection = NEW(std::set<detail::InstanceCollectionTracker*>);
+    g_collection = new std::set<detail::InstanceCollectionTracker*>;
   g_collection->insert(instance_collection);
 }
 
