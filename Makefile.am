@@ -37,7 +37,6 @@ SOURCES = \
 	SimpleSegregatedStorage.h \
 	Signals.h \
 	Singleton.h \
-	apply_function.h \
 	at_scope_end.h \
 	cpu_relax.h \
 	debug_ostream_operators.h \

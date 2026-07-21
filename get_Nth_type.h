@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2021, 2023 Carlo Wood
+// SPDX-License-Identifier: MIT
+
 #pragma once
 
 #include <cstddef>

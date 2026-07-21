@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2023-2025 Carlo Wood
+// SPDX-License-Identifier: MIT
+
 #pragma once
 
 #include <concepts>

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2021 Carlo Wood
+// SPDX-License-Identifier: MIT
+
 #pragma once
 
 #include "c_escape_iterator.h"

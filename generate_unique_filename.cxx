@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2024-2025 Carlo Wood
+// SPDX-License-Identifier: MIT
+
 #include "sys.h"
 #include <filesystem>
 #include <regex>

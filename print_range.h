@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025-2026 Carlo Wood
+// SPDX-License-Identifier: MIT
+
 #pragma once
 
 #include <iterator>

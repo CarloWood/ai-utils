@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+//
 // This is a copy of https://github.com/alipha/cpp/blob/8c4313a8ba131e4822c5adcd09e62dc2b2ab9c3d/endian/endian.hpp
 // See https://github.com/alipha/cpp/blob/8c4313a8ba131e4822c5adcd09e62dc2b2ab9c3d/LICENSE for the license.
 

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 Carlo Wood
+// SPDX-License-Identifier: MIT
+
 // utils/unreachable.h
 //
 // Implement std::reachable for C++ versions older than 23.

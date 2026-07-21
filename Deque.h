@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2022 Carlo Wood
+// SPDX-License-Identifier: MIT
+
 #include "VectorIndex.h"
 #include <deque>
 

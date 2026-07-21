@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 Carlo Wood
+// SPDX-License-Identifier: MIT
+
 #include "sys.h"
 #include "to_digits_string.h"
 #include <cstring>

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2022 Carlo Wood
+// SPDX-License-Identifier: MIT
+
 #include "sys.h"
 #include "u8string_to_filename.h"
 #include "utf8_glyph_length.h"

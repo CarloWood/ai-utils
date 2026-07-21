@@ -1,13 +1,17 @@
-#pragma once
+// SPDX-License-Identifier: BSD-2-Clause-Views
 
-// Translated from http://www.1024cores.net/home/lock-free-algorithms/queues/intrusive-mpsc-node-based-queue
-// into modern C++ by Carlo Wood (c) 2021.
-//
-// For this reason this file has the following license.
+#ifdef MIT_LICENSE_ONLY
+#error "Including utils/threading/MpscQueue.h -- which isn't MIT licensed."
+#endif
+
+// Based on Dmitry Vyukov's intrusive MPSC node-based queue:
+// http://www.1024cores.net/home/lock-free-algorithms/queues/intrusive-mpsc-node-based-queue
 //
 // Copyright (c) 2010-2011 Dmitry Vyukov. All rights reserved.
+// Copyright (c) 2021 Carlo Wood. Translation into modern C++.
 //
-// Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
 //
 //   1. Redistributions of source code must retain the above copyright notice, this list of
 //      conditions and the following disclaimer.
@@ -34,6 +38,8 @@
 //
 // All comments and memory orders used are Copyright (c) 2021 Carlo Wood,
 // and also released under the same license.
+
+#pragma once
 
 #include <atomic>
 

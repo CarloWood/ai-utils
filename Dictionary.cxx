@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2021 Carlo Wood
+// SPDX-License-Identifier: MIT
+
 #include "sys.h"
 #include "Dictionary.h"
 

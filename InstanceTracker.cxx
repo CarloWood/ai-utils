@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2021, 2026 Carlo Wood
+// SPDX-License-Identifier: MIT
+
 #include "sys.h"
 #include "InstanceTracker.h"
 #include "utils/threading/aithreadid.h"

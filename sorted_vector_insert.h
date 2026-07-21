@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2022-2024 Carlo Wood
+// SPDX-License-Identifier: MIT
+
 #pragma once
 
 #include <vector>

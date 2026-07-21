@@ -1,5 +1,6 @@
+// SPDX-License-Identifier: MIT
+//
 // Copied from https://github.com/PeterSommerlad/ReverseAdapter
-// License: MIT
 
 // Changes by Carlo Wood,
 // * renamed the namespace to adaptor as that is the word used by the standard (as opposed to adapter).

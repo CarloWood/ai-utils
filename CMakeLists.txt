@@ -184,7 +184,6 @@ target_sources(utils_ObjLib
     "Singleton.h"
     "UltraHash.h"
 
-    "apply_function.h"
     "at_scope_end.h"
     "cpu_relax.h"
     "debug_ostream_operators.h"

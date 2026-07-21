@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2021 Carlo Wood
+// SPDX-License-Identifier: MIT
+
 #pragma once
 
 #include <boost/iterator/iterator_adaptor.hpp>

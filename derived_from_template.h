@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2022 Carlo Wood
+// SPDX-License-Identifier: MIT
+
 #include <utility>
 #include <type_traits>
 

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2022, 2025 Carlo Wood
+// SPDX-License-Identifier: MIT
+
 #include "sys.h"
 #include "UltraHash.h"
 #include "MultiLoop.h"
