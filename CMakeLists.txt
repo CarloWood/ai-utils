@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12...3.26)
+cmake_minimum_required(VERSION 3.12...4.3.4)
 
 project(utils
   DESCRIPTION "C++ Core utilities"
