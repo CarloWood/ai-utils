@@ -82,7 +82,7 @@ providing C++ utilities for larger projects, including:
 
 The root project should be using
 [cmake](https://cmake.org/overview/)
-[cwm4](https://github.com/CarloWood/cwm4) and
+[cmake-aicxx](https://github.com/CarloWood/cmake-aicxx) and
 [cwds](https://github.com/CarloWood/cwds).
 
 ## Checking out a project that uses the ai-utils submodule.
@@ -91,14 +91,10 @@ To clone a project example-project that uses ai-utils simply run:
 
     git clone --recursive <URL-to-project>/example-project.git
     cd example-project
-    AUTOGEN_CMAKE_ONLY=1 ./autogen.sh
+    ./autogen.sh
 
 The ``--recursive`` is optional because ``./autogen.sh`` will fix
 it when you forgot it.
-
-When using [GNU autotools](https://en.wikipedia.org/wiki/GNU_Autotools) you should of course
-not set ``AUTOGEN_CMAKE_ONLY``. Also, you probably want to use ``--enable-mainainer-mode``
-as option to the generated ``configure`` script. ***WARNING: autotools are no longer tested (supported) by the author***
 
 In order to use ``cmake`` configure as usual, for example to do a debug build with 16 cores:
 
@@ -115,7 +111,7 @@ Or to make a release build:
 ## Adding the ai-utils submodule to a project
 
 To add this submodule to a project, that project should already
-be set up to use [cwm4](https://github.com/CarloWood/cwm4).
+be set up to use [cmake-aicxx](https://github.com/CarloWood/cmake-aicxx).
 
 Simply execute the following in a directory of that project
 where you want to have the ``utils`` subdirectory (the
@@ -129,15 +125,15 @@ if you already cloned it there, it should add it.
 
 ### Using cmake
 
-Check out the submodules [cwds](https://github.com/CarloWood/cwds) and [cwm4](https://github.com/CarloWood/cwm4) in the root of the project:
+Check out the submodules [cwds](https://github.com/CarloWood/cwds) and [cmake-aicxx](https://github.com/CarloWood/cmake-aicxx) in the root of the project:
 
     git submodule add https://github.com/CarloWood/cwds.git
-    git submodule add https://github.com/CarloWood/cwm4.git
+    git submodule add https://github.com/CarloWood/cmake-aicxx.git cmake/aicxx
 
 The easiest way to use libcwd is by using [gitache](https://github.com/CarloWood/gitache).
 
 For that to happen create in the root of the project (that uses utils)
-a directory ``cmake/gitache-configs`` and put in it the file ``libcwd_r.cmake``
+a directory ``cmake/gitache-configs`` and put in it the file ``libcwd.cmake``
 with the content:
 
     gitache_config(
@@ -146,8 +142,11 @@ with the content:
       GIT_TAG
         "master"
       CMAKE_ARGS
-        "-DEnableLibcwdAlloc:BOOL=OFF -DEnableLibcwdLocation:BOOL=ON"
+        "-DEnableLibcwdLocation:BOOL=ON"
     )
+
+The CMAKE_ARGS section isn't really required as EnableLibcwdLocation=ON is the default,
+but this is where you could pass config options specific for your project.
 
 Add the variable ``GITACHE_ROOT`` to your environment,
 for example add to your ``~/.bashrc`` the line:
@@ -158,14 +157,14 @@ Add the following lines to the ``CMakeLists.txt`` in the
 root of the project (directly under the ``project`` line):
 
     # Begin of gitache configuration.
-    set(GITACHE_PACKAGES libcwd_r)
-    include(cwm4/cmake/StableGitache)
+    set(GITACHE_PACKAGES libcwd)
+    include(cmake/aicxx/cmake/StableGitache)
     # End of gitache configuration.
 
-    include(cwm4/cmake/AICxxProject)
+    include(cmake/aicxx/Project NO_POLICY_SCOPE)
     include(AICxxSubmodules)
 
-``add_subdirectory`` is not necessary for ``cwds``, ``cwm4`` or ``utils``.
+``add_subdirectory`` is not necessary for ``cmake/aicxx``, ``cwds`` or ``utils``.
 
 See for example the root [CMakeLists.txt](https://github.com/CarloWood/ai-utils-testsuite/blob/master/CMakeLists.txt) of ai-utils-testsuite.
 
@@ -181,33 +180,3 @@ For example,
 
 See this [CMakeLists.txt](https://github.com/CarloWood/ai-utils-testsuite/blob/master/src/CMakeLists.txt)
 of ai-utils-testsuite for a complete example.
-
-### Using GNU autotools
-
-Changes to ``configure.ac`` and ``Makefile.am``
-are taken care of by ``cwm4``, except for linking
-which works as usual;
-
-for example, a module that defines a
-
-    bin_PROGRAMS = singlethreaded_foobar multithreaded_foobar
-
-would also define
-
-    singlethreaded_foobar_CXXFLAGS = @LIBCWD_FLAGS@
-    singlethreaded_foobar_LDADD = ../utils/libutils.la $(top_builddir)/cwds/libcwds.la
-
-    multithreaded_foobar_CXXFLAGS = @LIBCWD_R_FLAGS@
-    multithreaded_foobar_LDADD = ../utils/libutils_r.la $(top_builddir)/cwds/libcwds_r.la
-
-or whatever the path to ``utils`` is, to link with the required submodules,
-libraries, and assuming you also use the [cwds](https://github.com/CarloWood/cwds) submodule.
-
-Finally, run
-
-    ./autogen.sh
-
-to let cwm4 do its magic, and commit all the changes.
-
-Checkout [ai-utils-testsuite](https://github.com/CarloWood/ai-utils-testsuite)
-for an example of a project that uses this submodule.

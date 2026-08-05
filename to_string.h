@@ -72,6 +72,7 @@
 #else
 
 #include <enchantum/enchantum.hpp>
+#include <enchantum/bitflags.hpp>
 
 namespace utils {
 
@@ -95,7 +96,12 @@ auto to_string(T const& t)
   else if constexpr (adl_decls::adl_to_stringable<T>)
     return to_string(t);
   else if constexpr (std::is_enum_v<T>)
-    return enchantum::to_string(t);
+  {
+    if constexpr (enchantum::is_bitflag<T>)
+      return enchantum::to_string_bitflag(t);
+    else
+      return enchantum::to_string(t);
+  }
   else
   {
     static_assert(false, "utils::string can not find a candidate");
