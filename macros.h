@@ -37,7 +37,7 @@
   _Pragma("GCC diagnostic push")
 #endif
 
-#if defined(__GNUC__) && !defined(__clang__) // clang doesn't have a -Wframe-address warning.
+#if defined(__GNUC__) && (!defined(__clang__) || __clang_major__ >= 11) // clang <= 10 doesn't have a -Wframe-address warning.
 #define PRAGMA_DIAGNOSTIC_PUSH_IGNORE_frame_address \
   _Pragma("GCC diagnostic push") \
   _Pragma("GCC diagnostic ignored \"-Wframe-address\"")
