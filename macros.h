@@ -18,12 +18,18 @@
 #error #include "sys.h" at the top of every source file!
 #endif
 
-#if HAVE_BUILTIN_EXPECT
-#define AI_LIKELY(EXPR) __builtin_expect (static_cast<bool>(EXPR), true)
-#define AI_UNLIKELY(EXPR) __builtin_expect (static_cast<bool>(EXPR), false)
+// __has_builtin exist since gcc-10, therefore we'll just entirely rely on it,
+// as in: we're not supporting older versions of the compiler.
+#ifndef __has_builtin
+#define __has_builtin(x) 0
+#endif
+
+#if __has_builtin(__builtin_expect) || (defined(__GNUC__) && HAVE_BUILTIN_EXPECT)
+#define AI_LIKELY(condition) __builtin_expect (static_cast<bool>(condition), true)
+#define AI_UNLIKELY(condition) __builtin_expect (static_cast<bool>(condition), false)
 #else
-#define AI_LIKELY(EXPR) (EXPR)
-#define AI_UNLIKELY(EXPR) (EXPR)
+#define AI_LIKELY(condition) (condition)
+#define AI_UNLIKELY(condition) (condition)
 #endif
 
 #define AI_CASE_RETURN(x) do { case x: return #x; } while(0)
