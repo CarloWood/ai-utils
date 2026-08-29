@@ -30,8 +30,11 @@ namespace utils {
 //
 // Then define one or more Vector types that will accept this index type; e.g.
 //
-//   using foos_type = utils::Vector<Foo, FooBarIndex> foos;
-//   using bars_type = utils::Vector<Bar, FooBarIndex> bars;
+//   using foos_type = utils::Vector<Foo, FooBarIndex>;
+//   using bars_type = utils::Vector<Bar, FooBarIndex>;
+//
+//   foos_type foos;
+//   bars_type bars;
 //
 // If no index type is specified then category used is utils::VectorIndex<T>, where T is the first
 // template parameter of the utils::Vector<T> (aka, the type of the elements stored in the Vector).
