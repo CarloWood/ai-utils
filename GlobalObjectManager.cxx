@@ -11,6 +11,9 @@
 #include "sys.h"
 #include "GlobalObjectManager.h"
 #include "debug.h"
+#ifdef CWDEBUG
+#include "print_using.h"
+#endif
 
 using namespace utils::_internal_;
 
@@ -50,9 +53,9 @@ void GlobalObjectManager::main_entered()
     if (!(*i)->instantiated_from_constructor())
     {
       DoutFatal( dc::core,
-	  "Missing global/static initialization of `" << cwprint_using(*(*i), &GlobalObject::print_type_name) << "'.\n"
+	  "Missing global/static initialization of `" << utils::print_using(*(*i), &GlobalObject::print_type_name) << "'.\n"
 	  "          There should be one and only one code line reading:\n"
-	  "          static " << cwprint_using(*(*i), &GlobalObject::print_type_name) << " dummy;" );
+	  "          static " << utils::print_using(*(*i), &GlobalObject::print_type_name) << " dummy;" );
     }
     (*i)->set_initialized_and_after_global_constructors();
   }

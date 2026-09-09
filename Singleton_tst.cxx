@@ -17,8 +17,9 @@
 #undef ERROR1		// Forgetting the friend_Instance in singleton class.
 #undef ERROR2		// Using Global instead of Singleton for singleton.
 #undef ERROR2a		// Trying to use Global instead of Singleton in order to pass a parameter.
+
 #undef ERROR3		// Instantiating the same Global twice.
-#undef ERROR4		// Instantiating the same Singleton twice.   TEST IS BROKEN!?
+#undef ERROR4		// Instantiating the same Singleton twice.
 #undef ERROR5		// Forgetting to instantiate a global Global<> object.
 #undef ERROR5a		// Using `instance()' from global constructor.
 #undef ERROR5b		// Not instantiating it at all and using `instance()' from main().
@@ -181,8 +182,4 @@ int main(int UNUSED_ARG(argc), char *UNUSED_ARG(argv)[])
   cout << (void *)&Global<Test, 0>::instance() << endl;
   cout << (void *)&Global<Test, 2>::instance() << endl;
   cout << Global<Test2, 0>::instance().str() << endl;
-
-  Debug( list_allocations_on(libcw_do) );
-
-  return 0;
 }

@@ -132,11 +132,11 @@
 #pragma once
 
 #include "debug.h"
-#if defined(DEBUGGLOBAL) && (!defined(CWDEBUG) || !CWDEBUG_ALLOC || !CWDEBUG_LOCATION)
+#if defined(DEBUGGLOBAL) && (!defined(CWDEBUG) || !CWDEBUG_LOCATION)
 #ifdef CWDEBUG
 #error "Please configure with -DEnableDebugGlobal:BOOL=OFF or (re)configure libcwd without -DEnableLibcwdLocation:BOOL=OFF (in cmake/gitache-configs/libcwd.cmake)."
 #else
-#error "You cannot define DEBUGGLOBAL without having CWDEBUG, CWDEBUG_ALLOC and CWDEBUG_LOCATION defined."
+#error "You cannot define DEBUGGLOBAL without having CWDEBUG and CWDEBUG_LOCATION defined."
 #endif
 #endif
 #ifdef DEBUGGLOBAL
@@ -384,7 +384,7 @@ Global<TYPE, inst, CONVERTER>::Global()
   {
     typename utils::_internal_::GlobalInstanceTypeName<TYPE, inst, CONVERTER> name;
     DoutFatal( dc::core,
-	"The class `" << name << "' is defined more then once.\n"
+	"The class `" << name << "' is defined more than once.\n"
 	"          There should be one and only one code line reading:\n"
 	"          static " << name << " dummy;" );
   }
