@@ -276,7 +276,7 @@ void SpinSemaphore::print_stats_on(std::ostream& os)
 
 #if defined(CWDEBUG) && !defined(DOXYGEN)
 NAMESPACE_DEBUG_CHANNELS_START
-channel_ct semaphore("SEMAPHORE");
-channel_ct semaphorestats("SEMAPHORESTATS");
+Channel semaphore("SEMAPHORE");
+Channel semaphorestats("SEMAPHORESTATS");
 NAMESPACE_DEBUG_CHANNELS_END
 #endif

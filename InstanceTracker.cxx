@@ -47,6 +47,6 @@ void dump()
 
 #if defined(CWDEBUG) && !defined(DOXYGEN)
 NAMESPACE_DEBUG_CHANNELS_START
-channel_ct tracker("TRACKER");
+Channel tracker("TRACKER");
 NAMESPACE_DEBUG_CHANNELS_END
 #endif

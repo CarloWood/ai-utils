@@ -25,8 +25,8 @@
 
 #if defined(CWDEBUG) && !defined(DOXYGEN)
 NAMESPACE_DEBUG_CHANNELS_START
-extern channel_ct semaphore;
-extern channel_ct semaphorestats;
+extern Channel semaphore;
+extern Channel semaphorestats;
 NAMESPACE_DEBUG_CHANNELS_END
 #endif
 

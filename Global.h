@@ -520,7 +520,7 @@ namespace utils {
         GlobalTypeName<TYPE, inst> name;
         PRAGMA_DIAGNOSTIC_PUSH_IGNORE_frame_address
         _Pragma("GCC diagnostic ignored \"-Winline\"")
-	libcwd::location_ct loc(inst < 0 ? ((char*)__builtin_return_address(2) + libcwd::builtin_return_address_offset)
+	libcwd::Location loc(inst < 0 ? ((char*)__builtin_return_address(2) + libcwd::builtin_return_address_offset)
 	                                : ((char*)__builtin_return_address(1) + libcwd::builtin_return_address_offset));
         PRAGMA_DIAGNOSTIC_POP
         DoutFatal(dc::core, loc << ": Calling " << name << "::instance() in (or indirectly from)\n"

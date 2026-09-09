@@ -32,7 +32,7 @@
 
 #if defined(CWDEBUG) && !defined(DOXYGEN)
 NAMESPACE_DEBUG_CHANNELS_START
-channel_ct delayloop("DELAYLOOP");
+Channel delayloop("DELAYLOOP");
 NAMESPACE_DEBUG_CHANNELS_END
 #endif
 

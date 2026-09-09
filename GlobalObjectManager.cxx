@@ -12,10 +12,6 @@
 #include "GlobalObjectManager.h"
 #include "debug.h"
 
-#ifdef CWDEBUG
-#include <libcwd/cwprint.h>
-#endif
-
 using namespace utils::_internal_;
 
 #ifdef DEBUGGLOBAL

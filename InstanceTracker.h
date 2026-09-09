@@ -17,7 +17,7 @@
 
 #if defined(CWDEBUG) && !defined(DOXYGEN)
 NAMESPACE_DEBUG_CHANNELS_START
-extern channel_ct tracker;
+extern Channel tracker;
 NAMESPACE_DEBUG_CHANNELS_END
 #endif
 
@@ -99,7 +99,7 @@ class InstanceCollection : public InstanceCollectionTracker
   void dump() const override
   {
     Dout(dc::tracker, "Instances of " << type_info_of<T>().demangled_name() << ":");
-    debug::Indent indent(2);
+    libcwd::Indent indent(2);
     for_each_instance([&](T const* instance)
     {
       Dout(dc::tracker, utils::print_using(*instance, &T::print_tracker_info_on));

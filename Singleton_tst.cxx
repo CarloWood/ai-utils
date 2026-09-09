@@ -165,7 +165,6 @@ int main(int UNUSED_ARG(argc), char *UNUSED_ARG(argv)[])
 #ifdef CWDEBUG
   // Select debug channels
   ForAllDebugChannels( while (!debugChannel.is_on()) debugChannel.on() );
-  DEBUGCHANNELS::dc::malloc.off();
 #endif
 
   // Write debug output to cout
