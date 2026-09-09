@@ -54,9 +54,10 @@ template<typename T>
 requires (std::convertible_to<T, std::u8string_view> && !utils::has_print_on::has_print_on<std::remove_cvref_t<T> const>)
 std::ostream& operator<<(std::ostream& os, T const& utf8_sv)
 {
-  os << "u8\"";
+  os.write("u8\"", 3);
   os.write(reinterpret_cast<char const*>(utf8_sv.data()), utf8_sv.length());
-  return os << '"';
+  os.write("\"", 1);
+  return os;
 }
 
 #ifdef QT_CORE_LIB

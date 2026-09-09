@@ -228,13 +228,6 @@ target_link_libraries(utils_ObjLib
 )
 endif ()
 
-# Required include search-paths.
-get_target_property(CWDS_INTERFACE_INCLUDE_DIRECTORIES AICxx::cwds INTERFACE_INCLUDE_DIRECTORIES)
-target_include_directories(utils_ObjLib
-  PRIVATE
-   "${CWDS_INTERFACE_INCLUDE_DIRECTORIES}"
-)
-
 # Require support for C++20.
 target_compile_features(utils_ObjLib
   PUBLIC cxx_std_20
@@ -247,6 +240,8 @@ endif ()
 
 # Set link dependencies.
 target_link_libraries(utils_ObjLib
+  PRIVATE
+    AICxx::cwds         # In order to compile utils itself with -DCWDEBUG and get the required include directories for sys.h and debug.h.
   PUBLIC
     Threads::Threads
 )

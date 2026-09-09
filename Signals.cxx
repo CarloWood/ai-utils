@@ -14,6 +14,9 @@
 #include "macros.h"
 #include <string>
 #include <cstring>
+#ifdef CWDEBUG
+#include <libcwd/threads_created.h>
+#endif
 
 namespace utils {
 
