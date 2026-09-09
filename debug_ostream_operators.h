@@ -39,6 +39,7 @@ std::ostream& operator<<(std::ostream& os, PrintCEscaped str);
 
 #ifdef CWDEBUG
 
+#include <iostream>
 #ifdef QT_CORE_LIB
 #include <QString>
 #endif
