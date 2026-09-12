@@ -71,6 +71,6 @@ std::ostream& operator<<(std::ostream& os, T const& qstring)
 }
 #endif
 
-} // libcwd::debug_ostream_operators
+} // namespace libcwd::ostream_operators
 
 #endif // CWDEBUG
