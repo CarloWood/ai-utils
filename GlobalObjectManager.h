@@ -18,10 +18,6 @@
 
 #include <vector>
 
-#if defined(CWDEBUG) && CWDEBUG_ALLOC
-#include <libcwd/private_internal_stringbuf.h>
-#endif
-
 /// Global objects manager singleton class.
 ///
 /// This singleton is used by Global<> to keep track of the number
@@ -31,12 +27,7 @@ class GlobalObjectManager : public Singleton<GlobalObjectManager>
 {
   friend_Instance;
 private:
-#if defined(CWDEBUG) && CWDEBUG_ALLOC
-  using globalObjects_type = std::vector<utils::_internal_::GlobalObject*,
-      libcwd::_private_::auto_internal_allocator::rebind<utils::_internal_::GlobalObject*>::other>;
-#else
   using globalObjects_type = std::vector<utils::_internal_::GlobalObject*>;
-#endif
   globalObjects_type globalObjects;
   int number_of_global_objects;
 
