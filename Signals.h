@@ -23,6 +23,7 @@
 #include "utils/has_print_on.h"
 #include <vector>
 #include <csignal>
+#include <initializer_list>
 #include <iosfwd>
 #include <mutex>
 
@@ -63,6 +64,26 @@ class Signal : public Singleton<Signal>
   static void unblock(int signum, void (*cb)(int) = SIG_IGN) { sigset_t sigmask; unblock(&sigmask, signum, cb); }
   static void default_handler(int signum) { unblock(signum, SIG_DFL); }
   static void block_and_unregister(int signum);
+
+  class BlockGuard final
+  {
+    friend class Signals;
+
+   private:
+    sigset_t previous_{};
+    bool active_ = false;
+
+   public:
+    // Add `signums` to the set of blocked signals. Stores the previous signal mask in previous_.
+    BlockGuard(std::initializer_list<int> signums);
+    // Restore the signal mask to the value stored in previous_.
+    ~BlockGuard();
+
+    BlockGuard(BlockGuard const&) = delete;
+    BlockGuard& operator=(BlockGuard const&) = delete;
+    BlockGuard(BlockGuard&&) = delete;
+    BlockGuard& operator=(BlockGuard&&) = delete;
+  };
 
   void print_on(std::ostream& os) const;
 };
@@ -113,7 +134,7 @@ class Signals
 
   Signals(int signum, unsigned int number_of_RT_signals = 0);
   Signals(std::vector<int> signums, unsigned int number_of_RT_signals = 0);
-  Signals(std::initializer_list<int> signums, unsigned int number_of_RT_signals = 0) { Signals(std::vector<int>(signums), number_of_RT_signals); }
+  Signals(std::initializer_list<int> signums, unsigned int number_of_RT_signals = 0) : Signals(std::vector<int>(signums), number_of_RT_signals) { }
 
   void register_callback(int signum, void (*cb)(int));
   void default_handler(int signum);

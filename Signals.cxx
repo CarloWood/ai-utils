@@ -227,6 +227,21 @@ void Signal::block_and_unregister(int signum)
 #endif
 }
 
+Signal::BlockGuard::BlockGuard(std::initializer_list<int> signums)
+{
+  sigset_t mask;
+  sigemptyset(&mask);
+  for (int signum : signums)
+    sigaddset(&mask, signum);
+  active_ = sigprocmask(SIG_BLOCK, &mask, &previous_) == 0;
+}
+
+Signal::BlockGuard::~BlockGuard()
+{
+  if (active_)
+    sigprocmask(SIG_SETMASK, &previous_, nullptr);
+}
+
 Signals::Signals(std::vector<int> signums, unsigned int number_of_RT_signals)
 {
   utils::Signal::instance().reserve(signums, number_of_RT_signals);
