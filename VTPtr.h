@@ -119,7 +119,7 @@ struct VTPtrBase
   VTPtrBase(VT_type const* vt_ptr) : VT_ptr(vt_ptr) { }
 
   // If the static_assert fails, add the following two lines to class Self, *ABOVE* its declaration of VT_ptr.
-#if -0
+#if -0 // EXAMPLE CODE
   VT_type* clone_VT() override { return VT_ptr.clone(this); }   // <-- Add this line, before:
   utils::VTPtr<Self, ...> VT_ptr;       // <-- you already have this line. Make sure 'Self' is the current class, followed by the class(es) it is derived from.
 #endif

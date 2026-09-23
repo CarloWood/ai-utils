@@ -68,6 +68,13 @@ std::string signal_name_str(int signum)
   return "Unknown signal";
 }
 
+#ifdef CWDEBUG
+std::string signum_to_str(int signum)
+{
+  return 0 < signum && signum <= max_signum ? signal_name_str(signum) : std::to_string(signum);
+}
+#endif
+
 } // namespace
 
 Signal::~Signal()
@@ -96,7 +103,7 @@ void Signal::priv_reserve(int number_of_RT_signals)
   // which is probably not what you want. Instead register the signals that your thread is interested
   // in afterwards, at the start of your thread.
 #ifdef CWDEBUG
-  ASSERT(!NAMESPACE_DEBUG::threads_created);
+  ASSERT(!libcwd::init_functions::threads_created);
 #endif
   // There are only 30 or so Real Time signals available.
   ASSERT(SIGRTMIN + m_number_of_RT_signals < SIGRTMAX);
@@ -170,7 +177,8 @@ void Signal::reserve(std::vector<int> const& signums, unsigned int number_of_RT_
 
 void Signal::register_callback(int signum, void (*cb)(int))
 {
-  DoutEntering(dc::notice, "Signal::register_callback(" << signum << ", " << (void*)cb << ")");
+  DoutEntering(dc::notice, "Signal::register_callback(" << signum_to_str(signum) << ", " << (void*)cb << ")");
+
   if (0 < signum && signum <= max_signum)
   {
     // No locking necessary because m_reserved_signals is initialized before any threads are created.
@@ -199,7 +207,8 @@ void Signal::register_callback(int signum, void (*cb)(int))
 //static
 void Signal::unblock(sigset_t* sigmask, int signum, void (*cb)(int))
 {
-  DoutEntering(dc::notice, "Signal::unblock(sigmask, " << signum << ", " << (void*)cb << ")");
+  DoutEntering(dc::notice, "Signal::unblock(sigmask, " << signum_to_str(signum) << ", " << (void*)cb << ")");
+
   sigemptyset(sigmask);
   sigaddset(sigmask, signum);
   if (cb != SIG_IGN)
@@ -210,7 +219,8 @@ void Signal::unblock(sigset_t* sigmask, int signum, void (*cb)(int))
 //static
 void Signal::block_and_unregister(int signum)
 {
-  DoutEntering(dc::notice, "Signal::block_and_unregister(" << signum << ")");
+  DoutEntering(dc::notice, "Signal::block_and_unregister(" << signum_to_str(signum) << ")");
+
   sigset_t sigmask;
   sigemptyset(&sigmask);
   sigaddset(&sigmask, signum);

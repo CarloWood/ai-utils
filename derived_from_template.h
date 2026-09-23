@@ -11,7 +11,7 @@ namespace utils {
 //
 // Usage:
 //
-#if -0
+#if -0 // EXAMPLE CODE
 template<typename T>
 struct B {};
 
