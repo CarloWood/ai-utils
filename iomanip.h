@@ -13,7 +13,9 @@
 #include <iostream>
 #include <cstring>      // std::memset
 #include <utility>      // std::move
+#ifdef CWDEBUG
 #include <libcwd/LIBCWD_ASSERT.h>
+#endif
 
 namespace utils {
 namespace iomanip {
