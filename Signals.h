@@ -22,30 +22,68 @@
 #include "utils/Singleton.h"
 #include "utils/has_print_on.h"
 #include <vector>
-#include <csignal>
 #include <initializer_list>
 #include <iosfwd>
 #include <mutex>
+#include <signal.h>             // Needed for POSIX declarations like pthread_sigmask, sigset_t, etc.
+#include "debug.h"
+
+#ifdef CWDEBUG
+NAMESPACE_DEBUG_CHANNELS_START
+extern Channel signals;
+NAMESPACE_DEBUG_CHANNELS_END
+#endif
 
 namespace utils {
 // This class defines a print_on method.
 using has_print_on::operator<<;
 
+struct SignalSet
+{
+ private:
+  sigset_t set_;
+
+ public:
+  SignalSet() { ::sigemptyset(&set_); }
+  SignalSet(sigset_t set) : set_(set) { }
+
+  void emptyset() { ::sigemptyset(&set_); }
+  bool ismember(int signum) const { return ::sigismember(&set_, signum) == 1; }
+  void addset(int signum) { ::sigaddset(&set_, signum); }
+  void delset(int signum) { ::sigdelset(&set_, signum); }
+
+  bool block() const { return ::pthread_sigmask(SIG_BLOCK, &set_, nullptr) == 0; }
+  bool block(SignalSet& previous_out) const { return ::pthread_sigmask(SIG_BLOCK, &set_, &previous_out.set_) == 0; }
+  bool unblock() const { return ::pthread_sigmask(SIG_UNBLOCK, &set_, nullptr) == 0; }
+  bool unblock(SignalSet& previous_out) const { return ::pthread_sigmask(SIG_UNBLOCK, &set_, &previous_out.set_) == 0; }
+  bool setmask() const { return ::pthread_sigmask(SIG_SETMASK, &set_, nullptr) == 0; }
+  bool setmask(SignalSet& previous_out) const { return ::pthread_sigmask(SIG_SETMASK, &set_, &previous_out.set_) == 0; }
+
+  friend SignalSet operator|(SignalSet lhs, SignalSet rhs)
+  {
+    sigset_t result;
+    sigorset(&result, &lhs.set_, &rhs.set_);
+    return {result};
+  }
+
+  void print_on(std::ostream& os) const;
+};
+
 class Signal : public Singleton<Signal>
 {
   friend_Instance;
  private:
-  Signal() : m_number_of_RT_signals(0), m_next_rt_signum(SIGRTMIN) { sigemptyset(&m_reserved_signals); }
+  Signal() : m_number_of_RT_signals(0), m_next_rt_signum(SIGRTMIN) { }
   ~Signal();
   Signal(Signal const&) = delete;
 
-  sigset_t m_reserved_signals;          // The signals that this application is interested in. All other signals use their default handler.
+  SignalSet m_reserved_signals;         // The signals that this application is interested in. All other signals use their default handler.
   std::mutex m_next_rt_signum_mutex;
   int m_number_of_RT_signals;
   int m_next_rt_signum;
   std::mutex m_callback_mutex;
 #if CW_DEBUG
-  sigset_t m_callback_set;
+  SignalSet m_callback_set;
 #endif
 
  private:
@@ -59,9 +97,11 @@ class Signal : public Singleton<Signal>
   void register_callback(int signum, void (*cb)(int));
   static int reserve_and_next_rt_signum() { return instantiate().priv_reserve_and_next_rt_signum(); }
   static int next_rt_signum() { return instance().priv_next_rt_signum(); }
-  static void unblock(sigset_t* sigmask, int signum, void (*cb)(int));
-  static void unblock(sigset_t const* sigmask) { sigprocmask(SIG_UNBLOCK, sigmask, NULL); }
-  static void unblock(int signum, void (*cb)(int) = SIG_IGN) { sigset_t sigmask; unblock(&sigmask, signum, cb); }
+
+  [[deprecated]] static void unblock(sigset_t* sigmask, int signum, void (*cb)(int));
+  [[deprecated]] static void unblock(sigset_t const* sigmask) { ::pthread_sigmask(SIG_UNBLOCK, sigmask, NULL); }
+
+  static void unblock(int signum, void (*cb)(int) = SIG_IGN);
   static void default_handler(int signum) { unblock(signum, SIG_DFL); }
   static void block_and_unregister(int signum);
 
@@ -70,7 +110,7 @@ class Signal : public Singleton<Signal>
     friend class Signals;
 
    private:
-    sigset_t previous_{};
+    SignalSet previous_{};
     bool active_ = false;
 
    public:

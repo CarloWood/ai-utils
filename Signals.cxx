@@ -18,6 +18,12 @@
 #include <libcwd/threads_created.h>
 #endif
 
+#ifdef CWDEBUG
+NAMESPACE_DEBUG_CHANNELS_START
+Channel signals("SIGNALS");
+NAMESPACE_DEBUG_CHANNELS_END
+#endif
+
 namespace utils {
 
 namespace {
@@ -81,17 +87,20 @@ Signal::~Signal()
 {
 }
 
-void Signal::print_on(std::ostream& os) const
+void SignalSet::print_on(std::ostream& os) const
 {
-  os << "Reserved signals: ";
   char const* separator = "";
   for (int signum = 1; signum <= max_signum; ++signum)
-    if (sigismember(&m_reserved_signals, signum) == 1)
+    if (ismember(signum))
     {
       os << separator << signal_name_str(signum);
       separator = ", ";
     }
-  os << "; reserved number of RT signals: " << m_number_of_RT_signals << '.';
+}
+
+void Signal::print_on(std::ostream& os) const
+{
+  os << "Reserved signals: " << m_reserved_signals << "; reserved number of RT signals: " << m_number_of_RT_signals << '.';
 }
 
 void Signal::priv_reserve(int number_of_RT_signals)
@@ -121,7 +130,7 @@ void Signal::priv_reserve(int number_of_RT_signals)
 int Signal::priv_next_rt_signum()
 {
   std::lock_guard<std::mutex> lock(m_next_rt_signum_mutex);
-  DoutEntering(dc::notice, "Signal::priv_next_rt_signum() with m_next_rt_signum = " << m_next_rt_signum << "; m_number_of_RT_signals = " << m_number_of_RT_signals << ".");
+  DoutEntering(dc::signals, "Signal::priv_next_rt_signum() with m_next_rt_signum = " << m_next_rt_signum << "; m_number_of_RT_signals = " << m_number_of_RT_signals << ".");
   // Reserve the number of required Real Time signals in advance by creating an Signals object at the start of main().
   // In initializer lists of (global) objects, use utils::Signal::reserve_and_next_rt_signum().
   ASSERT(m_next_rt_signum < SIGRTMIN + m_number_of_RT_signals);
@@ -144,7 +153,7 @@ void Signal::reserve(std::vector<int> const& signums, unsigned int number_of_RT_
     signum_names += separator + signal_name_str(signum);
     separator = ", ";
   }
-  DoutEntering(dc::notice, "Signal::reserve({" << signum_names << "}, " << number_of_RT_signals << ")");
+  DoutEntering(dc::signals, "Signal::reserve({" << signum_names << "}, " << number_of_RT_signals << ")");
 #endif
   priv_reserve(number_of_RT_signals);
   // Ignore all reserved signals (except SIGKILL and SIGSTOP).
@@ -155,34 +164,31 @@ void Signal::reserve(std::vector<int> const& signums, unsigned int number_of_RT_
   {
     if (signum == SIGKILL || signum == SIGSTOP)
       continue;
-    if (sigismember(&m_reserved_signals, signum) != 1)
+    if (!m_reserved_signals.ismember(signum))
     {
       if (sigaction(signum, &action, NULL) == -1)
         DoutFatal(dc::core|error_cf, "sigaction(" << signum << ", " << (void*)&action << ", NULL) = -1");
-      sigaddset(&m_reserved_signals, signum);
+      m_reserved_signals.addset(signum);
     }
     else
       Dout(dc::warning, signal_name_str(signum) << " was already registered.");
   }
   // Block all reserved signals before creating any threads.
-  sigset_t rt_signals;
-  sigemptyset(&rt_signals);
+  SignalSet rt_signals;
   for (unsigned int signum = SIGRTMIN; signum < SIGRTMIN + number_of_RT_signals; ++signum)
-    sigaddset(&rt_signals, signum);
-  sigset_t all_signals;
-  sigemptyset(&all_signals);
-  sigorset(&all_signals, &m_reserved_signals, &rt_signals);
-  sigprocmask(SIG_BLOCK, &all_signals, nullptr);
+    rt_signals.addset(signum);
+  SignalSet all_signals = m_reserved_signals | rt_signals;
+  all_signals.block();
 }
 
 void Signal::register_callback(int signum, void (*cb)(int))
 {
-  DoutEntering(dc::notice, "Signal::register_callback(" << signum_to_str(signum) << ", " << (void*)cb << ")");
+  DoutEntering(dc::signals, "Signal::register_callback(" << signum_to_str(signum) << ", " << (void*)cb << ")");
 
   if (0 < signum && signum <= max_signum)
   {
     // No locking necessary because m_reserved_signals is initialized before any threads are created.
-    if (sigismember(&m_reserved_signals, signum) != 1)
+    if (!m_reserved_signals.ismember(signum))
       // Register signals first by creating an Signals object at the start of main.
       // Note that you cannot specify a callback for SIGKILL or SIGSTOP.
       DoutFatal(dc::core, "Trying to register a callback for a signal (" << signal_name_str(signum) << ") that was not registered.");
@@ -199,57 +205,67 @@ void Signal::register_callback(int signum, void (*cb)(int))
     DoutFatal(dc::core|error_cf, "sigaction(" << signum << ", " << (void*)&action << ", NULL) = -1");
 #if CW_DEBUG
   // Please only register a callback once for any given signal number. This assert tries to avoid two different threads trying to register the same signal number.
-  ASSERT(sigismember(&m_callback_set, signum) != 1);
-  sigaddset(&m_callback_set, signum);
+  ASSERT(!m_callback_set.ismember(signum));
+  m_callback_set.addset(signum);
 #endif
 }
 
 //static
-void Signal::unblock(sigset_t* sigmask, int signum, void (*cb)(int))
+void Signal::unblock(int signum, void (*cb)(int))
 {
-  DoutEntering(dc::notice, "Signal::unblock(sigmask, " << signum_to_str(signum) << ", " << (void*)cb << ")");
+  DoutEntering(dc::signals, "Signal::unblock(" << signum_to_str(signum) << ", " << (void*)cb << ")");
 
-  sigemptyset(sigmask);
-  sigaddset(sigmask, signum);
+  SignalSet sigmask;
+  sigmask.addset(signum);
   if (cb != SIG_IGN)
     instance().register_callback(signum, cb);
-  unblock(sigmask);
+  sigmask.unblock();
+}
+
+// [[deprecated]] static
+void Signal::unblock(sigset_t* sigmask, int signum, void (*cb)(int))
+{
+  // Use this instead (if you even use `sigmask`):
+  sigemptyset(sigmask);
+  sigaddset(sigmask, signum);
+  unblock(signum, cb);
 }
 
 //static
 void Signal::block_and_unregister(int signum)
 {
-  DoutEntering(dc::notice, "Signal::block_and_unregister(" << signum_to_str(signum) << ")");
+  DoutEntering(dc::signals, "Signal::block_and_unregister(" << signum_to_str(signum) << ")");
 
-  sigset_t sigmask;
-  sigemptyset(&sigmask);
-  sigaddset(&sigmask, signum);
-  sigprocmask(SIG_BLOCK, &sigmask, NULL);
+  // Block signum.
+  SignalSet sigmask;
+  sigmask.addset(signum);
+  sigmask.block();
+
+  // Unregister signum.
   std::lock_guard<std::mutex> lock(instance().m_callback_mutex);
   struct sigaction action;
   std::memset(&action, 0, sizeof(struct sigaction));
   action.sa_handler = SIG_IGN;
   if (sigaction(signum, &action, NULL) == -1)
     DoutFatal(dc::core|error_cf, "sigaction(" << signum << ", " << (void*)&action << ", NULL) = -1");
-  sigdelset(&instance().m_reserved_signals, signum);
+  instance().m_reserved_signals.delset(signum);
 #if CW_DEBUG
-  sigdelset(&instance().m_callback_set, signum);
+  instance().m_callback_set.delset(signum);
 #endif
 }
 
 Signal::BlockGuard::BlockGuard(std::initializer_list<int> signums)
 {
-  sigset_t mask;
-  sigemptyset(&mask);
+  SignalSet mask;
   for (int signum : signums)
-    sigaddset(&mask, signum);
-  active_ = sigprocmask(SIG_BLOCK, &mask, &previous_) == 0;
+    mask.addset(signum);
+  active_ = mask.block(previous_);
 }
 
 Signal::BlockGuard::~BlockGuard()
 {
   if (active_)
-    sigprocmask(SIG_SETMASK, &previous_, nullptr);
+    previous_.setmask();
 }
 
 Signals::Signals(std::vector<int> signums, unsigned int number_of_RT_signals)
