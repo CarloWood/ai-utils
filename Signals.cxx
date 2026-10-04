@@ -14,6 +14,7 @@
 #include "macros.h"
 #include <string>
 #include <cstring>
+#include <cerrno>
 #ifdef CWDEBUG
 #include <libcwd/threads_created.h>
 #endif
@@ -74,6 +75,8 @@ std::string signal_name_str(int signum)
   return "Unknown signal";
 }
 
+} // namespace
+
 #ifdef CWDEBUG
 std::string signum_to_str(int signum)
 {
@@ -81,10 +84,19 @@ std::string signum_to_str(int signum)
 }
 #endif
 
-} // namespace
-
 Signal::~Signal()
 {
+}
+
+SignalSet::SignalSet(SignalSet::Blocked)
+{
+  // This should never happen, but rather than throw lets just set all bits to zero (aka, "nothing is blocked").
+  int ret = ::pthread_sigmask(SIG_BLOCK, nullptr, &set_);
+  if (AI_UNLIKELY(ret != 0))
+  {
+    Dout(dc::warning, "::pthread_sigmask(SIG_BLOCK, nullptr, &set_) failed: " << std::strerror(ret));
+    ::sigemptyset(&set_);
+  }
 }
 
 void SignalSet::print_on(std::ostream& os) const
@@ -256,14 +268,26 @@ void Signal::block_and_unregister(int signum)
 
 Signal::BlockGuard::BlockGuard(std::initializer_list<int> signums)
 {
+#ifdef CWDEBUG
+  std::string signum_names;
+  char const* separator = "";
+  for (int signum : signums)
+  {
+    signum_names += separator + signal_name_str(signum);
+    separator = ", ";
+  }
+  DoutEntering(dc::signals, "Signal::BlockGuard::BlockGuard({" << signum_names << "})");
+#endif
   SignalSet mask;
   for (int signum : signums)
     mask.addset(signum);
   active_ = mask.block(previous_);
+  Dout(dc::signals, "Blocked signals are now: " << utils::SignalSet{utils::SignalSet::blocked_signals});
 }
 
 Signal::BlockGuard::~BlockGuard()
 {
+  DoutEntering(dc::signals, "Signal::BlockGuard::~BlockGuard()");
   if (active_)
     previous_.setmask();
 }
