@@ -166,6 +166,7 @@ target_sources(utils_ObjLib
     "to_digits_string.cxx"
 
     "threading/aithreadid.cxx"
+    "threading/EventLoop.cxx"
     "threading/Semaphore.cxx"
     "threading/SpinSemaphore.cxx"
 
@@ -204,6 +205,7 @@ target_sources(utils_ObjLib
     "to_digits_string.h"
 
     "threading/aithreadid.h"
+    "threading/EventLoop.h"
     "threading/FIFOBuffer.h"
     "threading/Futex.h"
     "threading/Gate.h"
