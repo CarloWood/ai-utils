@@ -13,7 +13,6 @@
 #include <limits>
 #include <mutex>
 #include <optional>
-#include <utility>
 
 namespace utils::threading {
 
@@ -50,13 +49,13 @@ class EventLoop
   static constexpr int max_number_of_events =           // The maximum number of distinct events that may be watched.
     std::numeric_limits<events_mask_type>::digits;
 
-  enum class PollEvents : unsigned
+  enum class PollEvents : unsigned int
   {
     read    = 1u << 0,                                  // The fd is readable.
     write   = 1u << 1                                   // The fd is writable.
   };
 
-  enum class ReadyEvents : unsigned
+  enum class ReadyEvents : unsigned int
   {
     read    = 1u << 0,                                  // The fd is readable.
     write   = 1u << 1,                                  // The fd is writable.
@@ -66,17 +65,17 @@ class EventLoop
 
   friend constexpr PollEvents operator|(PollEvents a, PollEvents b) noexcept
   {
-    return static_cast<PollEvents>(std::to_underlying(a) | std::to_underlying(b));
+    return static_cast<PollEvents>(static_cast<unsigned int>(a) | static_cast<unsigned int>(b));
   }
 
   friend constexpr ReadyEvents operator|(ReadyEvents a, ReadyEvents b) noexcept
   {
-    return static_cast<ReadyEvents>(std::to_underlying(a) | std::to_underlying(b));
+    return static_cast<ReadyEvents>(static_cast<unsigned int>(a) | static_cast<unsigned int>(b));
   }
 
   friend constexpr bool has_event(ReadyEvents events, ReadyEvents event) noexcept
   {
-    return (std::to_underlying(events) & std::to_underlying(event)) != 0;
+    return (static_cast<unsigned int>(events) & static_cast<unsigned int>(event)) != 0;
   }
 
   enum class WaitStatus

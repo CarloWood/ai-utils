@@ -114,8 +114,8 @@ EventLoop::Event EventLoop::watch_fd(int fd, PollEvents interests)
   if (fd < 0)
     throw std::invalid_argument("watch_fd: negative descriptor");
 
-  unsigned const wanted = std::to_underlying(interests);
-  unsigned const valid = std::to_underlying(PollEvents::read | PollEvents::write);
+  unsigned int const wanted = static_cast<unsigned int>(interests);
+  unsigned int const valid = static_cast<unsigned int>(PollEvents::read | PollEvents::write);
 
   if ((wanted & valid) == 0 || (wanted & ~valid) != 0)
     throw std::invalid_argument("watch_fd: invalid interests");
@@ -140,9 +140,9 @@ EventLoop::Event EventLoop::watch_fd(int fd, PollEvents interests)
   epoll_event change{};
   change.events = EPOLLRDHUP;
 
-  if ((wanted & std::to_underlying(PollEvents::read)) != 0)
+  if ((wanted & static_cast<unsigned int>(PollEvents::read)) != 0)
     change.events |= EPOLLIN;
-  if ((wanted & std::to_underlying(PollEvents::write)) != 0)
+  if ((wanted & static_cast<unsigned int>(PollEvents::write)) != 0)
     change.events |= EPOLLOUT;
 
   change.data.u64 = static_cast<uint64_t>(i.get_value());
