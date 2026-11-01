@@ -18,32 +18,32 @@ namespace utils::threading {
 
 // class EventLoop
 //
-// Producer threads by call `notify` concurrently.
-// Only one thread may call any of the wait, wait_for or wait_until member functions; callbacks execute on that thread only.
+// Producer threads may call `notify` concurrently.
+// Only one thread may call any of the wait, wait_for or wait_until member functions and access `result` afterwards.
 //
-// Notifications remain pending until returned by wait*, including notifications
-// sent before wait*. Multiple pending notifications for one Event coalesce.
+// Notifications remain pending until returned by wait*, including notifications sent before wait*.
+// Multiple pending notifications for one Event coalesce.
 // Notifications received after an Event has been returned remain pending.
 //
-// terminate() causes the current or next wait* call to return terminated,
-// with an empty event mask. Pending notifications are discarded.
-// terminate() blocks until the wait thread has acknowledged termination.
-// It must not be called from the wait thread.
+// terminate() causes the current or next wait* call to return `terminated`, with an empty event mask.
+// Pending notifications are discarded.
+// `terminate` blocks until the wait thread has acknowledged termination. It must not be called from the wait thread.
 //
 // All watch_* calls must occur before waiting begins.
-// notify() accepts only Events returned by watch_event().
-// The caller must ensure that no producers are still using EventLoop when
-// it is destroyed.
+// `notify` accepts only Events returned by `watch_event`.
+// The caller must ensure that no producers are still using EventLoop when it is destroyed.
 //
 // `watch_fd` and `watch_event` throw std::runtime_error if too many events are registered.
 //
 // Usage:
 //
-//   using EventLoop = utils::EventLoop;
+//   using EventLoop = utils::threading::EventLoop;
 //   using Event = EventLoop::Event;
 //   using EventMask = EventLoop::EventMask;
+//   using Index = EventLoop::Index;
 //   using PollEvents = EventLoop::PollEvents;
 //   using ReadyEvents = EventLoop::ReadyEvents;
+//   using WaitStatus = EventLoop::WaitStatus;
 //   using WaitResult = EventLoop::WaitResult;
 //
 //   EventLoop event_loop;
@@ -52,7 +52,7 @@ namespace utils::threading {
 //   Event const e1 = event_loop.watch_event();
 //   Index const i1 = EventLoop::index(e1);
 //
-//   utils::Array<FooBar, max_events> my_array;
+//   utils::Array<FooBar, max_events, Index> my_array;
 //   my_array[i0] = stuff0;
 //   my_array[i1] = stuff1;
 //
@@ -232,7 +232,8 @@ class EventLoop
   template<typename Clock, typename Duration>
   void wait_until(std::chrono::time_point<Clock, Duration> const& abs_time);
 
-  // Get the result of the last wait* function.
+  // Get a reference to the result object, mutated by the last call to wait*.
+  // Note that if a wait* call throws, then the result contents are unspecified.
   WaitResult const& result() const { return result_; }
 
   // Return true iff `event` is an Event that was previously returned by `watch_fd`.
