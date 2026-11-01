@@ -37,6 +37,56 @@ namespace utils::threading {
 //
 // `watch_fd` and `watch_event` throw std::runtime_error if too many events are registered.
 //
+// Usage:
+//
+//   using EventLoop = utils::EventLoop;
+//   using Event = EventLoop::Event;
+//   using EventMask = EventLoop::EventMask;
+//   using PollEvents = EventLoop::PollEvents;
+//   using ReadyEvents = EventLoop::ReadyEvents;
+//   using WaitResult = EventLoop::WaitResult;
+//
+//   EventLoop event_loop;
+//   Event const e0 = event_loop.watch_fd(fd, PollEvents::read);
+//   Index const i0 = EventLoop::index(e0);
+//   Event const e1 = event_loop.watch_event();
+//   Index const i1 = EventLoop::index(e1);
+//
+//   utils::Array<FooBar, max_events> my_array;
+//   my_array[i0] = stuff0;
+//   my_array[i1] = stuff1;
+//
+//   for (;;)
+//   {
+//     WaitResult wait_result = event_loop.wait();
+//     EventMask events = wait_result.events();
+//     if (events.any())
+//     {
+//       for (auto event : events)
+//       {
+//         Index index = EventLoop::index(event);
+//         FooBar& foobar = my_array[index];
+//         if (event_loop.is_fd_event(event))
+//         {
+//           int fd = wait_result.fd(index);
+//           ReadyEvents ready_events = wait_result.ready_events(index);
+//           // ... handle I/O.
+//         }
+//         else
+//         {
+//           // ... handle event.
+//         }
+//       }
+//     }
+//     else if (wait_result.status() == WaitStatus::terminated)
+//       break;
+//     else
+//     {
+//       // ...otherwise this would be a timeout.
+//       continue;
+//     }
+//   }
+//
 class EventLoop
 {
  public:
@@ -44,7 +94,8 @@ class EventLoop
   using Event = BitSet<events_mask_type>;               // A single bit representing one distinct event as registered with watch_*.
   using EventMask = BitSet<events_mask_type>;           // One or more bits representing distinct events.
   using EventIndex = Event::Index;                      // The bit index of an Event.
-  using Index = ArrayIndex<EventLoop>;
+  using Index = ArrayIndex<EventLoop>;                  // The array index of an Event.
+
   static constexpr events_mask_type no_events{0};
   static constexpr int max_number_of_events =           // The maximum number of distinct events that may be watched.
     std::numeric_limits<events_mask_type>::digits;
@@ -63,17 +114,17 @@ class EventLoop
     error   = 1u << 3                                   // The underlying object has an error condition.
   };
 
-  friend constexpr PollEvents operator|(PollEvents a, PollEvents b) noexcept
+  friend constexpr PollEvents operator|(PollEvents a, PollEvents b)
   {
     return static_cast<PollEvents>(static_cast<unsigned int>(a) | static_cast<unsigned int>(b));
   }
 
-  friend constexpr ReadyEvents operator|(ReadyEvents a, ReadyEvents b) noexcept
+  friend constexpr ReadyEvents operator|(ReadyEvents a, ReadyEvents b)
   {
     return static_cast<ReadyEvents>(static_cast<unsigned int>(a) | static_cast<unsigned int>(b));
   }
 
-  friend constexpr bool has_event(ReadyEvents events, ReadyEvents event) noexcept
+  friend constexpr bool has_event(ReadyEvents events, ReadyEvents event)
   {
     return (static_cast<unsigned int>(events) & static_cast<unsigned int>(event)) != 0;
   }
@@ -88,12 +139,12 @@ class EventLoop
   class WaitResult
   {
    public:
-    WaitStatus status() const noexcept;
-    EventMask events() const noexcept;
+    WaitStatus status() const { return status_; }
+    EventMask events() const { return events_; }
 
     // Valid only if for a fd event present in events().
-    ReadyEvents ready_events(Event event) const noexcept;
-    int fd(Event event) const noexcept;
+    ReadyEvents ready_events(Index event_index) const { return ready_[event_index]; }
+    int fd(Index event_index) const { return fds_[event_index]; }
 
    private:
     friend class EventLoop;

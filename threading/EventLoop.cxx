@@ -392,24 +392,4 @@ void EventLoop::terminate()
   termination_cv_.wait(lock, [this] { return termination_acknowledged_; });
 }
 
-EventLoop::WaitStatus EventLoop::WaitResult::status() const noexcept
-{
-  return status_;
-}
-
-EventLoop::EventMask EventLoop::WaitResult::events() const noexcept
-{
-  return events_;
-}
-
-EventLoop::ReadyEvents EventLoop::WaitResult::ready_events(Event event) const noexcept
-{
-  return ready_[EventLoop::index(event)];
-}
-
-int EventLoop::WaitResult::fd(Event event) const noexcept
-{
-  return fds_[EventLoop::index(event)];
-}
-
 } // namespace utils::threading
