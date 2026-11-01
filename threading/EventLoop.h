@@ -37,6 +37,57 @@ namespace utils::threading {
 //
 // `watch_fd` and `watch_event` throw std::runtime_error if too many events are registered.
 //
+// Usage:
+//
+//   using EventLoop = utils::EventLoop;
+//   using Event = EventLoop::Event;
+//   using EventMask = EventLoop::EventMask;
+//   using PollEvents = EventLoop::PollEvents;
+//   using ReadyEvents = EventLoop::ReadyEvents;
+//   using WaitResult = EventLoop::WaitResult;
+//
+//   EventLoop event_loop;
+//   Event const e0 = event_loop.watch_fd(fd, PollEvents::read);
+//   Index const i0 = EventLoop::index(e0);
+//   Event const e1 = event_loop.watch_event();
+//   Index const i1 = EventLoop::index(e1);
+//
+//   utils::Array<FooBar, max_events> my_array;
+//   my_array[i0] = stuff0;
+//   my_array[i1] = stuff1;
+//
+//   for (;;)
+//   {
+//     event_loop.wait();
+//     WaitResult const& wait_result = event_loop.result();
+//     EventMask events = wait_result.events();
+//     if (events.any())
+//     {
+//       for (auto event : events)
+//       {
+//         Index index = EventLoop::index(event);
+//         FooBar& foobar = my_array[index];
+//         if (event_loop.is_fd_event(event))
+//         {
+//           int fd = wait_result.fd(index);
+//           ReadyEvents ready_events = wait_result.ready_events(index);
+//           // ... handle I/O.
+//         }
+//         else
+//         {
+//           // ... handle event.
+//         }
+//       }
+//     }
+//     else if (wait_result.status() == WaitStatus::terminated)
+//       break;
+//     else
+//     {
+//       // ...otherwise this would be a timeout.
+//       continue;
+//     }
+//   }
+//
 class EventLoop
 {
  public:
@@ -44,7 +95,8 @@ class EventLoop
   using Event = BitSet<events_mask_type>;               // A single bit representing one distinct event as registered with watch_*.
   using EventMask = BitSet<events_mask_type>;           // One or more bits representing distinct events.
   using EventIndex = Event::Index;                      // The bit index of an Event.
-  using Index = ArrayIndex<EventLoop>;
+  using Index = ArrayIndex<EventLoop>;                  // The array index of an Event.
+
   static constexpr events_mask_type no_events{0};
   static constexpr int max_number_of_events =           // The maximum number of distinct events that may be watched.
     std::numeric_limits<events_mask_type>::digits;
@@ -63,17 +115,17 @@ class EventLoop
     error   = 1u << 3                                   // The underlying object has an error condition.
   };
 
-  friend constexpr PollEvents operator|(PollEvents a, PollEvents b) noexcept
+  friend constexpr PollEvents operator|(PollEvents a, PollEvents b)
   {
     return static_cast<PollEvents>(static_cast<unsigned int>(a) | static_cast<unsigned int>(b));
   }
 
-  friend constexpr ReadyEvents operator|(ReadyEvents a, ReadyEvents b) noexcept
+  friend constexpr ReadyEvents operator|(ReadyEvents a, ReadyEvents b)
   {
     return static_cast<ReadyEvents>(static_cast<unsigned int>(a) | static_cast<unsigned int>(b));
   }
 
-  friend constexpr bool has_event(ReadyEvents events, ReadyEvents event) noexcept
+  friend constexpr bool has_event(ReadyEvents events, ReadyEvents event)
   {
     return (static_cast<unsigned int>(events) & static_cast<unsigned int>(event)) != 0;
   }
@@ -88,12 +140,12 @@ class EventLoop
   class WaitResult
   {
    public:
-    WaitStatus status() const noexcept;
-    EventMask events() const noexcept;
+    WaitStatus status() const { return status_; }
+    EventMask events() const { return events_; }
 
     // Valid only if for a fd event present in events().
-    ReadyEvents ready_events(Event event) const noexcept;
-    int fd(Event event) const noexcept;
+    ReadyEvents ready_events(Index event_index) const { return ready_[event_index]; }
+    int fd(Index event_index) const { return fds_[event_index]; }
 
    private:
     friend class EventLoop;
@@ -102,12 +154,20 @@ class EventLoop
     EventMask events_{EventLoop::no_events};
     Array<ReadyEvents, max_number_of_events, Index> ready_{};
     Array<int, max_number_of_events, Index> fds_{};
+
+    void clear()
+    {
+      status_ = WaitStatus::timed_out;
+      events_ = EventMask{EventLoop::no_events};
+      ready_ = {};
+    }
   };
 
  private:
   EventMask fd_events_{no_events};              // Bit mask with events that are associated with fds.
   EventIndex next_event_{bitset::index_begin};  // The next event to return from a call to watch*.
                                                 // Numerically equal to the number of currently registered events.
+  WaitResult result_;                           // This object holds the result of each wait* call.
 
   struct Registration
   {
@@ -131,8 +191,7 @@ class EventLoop
   std::condition_variable termination_cv_;
   bool termination_acknowledged_ = false;
 
-  WaitResult wait_impl(std::optional<std::chrono::nanoseconds> timeout);
-  WaitResult finish_wait(WaitResult result);
+  void wait_impl(std::optional<std::chrono::nanoseconds> timeout);
   void signal_wakeup();
 
  public:
@@ -160,18 +219,21 @@ class EventLoop
   // Called by the 'wait' thread.
 
   // Block until one of the watched events occurs.
-  WaitResult wait()
+  void wait()
   {
     return wait_impl(std::nullopt);
   }
 
   // Block until one of the watched events occurs, the given duration has been elapsed.
   template<typename Rep, typename Period>
-  WaitResult wait_for(std::chrono::duration<Rep, Period> const& rel_time);
+  void wait_for(std::chrono::duration<Rep, Period> const& rel_time);
 
   // Block until one of the watched events occurs, the given time point has been reached.
   template<typename Clock, typename Duration>
-  WaitResult wait_until(std::chrono::time_point<Clock, Duration> const& abs_time);
+  void wait_until(std::chrono::time_point<Clock, Duration> const& abs_time);
+
+  // Get the result of the last wait* function.
+  WaitResult const& result() const { return result_; }
 
   // Return true iff `event` is an Event that was previously returned by `watch_fd`.
   bool is_fd_event(Event event) const { return (fd_events_ & event) == event; }
@@ -191,28 +253,26 @@ class EventLoop
 };
 
 template<typename Rep, typename Period>
-EventLoop::WaitResult EventLoop::wait_for(
-    std::chrono::duration<Rep, Period> const& rel_time)
+void EventLoop::wait_for(std::chrono::duration<Rep, Period> const& rel_time)
 {
-  using Clock = std::chrono::steady_clock;
-
-  auto const now = Clock::now();
-
   if (rel_time <= rel_time.zero())
-    return wait_impl(std::chrono::nanoseconds::zero());
+  {
+    wait_impl(std::chrono::nanoseconds::zero());
+    return;
+  }
 
+  using Clock = std::chrono::steady_clock;
+  auto const now = Clock::now();
   auto const max_wait = Clock::time_point::max() - now;
 
-  if (std::chrono::duration<long double>(rel_time) >=
-      std::chrono::duration<long double>(max_wait))
-    return wait_until(Clock::time_point::max());
-
-  return wait_until(now + std::chrono::ceil<Clock::duration>(rel_time));
+  if (std::chrono::duration<long double>(rel_time) >= std::chrono::duration<long double>(max_wait))
+    wait_until(Clock::time_point::max());
+  else
+    wait_until(now + std::chrono::ceil<Clock::duration>(rel_time));
 }
 
 template<typename Clock, typename Duration>
-EventLoop::WaitResult EventLoop::wait_until(
-    std::chrono::time_point<Clock, Duration> const& abs_time)
+void EventLoop::wait_until(std::chrono::time_point<Clock, Duration> const& abs_time)
 {
   for (;;)
   {
@@ -228,10 +288,10 @@ EventLoop::WaitResult EventLoop::wait_until(
           std::chrono::ceil<std::chrono::nanoseconds>(remaining);
     }
 
-    WaitResult result = wait_impl(duration);
+    wait_impl(duration);
 
-    if (result.status() != WaitStatus::timed_out || Clock::now() >= abs_time)
-      return result;
+    if (result_.status() != WaitStatus::timed_out || Clock::now() >= abs_time)
+      return;
   }
 }
 

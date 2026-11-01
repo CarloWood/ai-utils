@@ -237,25 +237,7 @@ void EventLoop::notify(Event event)
   signal_wakeup();
 }
 
-EventLoop::WaitResult EventLoop::finish_wait(WaitResult result)
-{
-  if (!terminating_.load(std::memory_order_acquire))
-    return result;
-
-  pending_.exchange(0, std::memory_order_acquire);
-
-  result = WaitResult{};
-  result.status_ = WaitStatus::terminated;
-
-  {
-    std::lock_guard lock(termination_mutex_);
-    termination_acknowledged_ = true;
-  }
-  termination_cv_.notify_all();
-  return result;
-}
-
-EventLoop::WaitResult EventLoop::wait_impl(std::optional<std::chrono::nanoseconds> timeout)
+void EventLoop::wait_impl(std::optional<std::chrono::nanoseconds> timeout)
 {
   using Clock = std::chrono::steady_clock;
 
@@ -271,7 +253,10 @@ EventLoop::WaitResult EventLoop::wait_impl(std::optional<std::chrono::nanosecond
   for (;;)
   {
     if (terminating_.load(std::memory_order_acquire))
-      return finish_wait(WaitResult{});
+    {
+      result_.clear();
+      break;
+    }
 
     timespec ts{};
     timespec const* pts = nullptr;
@@ -285,7 +270,7 @@ EventLoop::WaitResult EventLoop::wait_impl(std::optional<std::chrono::nanosecond
       pts = &ts;
     }
 
-    WaitResult result;
+    result_.clear();
 #if defined(__linux__)
     std::array<epoll_event, max_number_of_events + 1> ready{};
     int const n = ::epoll_pwait2(poller_fd_, ready.data(), ready.size(), pts, nullptr);
@@ -346,9 +331,9 @@ EventLoop::WaitResult EventLoop::wait_impl(std::optional<std::chrono::nanosecond
         flags = flags | ReadyEvents::error;
 #endif
 
-      result.events_ |= Event{EventIndex{bitset::IndexPOD{static_cast<int8_t>(i.get_value())}}};
-      result.ready_[i] = result.ready_[i] | flags;
-      result.fds_[i] = registrations_[i].fd;
+      result_.events_ |= Event{EventIndex{bitset::IndexPOD{static_cast<int8_t>(i.get_value())}}};
+      result_.ready_[i] = result_.ready_[i] | flags;
+      result_.fds_[i] = registrations_[i].fd;
     }
 
 #if defined(__linux__)
@@ -370,17 +355,32 @@ EventLoop::WaitResult EventLoop::wait_impl(std::optional<std::chrono::nanosecond
     }
 #endif
 
-    result.events_ |= pending_.exchange(0, std::memory_order_acquire);
+    result_.events_ |= pending_.exchange(0, std::memory_order_acquire);
 
-    if (result.events_.any())
+    if (result_.events_.any())
     {
-      result.status_ = WaitStatus::pending_events;
-      return finish_wait(result);
+      result_.status_ = WaitStatus::pending_events;
+      break;
     }
 
-    if (deadline && Clock::now() >= *deadline)
-      return finish_wait(result);
+    if (deadline && Clock::now() >= *deadline)          // Did we timeout?
+      break;
   }
+
+  if (!terminating_.load(std::memory_order_acquire))
+    return;
+
+  pending_.exchange(0, std::memory_order_acquire);
+
+  result_.clear();
+  result_.status_ = WaitStatus::terminated;
+
+  {
+    std::lock_guard lock(termination_mutex_);
+    termination_acknowledged_ = true;
+  }
+
+  termination_cv_.notify_all();
 }
 
 void EventLoop::terminate()
@@ -390,26 +390,6 @@ void EventLoop::terminate()
 
   std::unique_lock lock(termination_mutex_);
   termination_cv_.wait(lock, [this] { return termination_acknowledged_; });
-}
-
-EventLoop::WaitStatus EventLoop::WaitResult::status() const noexcept
-{
-  return status_;
-}
-
-EventLoop::EventMask EventLoop::WaitResult::events() const noexcept
-{
-  return events_;
-}
-
-EventLoop::ReadyEvents EventLoop::WaitResult::ready_events(Event event) const noexcept
-{
-  return ready_[EventLoop::index(event)];
-}
-
-int EventLoop::WaitResult::fd(Event event) const noexcept
-{
-  return fds_[EventLoop::index(event)];
 }
 
 } // namespace utils::threading
