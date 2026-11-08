@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2013-2019, 2021-2023 Carlo Wood
+// SPDX-FileCopyrightText: 2013-2019, 2021-2023, 2026 Carlo Wood
 // SPDX-License-Identifier: MIT
 
 /**
@@ -40,9 +40,11 @@
 
 #include "translate.h"
 #include "has_print_on.h"
+#include "iomanip.h"
 
 #include <deque>
 #include <exception>
+#include <iosfwd>
 #include <string>
 #include <map>
 #include <sstream>
@@ -431,6 +433,42 @@ class ErrorCode : public Error
 
   private:
     void finish_init();
+};
+
+// Write error to os: the prefix, followed by the translated lines of error.
+//
+// The prefix is "AIAlert: ", unless an ErrorPrefix manipulator was inserted into os earlier in the same full expression.
+// Lines after the first are put on a new line and indented by as many spaces as the last line of the prefix
+// has characters (UTF-8 code points), so that they line up with the first line.
+// If the prefix ends on a '\n' then there is nothing to line up with: all lines, including the first, are indented by four spaces.
+//
+// Seems that clang++ needs this to be defined here instead of global namespace for gtest to work.
+std::ostream& operator<<(std::ostream& os, Error const& error);
+
+// IO manipulator that replaces the "AIAlert: " prefix printed by operator<<(std::ostream&, Error const&).
+//
+// Usage:
+//
+//   std::cerr << AIAlert::ErrorPrefix("error: ") << error << std::endl;
+//
+// This is an Unsticky manipulator: it only affects the Error inserters that follow it in the same full expression.
+// When the temporary is destroyed, at the end of that full expression, the prefix that was in effect before is restored.
+// Only the pointer is stored, so the characters must stay valid until then (a string literal always is).
+class ErrorPrefix : public utils::iomanip::Unsticky<1>
+{
+ private:
+  static utils::iomanip::Index s_index;
+
+ public:
+  // Create a manipulator that makes the Error inserters print the null-terminated prefix instead of "AIAlert: ".
+  //
+  // Passing nullptr selects the default "AIAlert: " again.
+  explicit ErrorPrefix(char const* prefix) : Unsticky(s_index, const_cast<char*>(prefix)) { }
+
+  // Return the prefix of the ErrorPrefix that is currently in effect on os.
+  //
+  // Returns nullptr if there is none, in which case "AIAlert: " should be used.
+  static char const* get_prefix(std::ostream& os) { return static_cast<char const*>(get_pword_from(os, s_index)); }
 };
 
 } // namespace AIAlert

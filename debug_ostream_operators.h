@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2014, 2016-2019, 2022, 2025 Carlo Wood
+// SPDX-FileCopyrightText: 2014, 2016-2019, 2022, 2025-2026 Carlo Wood
 // SPDX-License-Identifier: MIT
 
 /**
@@ -13,15 +13,6 @@
 #include "utils/has_print_on.h"
 #include <iosfwd>                       // std::ostream&
 #include <string_view>
-
-namespace AIAlert {
-
-class Error;
-
-// Seems that clang++ needs this to be defined here instead of global namespace for gtest to work.
-std::ostream& operator<<(std::ostream& os, Error const& error);
-
-} // namespace AIAlert
 
 namespace utils {
 
