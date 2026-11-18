@@ -104,7 +104,7 @@ auto to_string(T const& t)
   }
   else
   {
-    static_assert(false, "utils::string can not find a candidate");
+    static_assert(false, "utils::to_string can not find a candidate");
     // Return something that can be written to an ostream, to avoid unnecessary compile errors.
     return std::string_view{""};
   }
