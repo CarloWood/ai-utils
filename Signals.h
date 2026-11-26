@@ -20,6 +20,7 @@
 #pragma once
 
 #include "utils/Singleton.h"
+#include "utils/SignalSet.h"
 #include "utils/has_print_on.h"
 #include <vector>
 #include <initializer_list>
@@ -43,47 +44,6 @@ std::string signum_to_str(int signum);
 
 // This class defines a print_on method.
 using has_print_on::operator<<;
-
-struct SignalSet
-{
- private:
-  sigset_t set_;
-
-  // Create an uninitialized SignalSet.
-  struct Uninitialized {};
-  SignalSet(Uninitialized) { }
-
- public:
-  SignalSet() { ::sigemptyset(&set_); }
-  SignalSet(sigset_t const* set) : set_(*set) { }
-
-  void emptyset() { ::sigemptyset(&set_); }
-  bool ismember(int signum) const { return ::sigismember(&set_, signum) == 1; }
-  void addset(int signum) { ::sigaddset(&set_, signum); }
-  void delset(int signum) { ::sigdelset(&set_, signum); }
-
-  bool block() const { return ::pthread_sigmask(SIG_BLOCK, &set_, nullptr) == 0; }
-  bool block(SignalSet& previous_out) const { return ::pthread_sigmask(SIG_BLOCK, &set_, &previous_out.set_) == 0; }
-  bool unblock() const { return ::pthread_sigmask(SIG_UNBLOCK, &set_, nullptr) == 0; }
-  bool unblock(SignalSet& previous_out) const { return ::pthread_sigmask(SIG_UNBLOCK, &set_, &previous_out.set_) == 0; }
-  bool setmask() const { return ::pthread_sigmask(SIG_SETMASK, &set_, nullptr) == 0; }
-  bool setmask(SignalSet& previous_out) const { return ::pthread_sigmask(SIG_SETMASK, &set_, &previous_out.set_) == 0; }
-
-  // Read the currently blocked signal mask into this object.
-  // This is mostly intended for debugging purposes; normally you should already know what signals you blocked.
-  struct Blocked {};
-  static constexpr Blocked blocked_signals{};
-  SignalSet(Blocked);
-
-  friend SignalSet operator|(SignalSet lhs, SignalSet rhs)
-  {
-    SignalSet result(Uninitialized{});
-    sigorset(&result.set_, &lhs.set_, &rhs.set_);
-    return result;
-  }
-
-  void print_on(std::ostream& os) const;
-};
 
 class Signal : public Singleton<Signal>
 {

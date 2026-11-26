@@ -14,6 +14,7 @@
 #if defined(__linux__)
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
+#include <sys/signalfd.h>
 #elif defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__DragonFly__)
 #include <fcntl.h>
 #include <sys/event.h>
@@ -95,6 +96,8 @@ EventLoop::EventLoop()
 EventLoop::~EventLoop()
 {
 #if defined(__linux__)
+  if (signal_fd_ != -1)
+    ::close(signal_fd_);
   ::close(wake_fd_);
 #endif
   ::close(poller_fd_);
@@ -193,6 +196,110 @@ EventLoop::Event EventLoop::watch_fd(int fd, PollEvents interests)
   ++next_event_;
   return event;
 }
+
+EventLoop::Event EventLoop::watch_signals(SignalSet const& signals)
+{
+  if (signal_events_.any())
+    throw std::invalid_argument("watch_signals: signals are already watched");
+  if (signals.empty())
+    throw std::invalid_argument("watch_signals: no signals");
+
+  if (number_of_events() == max_number_of_events)
+    throw std::runtime_error("Too many EventLoop events");
+
+  Event event{next_event_};
+  Index i = index(event);
+  Registration& registration = registrations_[i];
+
+#if defined(__linux__)
+  // Non-blocking, so that wait_impl can read until no signal is left.
+  int const fd = ::signalfd(-1, &signals.sigset(), SFD_NONBLOCK | SFD_CLOEXEC);
+  if (fd == -1)
+    throw_system_error("signalfd");
+
+  epoll_event change{};
+  change.events = EPOLLIN;
+  change.data.u64 = static_cast<uint64_t>(i.get_value());
+
+  if (::epoll_ctl(poller_fd_, EPOLL_CTL_ADD, fd, &change) == -1)
+  {
+    int error = errno;
+    ::close(fd);
+    throw std::system_error(error, std::generic_category(), "epoll_ctl(signalfd)");
+  }
+
+  signal_fd_ = fd;
+  registration.fd = fd;
+  registration.interests = PollEvents::read;
+#else
+  // One EVFILT_SIGNAL filter per signal, all with the address of the same registration.
+  struct kevent change;
+  for (int signum = 1; signum < NSIG; ++signum)
+  {
+    if (!signals.ismember(signum))
+      continue;
+
+    EV_SET(&change, signum, EVFILT_SIGNAL, EV_ADD, 0, 0, &registration);
+
+    if (::kevent(poller_fd_, &change, 1, nullptr, 0, nullptr) == -1)
+    {
+      int error = errno;
+      // Remove the filters that were already added.
+      for (int added = 1; added < signum; ++added)
+      {
+        if (!signals.ismember(added))
+          continue;
+        EV_SET(&change, added, EVFILT_SIGNAL, EV_DELETE, 0, 0, nullptr);
+        ::kevent(poller_fd_, &change, 1, nullptr, 0, nullptr);
+      }
+      throw std::system_error(error, std::generic_category(), "kevent(EVFILT_SIGNAL)");
+    }
+  }
+#endif
+
+  signal_events_ |= event;
+  ++next_event_;
+  return event;
+}
+
+#if defined(__linux__)
+// Read every signal that is pending on signal_fd_ into result_.signals_.
+// Returns true if at least one signal was read: a readable signalfd can turn out empty, for example
+// when the signal was meant for another thread, because epoll checks readiness for the thread that waits.
+bool EventLoop::read_signals()
+{
+  bool received = false;
+  for (;;)
+  {
+    std::array<signalfd_siginfo, 8> infos{};
+    ssize_t const nread = ::read(signal_fd_, infos.data(), sizeof(infos));
+
+    if (nread == -1)
+    {
+      if (errno == EINTR)
+        continue;
+      if (errno == EAGAIN)
+        return received;
+      throw_system_error("read(signalfd)");
+    }
+    if (nread == 0)
+      return received;
+    if (static_cast<std::size_t>(nread) % sizeof(signalfd_siginfo) != 0)
+      throw std::runtime_error("short read(signalfd)");
+
+    std::size_t const count = static_cast<std::size_t>(nread) / sizeof(signalfd_siginfo);
+    for (std::size_t k = 0; k < count; ++k)
+    {
+      int const signum = static_cast<int>(infos[k].ssi_signo);
+      if (0 < signum && signum < NSIG)
+      {
+        result_.signals_.addset(signum);
+        received = true;
+      }
+    }
+  }
+}
+#endif
 
 void EventLoop::signal_wakeup()
 {
@@ -302,6 +409,16 @@ void EventLoop::wait_impl(std::optional<std::chrono::nanoseconds> timeout)
       }
 
       Index i{static_cast<int>(ev.data.u64)};
+      Event const event{EventIndex{bitset::IndexPOD{static_cast<int8_t>(i.get_value())}}};
+
+      if ((signal_events_ & event).any())
+      {
+        // Report the signal Event only when it delivered at least one signal.
+        if (read_signals())
+          result_.events_ |= event;
+        continue;
+      }
+
       ReadyEvents flags{};
 
       if (ev.events & EPOLLIN)
@@ -319,6 +436,16 @@ void EventLoop::wait_impl(std::optional<std::chrono::nanoseconds> timeout)
 
       auto const* registration = static_cast<Registration const*>(ev.udata);
       Index i{static_cast<int>(registration - registrations_.data())};
+      Event const event{EventIndex{bitset::IndexPOD{static_cast<int8_t>(i.get_value())}}};
+
+      if (ev.filter == EVFILT_SIGNAL)
+      {
+        // The ident of an EVFILT_SIGNAL filter is the signal number.
+        result_.signals_.addset(static_cast<int>(ev.ident));
+        result_.events_ |= event;
+        continue;
+      }
+
       ReadyEvents flags{};
 
       if (ev.filter == EVFILT_READ)
@@ -331,7 +458,7 @@ void EventLoop::wait_impl(std::optional<std::chrono::nanoseconds> timeout)
         flags = flags | ReadyEvents::error;
 #endif
 
-      result_.events_ |= Event{EventIndex{bitset::IndexPOD{static_cast<int8_t>(i.get_value())}}};
+      result_.events_ |= event;
       result_.ready_[i] = result_.ready_[i] | flags;
       result_.fds_[i] = registrations_[i].fd;
     }

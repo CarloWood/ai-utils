@@ -181,6 +181,7 @@ target_sources(utils_ObjLib
     "MultiLoop.h"
     "ObjectTracker.h"
     "Register.h"
+    "SignalSet.h"
     "Signals.h"
     "Singleton.h"
     "UltraHash.h"

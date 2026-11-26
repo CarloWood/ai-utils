@@ -5,6 +5,7 @@
 
 #include "utils/BitSet.h"
 #include "utils/Array.h"
+#include "utils/SignalSet.h"
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
@@ -33,7 +34,10 @@ namespace utils::threading {
 // `notify` accepts only Events returned by `watch_event`.
 // The caller must ensure that no producers are still using EventLoop when it is destroyed.
 //
-// `watch_fd` and `watch_event` throw std::runtime_error if too many events are registered.
+// `watch_fd`, `watch_event` and `watch_signals` throw std::runtime_error if too many events are registered.
+//
+// `watch_signals` lets the wait thread wake up for signals without running any signal handler: the signals
+// stay blocked in every thread, and wait* reads them as an ordinary event (signalfd(2) on Linux, EVFILT_SIGNAL on BSD/macOS).
 //
 // Usage:
 //
@@ -147,6 +151,12 @@ class EventLoop
     ReadyEvents ready_events(Index event_index) const { return ready_[event_index]; }
     int fd(Index event_index) const { return fds_[event_index]; }
 
+    // Return true if signal signum arrived since the previous wait*.
+    //
+    // Only meaningful when the Event returned by watch_signals is present in events(); it is then true for at least one signal.
+    // Several arrivals of the same signal coalesce.
+    bool signal_received(int signum) const { return signals_.ismember(signum); }
+
    private:
     friend class EventLoop;
 
@@ -154,17 +164,20 @@ class EventLoop
     EventMask events_{EventLoop::no_events};
     Array<ReadyEvents, max_number_of_events, Index> ready_{};
     Array<int, max_number_of_events, Index> fds_{};
+    SignalSet signals_;                         // The signals read by the last wait*, see signal_received.
 
     void clear()
     {
       status_ = WaitStatus::timed_out;
       events_ = EventMask{EventLoop::no_events};
       ready_ = {};
+      signals_.emptyset();
     }
   };
 
  private:
   EventMask fd_events_{no_events};              // Bit mask with events that are associated with fds.
+  EventMask signal_events_{no_events};          // The Event returned by watch_signals, if it was called.
   EventIndex next_event_{bitset::index_begin};  // The next event to return from a call to watch*.
                                                 // Numerically equal to the number of currently registered events.
   WaitResult result_;                           // This object holds the result of each wait* call.
@@ -182,6 +195,7 @@ class EventLoop
   int poller_fd_ = -1;                          // The epoll descriptor on Linux or the kqueue descriptor on BSD/macOS
 #ifdef __linux__
   int wake_fd_ = -1;                            // The eventfd(2) descriptor. The BSD backend uses EVFILT_USER.
+  int signal_fd_ = -1;                          // The signalfd(2) descriptor created by watch_signals. The BSD backend uses EVFILT_SIGNAL.
 #endif
   std::atomic<events_mask_type> pending_{0};
 
@@ -193,6 +207,9 @@ class EventLoop
 
   void wait_impl(std::optional<std::chrono::nanoseconds> timeout);
   void signal_wakeup();
+#ifdef __linux__
+  bool read_signals();
+#endif
 
  public:
   // Constructor.
@@ -208,6 +225,19 @@ class EventLoop
 
   // Register a new Event.
   [[nodiscard]] Event watch_event();
+
+  // Register a new Event for the arrival of any of the signals in signals.
+  //
+  // The caller must block signals in every thread of the process, including the main thread and the wait thread,
+  // for example by blocking them in main() before any thread is created: a signal that some thread does not block
+  // is delivered to that thread instead. On BSD/macOS such blocked signals stay pending forever unless their
+  // disposition is SIG_IGN, so ignore them as well; on Linux a blocked signal stays pending regardless of its disposition.
+  // Only signals sent to the process, or to the wait thread itself, are reported.
+  //
+  // Each wait* that returns this Event has read the arrived signals: use WaitResult::signal_received to see which.
+  // May be called at most once. Throws std::invalid_argument when called twice or when signals is empty,
+  // and std::system_error when the operating system refuses the registration.
+  [[nodiscard]] Event watch_signals(SignalSet const& signals);
 
   // Convert a single-bit Event to the corresponding array Index.
   static Index index(Event event)

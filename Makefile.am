@@ -35,6 +35,7 @@ SOURCES = \
 	NodeMemoryResource.h \
 	MultiLoop.h \
 	SimpleSegregatedStorage.h \
+	SignalSet.h \
 	Signals.h \
 	Singleton.h \
 	at_scope_end.h \
